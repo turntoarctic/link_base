@@ -17,7 +17,7 @@ declare module '@tiptap/core' {
 export const Details = Node.create({
   name: 'details',
   group: 'block',
-  content: 'summary block+',
+  content: 'detailsSummary block+',
   defining: true,
   isolating: true,
 

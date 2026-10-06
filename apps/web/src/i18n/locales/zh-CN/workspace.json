@@ -1,0 +1,92 @@
+{
+  "sidebar": {
+    "searchPlaceholder": "搜索或跳转…（⌘K）",
+    "favorites": "收藏",
+    "favoritesEmpty": "收藏的页面会出现在这里",
+    "private": "私密",
+    "pages": "页面",
+    "tags": "标签",
+    "trash": "回收站",
+    "newPage": "＋ 新页面",
+    "addChild": "在此节点下新建子页",
+    "nodeMenu": "页面操作",
+    "renameTitle": "重命名页面"
+  },
+  "tree": {
+    "moveToTrash": "移到回收站",
+    "copyLink": "复制链接",
+    "rename": "重命名",
+    "addChild": "新建子页"
+  },
+  "page": {
+    "menu": "页面菜单",
+    "moveToTrash": "移到回收站",
+    "copyLink": "复制链接",
+    "favorite": "收藏",
+    "unfavorite": "取消收藏",
+    "addTag": "添加标签…",
+    "breadcrumbHome": "工作空间",
+    "movedToTrash": "已移到回收站"
+  },
+  "toast": {
+    "linkCopied": "链接已复制",
+    "inviteCopied": "邀请链接已复制",
+    "movedToTrash": "已移到回收站",
+    "restored": "页面已恢复",
+    "deletedPermanently": "已彻底删除",
+    "nameSaved": "工作空间名称已更新"
+  },
+  "trash": {
+    "title": "回收站",
+    "columnTitle": "标题",
+    "columnPath": "路径",
+    "columnDeletedAt": "删除时间",
+    "columnActions": "操作",
+    "empty": "回收站是空的",
+    "deletePermanently": "彻底删除",
+    "confirmTitle": "彻底删除「{{title}}」？",
+    "confirmBody": "页面及其子页面将被永久删除，无法恢复。",
+    "restored": "已恢复"
+  },
+  "tags": {
+    "title": "标签",
+    "empty": "还没有标签",
+    "create": "新建标签",
+    "namePlaceholder": "标签名",
+    "color": "颜色",
+    "deleteConfirm": "删除标签「{{name}}」？页面上的该标签会一并移除。"
+  },
+  "search": {
+    "placeholder": "搜索页面标题与正文…",
+    "noResults": "没有匹配的页面",
+    "newPage": "新建页面：{{title}}",
+    "hint": "↑↓ 选择，⏎ 打开，⌘⏎ 新建"
+  },
+  "settings": {
+    "title": "设置",
+    "general": "通用",
+    "members": "成员",
+    "tags": "标签",
+    "workspaceName": "工作空间名称",
+    "saveName": "保存名称",
+    "language": "界面语言",
+    "theme": "外观主题",
+    "invite": "邀请成员",
+    "inviteHint": "邀请链接 7 天有效，复制发给同事即可。",
+    "createInvite": "生成邀请链接",
+    "copyInvite": "复制邀请链接",
+    "role": "角色",
+    "roleOwner": "所有者",
+    "roleAdmin": "管理员",
+    "roleMember": "成员",
+    "removeMember": "移除",
+    "transferOwner": "转让所有权",
+    "transferConfirm": "将所有权转让给「{{name}}」？转让后你将变为管理员。"
+  },
+  "errors": {
+    "loadFailed": "加载失败"
+  },
+  "auth": {
+    "loginRequired": "请先登录"
+  }
+}

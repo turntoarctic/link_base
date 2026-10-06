@@ -1,0 +1,343 @@
+/**
+ * @linkbase/editor 自有 UI 样式（弹层/工具条/NodeView/拖拽手柄）。
+ * 颜色一律引用语义 token（06 §6），暗色模式零成本生效。
+ */
+
+/* ------------------------------- suggestion 弹层 ------------------------------- */
+
+.linkbase-suggestion-popup {
+  position: fixed;
+  z-index: 1000;
+  min-width: 280px;
+  max-width: 340px;
+  max-height: 320px;
+  overflow: hidden;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 1px var(--border), 0 4px 12px rgb(15 15 15 / 8%);
+}
+
+.linkbase-menu {
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.linkbase-menu-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.linkbase-menu-group-title {
+  padding: 6px 8px 2px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.linkbase-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.linkbase-menu-item[data-active='true'] {
+  background: var(--muted);
+}
+
+.linkbase-menu-item-icon {
+  display: inline-flex;
+  color: var(--muted-foreground);
+}
+
+.linkbase-menu-item-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  font-size: 11px;
+}
+
+.linkbase-menu-empty {
+  padding: 12px 8px;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+/* ------------------------------- 浮动工具条 ------------------------------- */
+
+.linkbase-tb {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 1px var(--border), 0 4px 12px rgb(15 15 15 / 8%);
+}
+
+.linkbase-tb + .linkbase-tb {
+  margin-top: 6px;
+}
+
+.linkbase-tb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.linkbase-tb-btn:hover {
+  background: var(--muted);
+}
+
+.linkbase-tb-btn.is-active {
+  background: var(--accent);
+}
+
+.linkbase-tb-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.linkbase-tb-select {
+  height: 26px;
+  margin-right: 4px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.linkbase-tb-select:hover {
+  background: var(--muted);
+}
+
+.linkbase-tb-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.linkbase-tb-link input {
+  width: 200px;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--input);
+  border-radius: 4px;
+  background: var(--background);
+  color: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.linkbase-tb-swatch {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* ------------------------------- 拖拽手柄 ------------------------------- */
+
+.linkbase-drag-handle {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 22px;
+  margin-left: -26px;
+  margin-top: 2px;
+  border-radius: 4px;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+
+.ProseMirror:hover .linkbase-drag-handle {
+  opacity: 0.45;
+}
+
+.linkbase-drag-handle:hover {
+  opacity: 1 !important;
+  background: var(--muted);
+}
+
+.linkbase-drag-handle-dot {
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--muted-foreground);
+}
+
+.linkbase-drop-indicator {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 1px;
+  background: var(--primary);
+  pointer-events: none;
+}
+
+.linkbase-is-dragging {
+  user-select: none;
+}
+
+.linkbase-is-dragging * {
+  cursor: grabbing !important;
+}
+
+/* ------------------------------- NodeView ------------------------------- */
+
+.linkbase-image-wrapper {
+  width: 100%;
+}
+
+.linkbase-image-wrapper img {
+  max-width: 100%;
+  border-radius: var(--radius-md);
+}
+
+.linkbase-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 120px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: var(--secondary);
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+
+.linkbase-image-skeleton {
+  width: 60%;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--muted);
+  animation: linkbase-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes linkbase-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.linkbase-image-error {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  border: 1px dashed var(--destructive);
+  border-radius: var(--radius-md);
+  color: var(--destructive);
+  font-size: 13px;
+}
+
+.linkbase-image-error button {
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--background);
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.linkbase-subpage-wrapper {
+  width: 100%;
+}
+
+.linkbase-subpage-card {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.linkbase-subpage-card:hover {
+  background: var(--muted);
+}
+
+.linkbase-subpage-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.linkbase-subpage-arrow {
+  color: var(--text-tertiary);
+}
+
+.linkbase-callout {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  background: var(--muted);
+}
+
+.linkbase-callout-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.linkbase-callout-icon:hover {
+  background: var(--accent);
+}
+
+.linkbase-callout-content {
+  flex: 1;
+  min-width: 0;
+}

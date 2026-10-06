@@ -1,0 +1,9 @@
+# 07 §2.1：提交可读的文本 lockfile；脚本统一用 Bun 运行时
+[install]
+saveTextLockfile = true
+
+[run]
+bun = true
+
+[test]
+coverage = false

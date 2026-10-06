@@ -1,0 +1,28 @@
+{
+  "name": "@linkbase/server",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "catalog:",
+    "@linkbase/contracts": "workspace:*",
+    "@linkbase/database": "workspace:*",
+    "@linkbase/editor": "workspace:*",
+    "@linkbase/types": "workspace:*",
+    "@linkbase/ydoc": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "hono": "catalog:",
+    "pino": "catalog:",
+    "yjs": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.0",
+    "typescript": "catalog:"
+  }
+}

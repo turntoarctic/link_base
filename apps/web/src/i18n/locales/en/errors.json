@@ -1,0 +1,13 @@
+{
+  "LB_VALIDATION": "Invalid request, please check your input",
+  "LB_UNAUTHORIZED": "Not logged in or session expired, please log in again",
+  "LB_TOKEN_INVALID": "Session has expired, please log in again",
+  "LB_FORBIDDEN": "You do not have permission to do this",
+  "LB_NOT_FOUND": "Resource not found or deleted",
+  "LB_PAGE_NOT_FOUND": "Page not found",
+  "LB_EMAIL_TAKEN": "This email is already registered",
+  "LB_TAG_EXISTS": "A tag with the same name already exists",
+  "LB_RATE_LIMITED": "Too many attempts, please try again later",
+  "LB_PAYLOAD_TOO_LARGE": "Content exceeds the size limit",
+  "LB_INTERNAL": "Something went wrong, please try again later"
+}

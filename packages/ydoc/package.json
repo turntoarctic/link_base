@@ -1,0 +1,20 @@
+{
+  "name": "@linkbase/ydoc",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@linkbase/editor": "workspace:*",
+    "y-prosemirror": "catalog:",
+    "yjs": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}

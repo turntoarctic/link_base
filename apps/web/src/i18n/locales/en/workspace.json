@@ -1,0 +1,92 @@
+{
+  "sidebar": {
+    "searchPlaceholder": "Search or jump… (⌘K)",
+    "favorites": "Favorites",
+    "favoritesEmpty": "Favorited pages will appear here",
+    "private": "Private",
+    "pages": "Pages",
+    "tags": "Tags",
+    "trash": "Trash",
+    "newPage": "＋ New page",
+    "addChild": "New subpage under this node",
+    "nodeMenu": "Page actions",
+    "renameTitle": "Rename page"
+  },
+  "tree": {
+    "moveToTrash": "Move to trash",
+    "copyLink": "Copy link",
+    "rename": "Rename",
+    "addChild": "New subpage"
+  },
+  "page": {
+    "menu": "Page menu",
+    "moveToTrash": "Move to trash",
+    "copyLink": "Copy link",
+    "favorite": "Add to favorites",
+    "unfavorite": "Remove from favorites",
+    "addTag": "Add tag…",
+    "breadcrumbHome": "Workspace",
+    "movedToTrash": "Moved to trash"
+  },
+  "toast": {
+    "linkCopied": "Link copied",
+    "inviteCopied": "Invite link copied",
+    "movedToTrash": "Moved to trash",
+    "restored": "Page restored",
+    "deletedPermanently": "Permanently deleted",
+    "nameSaved": "Workspace name updated"
+  },
+  "trash": {
+    "title": "Trash",
+    "columnTitle": "Title",
+    "columnPath": "Path",
+    "columnDeletedAt": "Deleted at",
+    "columnActions": "Actions",
+    "empty": "Trash is empty",
+    "deletePermanently": "Delete permanently",
+    "confirmTitle": "Permanently delete “{{title}}”?",
+    "confirmBody": "The page and its subpages will be deleted forever. This cannot be undone.",
+    "restored": "Restored"
+  },
+  "tags": {
+    "title": "Tags",
+    "empty": "No tags yet",
+    "create": "New tag",
+    "namePlaceholder": "Tag name",
+    "color": "Color",
+    "deleteConfirm": "Delete tag “{{name}}”? It will be removed from all pages."
+  },
+  "search": {
+    "placeholder": "Search page titles and content…",
+    "noResults": "No matching pages",
+    "newPage": "New page: {{title}}",
+    "hint": "↑↓ to select, ⏎ to open, ⌘⏎ to create"
+  },
+  "settings": {
+    "title": "Settings",
+    "general": "General",
+    "members": "Members",
+    "tags": "Tags",
+    "workspaceName": "Workspace name",
+    "saveName": "Save name",
+    "language": "Interface language",
+    "theme": "Appearance",
+    "invite": "Invite members",
+    "inviteHint": "Invite links are valid for 7 days. Copy and share with teammates.",
+    "createInvite": "Generate invite link",
+    "copyInvite": "Copy invite link",
+    "role": "Role",
+    "roleOwner": "Owner",
+    "roleAdmin": "Admin",
+    "roleMember": "Member",
+    "removeMember": "Remove",
+    "transferOwner": "Transfer ownership",
+    "transferConfirm": "Transfer ownership to “{{name}}”? You will become an admin."
+  },
+  "errors": {
+    "loadFailed": "Failed to load"
+  },
+  "auth": {
+    "loginRequired": "Please log in first"
+  }
+}

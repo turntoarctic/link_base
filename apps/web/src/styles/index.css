@@ -1,0 +1,174 @@
+/* 样式入口：Tailwind 4 + 主题 token（06 §5.1 全应用唯一主题定义处） */
+@import 'tailwindcss';
+@import './tokens.css';
+@import './editor.css';
+@import '@linkbase/editor/styles.css';
+
+/* class 策略暗色（06 §5.1：跟随系统 + 手动覆盖） */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-tag-1: var(--tag-1-bg);
+  --color-tag-1-fg: var(--tag-1-fg);
+  --color-tag-2: var(--tag-2-bg);
+  --color-tag-2-fg: var(--tag-2-fg);
+  --color-tag-3: var(--tag-3-bg);
+  --color-tag-3-fg: var(--tag-3-fg);
+  --color-tag-4: var(--tag-4-bg);
+  --color-tag-4-fg: var(--tag-4-fg);
+  --color-tag-5: var(--tag-5-bg);
+  --color-tag-5-fg: var(--tag-5-fg);
+  --color-tag-6: var(--tag-6-bg);
+  --color-tag-6-fg: var(--tag-6-fg);
+  --color-tag-7: var(--tag-7-bg);
+  --color-tag-7-fg: var(--tag-7-fg);
+  --color-tag-8: var(--tag-8-bg);
+  --color-tag-8-fg: var(--tag-8-fg);
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  --shadow-pop: 0 0 0 1px var(--border), 0 4px 12px rgb(15 15 15 / 8%);
+  --shadow-modal: 0 10px 40px rgb(15 15 15 / 16%);
+
+  /* 字体（值直接内联，避免 inline 映射自引用） */
+  --font-sans:
+    ui-sans-serif, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei',
+    'Noto Sans CJK SC', sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', 'JetBrains Mono', Consolas, monospace;
+
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-lg: 16px;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    background: var(--background);
+  }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--primary) 22%, transparent);
+  }
+
+  /* 细滚动条（Notion 式低调） */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--muted-foreground) 35%, transparent) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--muted-foreground) 35%, transparent);
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+/* 布局宽度 token（06 §5.3）——以任意值语法消费：w-(--width-sidebar) */
+:root {
+  --width-sidebar: 240px;
+  --width-content: 720px;
+  --width-content-wide: 984px;
+}
+
+/* ---------------- Base UI 浮层动效（120–200ms ease-out，06 §5.3） ---------------- */
+
+.ui-popup {
+  transform-origin: var(--transform-origin);
+  transition:
+    opacity 150ms ease-out,
+    transform 150ms ease-out;
+}
+.ui-popup[data-starting-style],
+.ui-popup[data-ending-style] {
+  opacity: 0;
+  transform: scale(0.98) translateY(-2px);
+}
+
+.ui-backdrop {
+  background: rgb(15 15 15 / 40%);
+  transition: opacity 200ms ease-out;
+}
+.ui-backdrop[data-starting-style],
+.ui-backdrop[data-ending-style] {
+  opacity: 0;
+}
+
+/* 共享浮层外观：下拉/Popover（Dialog 用 .ui-dialog 覆盖尺寸与内边距） */
+.ui-menu {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 0 0 1px var(--border), 0 4px 12px rgb(15 15 15 / 8%);
+  overflow-y: auto;
+}
+
+.ui-dialog {
+  position: relative;
+  width: 460px;
+  max-width: calc(100vw - 32px);
+  border-radius: var(--radius-lg);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  padding: 20px;
+  box-shadow: 0 10px 40px rgb(15 15 15 / 16%);
+}
+
+.ui-toast {
+  animation: ui-toast-in 200ms ease-out;
+}
+
+@keyframes ui-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

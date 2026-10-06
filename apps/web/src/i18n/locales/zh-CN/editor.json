@@ -1,0 +1,69 @@
+{
+  "placeholder": "输入 / 唤起命令菜单",
+  "slash": {
+    "title": "命令菜单",
+    "noResults": "没有匹配的命令",
+    "group": {
+      "text": "基本块",
+      "media": "媒体与页面",
+      "advanced": "进阶"
+    },
+    "item": {
+      "paragraph": "文本",
+      "heading1": "标题 1",
+      "heading2": "标题 2",
+      "heading3": "标题 3",
+      "bulletList": "无序列表",
+      "orderedList": "有序列表",
+      "taskList": "待办列表",
+      "blockquote": "引用",
+      "codeBlock": "代码块",
+      "divider": "分割线",
+      "table": "表格",
+      "callout": "标注块",
+      "image": "图片",
+      "subpage": "子页面",
+      "mention": "提及（输入 @）"
+    }
+  },
+  "toolbar": {
+    "block": {
+      "paragraph": "文本",
+      "heading1": "标题 1",
+      "heading2": "标题 2",
+      "heading3": "标题 3",
+      "quote": "引用",
+      "code": "代码块"
+    },
+    "bold": "粗体",
+    "italic": "斜体",
+    "strike": "删除线",
+    "code": "行内代码",
+    "highlight": "高亮",
+    "highlightOff": "清除高亮",
+    "link": "链接",
+    "linkPlaceholder": "粘贴或输入链接",
+    "linkApply": "应用",
+    "comment": "评论（即将上线）",
+    "table": {
+      "addRow": "加行",
+      "deleteRow": "删行",
+      "addColumn": "加列",
+      "deleteColumn": "删列",
+      "headerRow": "表头行",
+      "deleteTable": "删除表格"
+    }
+  },
+  "mention": {
+    "title": "提及成员",
+    "noResults": "没有匹配的成员"
+  },
+  "image": {
+    "uploading": "上传中…",
+    "failed": "上传失败",
+    "retry": "重试"
+  },
+  "subpage": {
+    "untitled": "无标题子页面"
+  }
+}

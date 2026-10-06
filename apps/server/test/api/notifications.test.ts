@@ -3,10 +3,11 @@
  * 评论 → 页面创建者收通知；回复 → 根评论作者收通知；提及（派生触发）→ 去重；
  * 已读/全部已读。
  */
-import { beforeAll, describe, expect, test } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import * as Y from 'yjs'
 import { eq } from 'drizzle-orm'
 import { createDb, workspaceMembers } from '@linkbase/database'
+import { closeTrackedDbs, trackDb } from '../helpers/test-db.ts'
 import { createApp } from '../../src/app.ts'
 import { createKV, createSessions } from '../../src/db/redis.ts'
 import { mergePage } from '../../src/services/docs.service.ts'
@@ -28,8 +29,12 @@ describe.skipIf(!HAS_DB)('通知（P1-9 / T2.9）', () => {
   let ws = ''
   let pageId = ''
 
+  afterAll(async () => {
+    await closeTrackedDbs()
+  })
+
   beforeAll(async () => {
-    db = createDb(process.env.DATABASE_URL!)
+    db = trackDb(createDb(process.env.DATABASE_URL!))
     const kv = createKV('')
     app = createApp({ db, kv, sessions: createSessions(kv), appOrigin: 'http://localhost:5173' })
 
@@ -38,6 +43,7 @@ describe.skipIf(!HAS_DB)('通知（P1-9 / T2.9）', () => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ email: `ntf-owner-${unique()}@test.dev`, password: 'password123', name: '页主' }),
     })
+    if (owner.status !== 201) console.log('OWNER REGISTER FAIL:', owner.status, await owner.text())
     const ownerBody = (await owner.json()) as { accessToken: string; workspace: { id: string }; user: { id: string } }
     ownerH = { authorization: `Bearer ${ownerBody.accessToken}`, 'content-type': 'application/json' }
     ownerUserId = ownerBody.user.id

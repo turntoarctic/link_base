@@ -22,6 +22,7 @@ import { healthRouter } from './routes/health.ts'
 import { wsRouter } from './routes/ws.ts'
 import { commentsRouter } from './routes/comments.ts'
 import { notificationsRouter } from './routes/notifications.ts'
+import { shareRouter, publicShareRouter } from './routes/share.ts'
 
 export function createApp(deps: ServerDeps): Hono<AppEnv> {
   const app = new Hono<AppEnv>()
@@ -55,6 +56,8 @@ export function createApp(deps: ServerDeps): Hono<AppEnv> {
   app.route('/api/ws', wsRouter(deps))
   app.route('/api/workspaces', commentsRouter(deps))
   app.route('/api/notifications', notificationsRouter(deps))
+  app.route('/api/workspaces', shareRouter(deps))
+  app.route('/api', publicShareRouter(deps))
 
   app.onError(errorHandler)
   return app

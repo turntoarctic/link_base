@@ -132,6 +132,13 @@ export const pageApi = {
   restoreVersion(wsId: string, pageId: string, version: number): Promise<void> {
     return api.json(`/workspaces/${wsId}/pages/${pageId}/versions/${version}/restore`, { method: 'POST' })
   },
+  // 公开分享（Phase 3）
+  shareState(wsId: string, pageId: string): Promise<{ enabled: boolean; slug: string | null }> {
+    return api.json(`/workspaces/${wsId}/pages/${pageId}/share`)
+  },
+  setShare(wsId: string, pageId: string, enabled: boolean): Promise<{ slug: string } | void> {
+    return api.json(`/workspaces/${wsId}/pages/${pageId}/share`, { method: 'POST', json: { enabled } })
+  },
   // Markdown 导入导出（05 §7 / T2.5）
   exportMarkdown(wsId: string, pageId: string): Promise<string> {
     return api.text(`/workspaces/${wsId}/pages/${pageId}/export`)

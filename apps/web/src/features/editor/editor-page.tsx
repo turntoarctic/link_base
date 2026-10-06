@@ -21,6 +21,7 @@ import { VersionsPanel } from './versions-panel'
 import { CommentsPanel } from './comments-panel'
 import { ImportMarkdownDialog } from './import-markdown-dialog'
 import { openFindReplace } from './find-replace-bar'
+import { ShareDialog } from './share-dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -84,6 +85,7 @@ export default function EditorPage() {
   const [versionsOpen, setVersionsOpen] = useState(false)
   const [commentsOpen, setCommentsOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
   const [pendingAnchor, setPendingAnchor] = useState<CommentAnchor | null>(null)
   const [title, setTitle] = useState<string | undefined>(undefined)
   // 组件在 /page/:pageId 下切页不重挂载：切页必须重置标题，否则残留上个页面的
@@ -262,6 +264,9 @@ export default function EditorPage() {
               <FileUp />
               {t('workspace:import.menu')}
             </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setShareOpen(true)}>
+              {t('workspace:share.menu')}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onSelect={() => moveToTrash.mutate()}>
@@ -282,6 +287,7 @@ export default function EditorPage() {
         onAnchorConsumed={() => setPendingAnchor(null)}
       />
       <ImportMarkdownDialog wsId={workspaceId} open={importOpen} onOpenChange={setImportOpen} />
+      <ShareDialog wsId={workspaceId} pageId={pageId} open={shareOpen} onOpenChange={setShareOpen} />
 
       {/* 标题（独立输入框，非编辑器节点，05 §5） */}
       <div className="mx-auto w-(--width-content) max-w-full pt-6">

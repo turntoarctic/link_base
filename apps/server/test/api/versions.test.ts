@@ -2,10 +2,11 @@
  * 版本历史集成测试（08 §4.5 / T2.3，DB 门控）：
  * push 内容 → 手动存版本 → 追加内容 → 时间线/正文 → 恢复 → 旧内容回归（CRDT 合并）+ restore 快照。
  */
-import { beforeAll, describe, expect, test } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { desc, eq } from 'drizzle-orm'
 import * as Y from 'yjs'
 import { createDb, pageSnapshots } from '@linkbase/database'
+import { closeTrackedDbs, trackDb } from '../helpers/test-db.ts'
 import { createApp } from '../../src/app.ts'
 import { createKV, createSessions } from '../../src/db/redis.ts'
 
@@ -43,7 +44,7 @@ describe.skipIf(!HAS_DB)('版本历史（08 §4.5 / T2.3）', () => {
   let pageId = ''
 
   beforeAll(async () => {
-    db = createDb(process.env.DATABASE_URL!)
+    db = trackDb(createDb(process.env.DATABASE_URL!))
     const kv = createKV('')
     app = createApp({ db, kv, sessions: createSessions(kv), appOrigin: 'http://localhost:5173' })
 
@@ -61,6 +62,10 @@ describe.skipIf(!HAS_DB)('版本历史（08 §4.5 / T2.3）', () => {
       body: '{}',
     })
     pageId = ((await page.json()) as { id: string }).id
+  })
+
+  afterAll(async () => {
+    await closeTrackedDbs()
   })
 
   test('手动保存 → 时间线 → 恢复 → 旧内容回归 + restore 快照', async () => {

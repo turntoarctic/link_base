@@ -73,6 +73,35 @@
 | GET | `/workspaces/:wsId/favorites` | 我的收藏 |
 | PUT | `/workspaces/:wsId/pages/:pageId/visit` | 记录访问（P1，upsert page_visits） |
 | GET | `/workspaces/:wsId/recents` | 最近访问（P1） |
+| GET | `/workspaces/:wsId/templates` | 模板列表（isTemplate 页，T2.10）→ `[{ id, title }]` |
+| POST | `/workspaces/:wsId/pages/import` | `{ title?, markdown }` → `201 { id, title }`（MD 导入建页，T2.5；快照 reason=copy） |
+
+### 4.1 版本历史（08 §4.5 / T2.3）
+
+| Method | Path | 说明 |
+|--------|------|------|
+| POST | `/workspaces/:wsId/pages/:pageId/versions` | 手动保存版本（reason=manual）→ `201 { version }`；无内容 404 |
+| GET | `/workspaces/:wsId/pages/:pageId/versions` | 时间线（新→旧 ≤50）：`[{ version, reason, createdAt, excerpt }]` |
+| GET | `/workspaces/:wsId/pages/:pageId/versions/:version` | `{ text }`（正文预览） |
+| POST | `/workspaces/:wsId/pages/:pageId/versions/:version/restore` | 恢复（CRDT 合并 + reason=restore 快照 + WS 广播）→ 204 |
+
+### 4.2 评论（P1-3 / T2.4）
+
+| Method | Path | 说明 |
+|--------|------|------|
+| GET | `/workspaces/:wsId/pages/:pageId/comments` | 全量扁平（根 + 回复），客户端按 parentId 组串 |
+| POST | `/workspaces/:wsId/pages/:pageId/comments` | `{ body, anchor?{quote,prefix,suffix} }` → `201 CommentItem`（anchor = 行内文本引用锚点） |
+| POST | `.../comments/:commentId/replies` | `{ body }` → `201`（回复串） |
+| POST | `.../comments/:commentId/resolve` | `{ resolved }` → 204（解决/重开） |
+| PATCH | `.../comments/:commentId` | `{ body }` → 204 |
+| DELETE | `.../comments/:commentId` | 删除（回复级联）→ 204 |
+
+### 4.3 公开分享（Phase 3 立项第一项）
+
+| Method | Path | 说明 |
+|--------|------|------|
+| POST | `/workspaces/:wsId/pages/:pageId/share` | `{ enabled }` → `200 { slug } | 204`（开启生成 slug 并返回） |
+| GET | `/share/:slug` | **公开无鉴权**（限流内）→ 合并态 update 字节（`octet-stream`）；未开启/不存在 404 |
 
 ## 5. 内容同步与附件（二进制）
 
@@ -80,7 +109,7 @@
 
 | Method | Path | 说明 |
 |--------|------|------|
-| POST | `/ws/ticket` | → `201 { ticket, expiresIn: 30 }`（Phase 2，见 09 §2） |
+| POST | `/ws/ticket` | → `201 { ticket, expiresIn: 30 }`（Phase 2，见 09 §2；票取出即焚） |
 
 ### 5.2 Y.Doc 增量
 
@@ -127,6 +156,8 @@
 | PUT/DELETE | `/workspaces/:wsId/pages/:pageId/tags/:tagId` | 打/去标签 |
 | GET | `/workspaces/:wsId/pages/:pageId/tags` | 页面标签 |
 | GET | `/workspaces/:wsId/search?q=` | 搜索（08 §6）→ `[{ id, title, breadcrumb[], snippet? }]` |
+| GET | `/api/notifications` | 我的通知（新→旧 ≤50）：`[{ id, type, actorName, pageId, pageTitle, excerpt, read, createdAt }]` |
+| POST | `/api/notifications/:id/read` / `/read-all` | 标记已读 / 全部已读（P1-9） |
 | GET | `/api/health` | 探活（07 §9） |
 
 ## 8. 契约共享

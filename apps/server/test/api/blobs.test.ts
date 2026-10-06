@@ -2,8 +2,9 @@
  * Blob 附件往返测试（P1-6 / T2.6，DB 门控）：任意类型（非图片）上传 → 下载字节一致 + mime 正确；
  * 超限 413 语义由路由 bodyLimit 保证（此处验证常规流）。
  */
-import { beforeAll, describe, expect, test } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { createDb } from '@linkbase/database'
+import { closeTrackedDbs, trackDb } from '../helpers/test-db.ts'
 import { createApp } from '../../src/app.ts'
 import { createKV, createSessions } from '../../src/db/redis.ts'
 
@@ -20,7 +21,7 @@ describe.skipIf(!HAS_DB)('Blob 附件（P1-6 / T2.6）', () => {
   let ws = ''
 
   beforeAll(async () => {
-    const db = createDb(process.env.DATABASE_URL!)
+        const db = trackDb(createDb(process.env.DATABASE_URL!))
     const kv = createKV('')
     app = createApp({ db, kv, sessions: createSessions(kv), appOrigin: 'http://localhost:5173' })
     const reg = await app.request('/api/auth/register', {
@@ -54,6 +55,10 @@ describe.skipIf(!HAS_DB)('Blob 附件（P1-6 / T2.6）', () => {
     const received = new Uint8Array(await res.arrayBuffer())
     expect(received.length).toBe(bytes.length)
     expect(Buffer.from(received).equals(Buffer.from(bytes))).toBe(true)
+  })
+
+  afterAll(async () => {
+    await closeTrackedDbs()
   })
 
   test('文本文件往返 + 下载名随客户端 download 属性（能力 URL 无鉴权）', async () => {

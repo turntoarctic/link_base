@@ -9,6 +9,7 @@ import * as encoding from 'lib0/encoding'
 import * as decoding from 'lib0/decoding'
 import { Awareness, applyAwarenessUpdate, encodeAwarenessUpdate } from 'y-protocols/awareness'
 import { createDb, pages, workspaceMembers } from '@linkbase/database'
+import { closeTrackedDbs, trackDb } from '../helpers/test-db.ts'
 import { extractPageMeta } from '@linkbase/ydoc'
 import { getPageState } from '../../src/services/docs.service.ts'
 import { createApp } from '../../src/app.ts'
@@ -120,8 +121,12 @@ describe.skipIf(!HAS_DB)('WS 房间（09 §8）', () => {
   let pageId = ''
   const tokens = new Map<string, string>()
 
+  afterAll(async () => {
+    await closeTrackedDbs()
+  })
+
   beforeAll(async () => {
-    db = createDb(process.env.DATABASE_URL!)
+    db = trackDb(createDb(process.env.DATABASE_URL!))
     const kv = createKV('')
     const deps = { db, kv, sessions: createSessions(kv), appOrigin: 'http://localhost:5173' }
     app = createApp(deps)

@@ -149,5 +149,15 @@
     "typeMention": "{{actor}} 在页面中提及了你",
     "typeComment": "{{actor}} 评论了页面",
     "typeReply": "{{actor}} 回复了你的评论"
+  },
+  "share": {
+    "menu": "公开分享",
+    "title": "公开分享",
+    "subtitle": "开启后任何人可通过链接只读访问此页面",
+    "enable": "开启公开分享",
+    "copy": "复制链接",
+    "hint": "链接知晓者均可只读访问；关闭后链接立即失效（再次开启链接不变）。",
+    "readOnly": "只读分享",
+    "notFound": "分享不存在或已关闭"
   }
 }

@@ -2,9 +2,11 @@
  * Markdown 导入导出集成测试（05 §7 / T2.5，DB 门控）：
  * 结构化内容导出（标题/粗体/列表/任务/代码/表格）→ 导入建页 → 往返导出一致。
  */
-import { beforeAll, describe, expect, test } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import * as Y from 'yjs'
+import { createDb } from '@linkbase/database'
 import { createApp } from '../../src/app.ts'
+import { closeTrackedDbs, trackDb } from '../helpers/test-db.ts'
 import { createKV, createSessions } from '../../src/db/redis.ts'
 
 process.env.JWT_SECRET ??= 'test-secret-0123456789abcdef'
@@ -21,9 +23,14 @@ describe.skipIf(!HAS_DB)('Markdown 导入导出（T2.5）', () => {
   let ws = ''
   let pageId = ''
 
+  afterAll(async () => {
+    await closeTrackedDbs()
+  })
+
   beforeAll(async () => {
     const kv = createKV('')
-    app = createApp({ db: (await import('@linkbase/database')).createDb(process.env.DATABASE_URL!), kv, sessions: createSessions(kv), appOrigin: 'http://localhost:5173' })
+    const db = trackDb(createDb(process.env.DATABASE_URL!))
+    app = createApp({ db, kv, sessions: createSessions(kv), appOrigin: 'http://localhost:5173' })
     const reg = await app.request('/api/auth/register', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },

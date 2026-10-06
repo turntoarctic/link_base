@@ -149,5 +149,15 @@
     "typeMention": "{{actor}} mentioned you in a page",
     "typeComment": "{{actor}} commented on a page",
     "typeReply": "{{actor}} replied to your comment"
+  },
+  "share": {
+    "menu": "Public sharing",
+    "title": "Public sharing",
+    "subtitle": "Anyone with the link can view this page read-only",
+    "enable": "Enable public sharing",
+    "copy": "Copy link",
+    "hint": "Anyone with the link can view read-only; disabling invalidates the link instantly (re-enabling keeps the same link).",
+    "readOnly": "Read-only share",
+    "notFound": "Share not found or disabled"
   }
 }

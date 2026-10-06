@@ -2,8 +2,9 @@
  * 评论集成测试（P1-3 / T2.4，DB 门控）：建（页面级/行内锚点）→ 回复 → 解决/重开 → 删除；
  * 越权（非成员 403）与跨页评论 id 不可达。
  */
-import { beforeAll, describe, expect, test } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { createDb } from '@linkbase/database'
+import { closeTrackedDbs, trackDb } from '../helpers/test-db.ts'
 import { createApp } from '../../src/app.ts'
 import { createKV, createSessions } from '../../src/db/redis.ts'
 
@@ -23,7 +24,7 @@ describe.skipIf(!HAS_DB)('评论（P1-3 / T2.4）', () => {
   let inlineId = ''
 
   beforeAll(async () => {
-    const db = createDb(process.env.DATABASE_URL!)
+    const db = trackDb(createDb(process.env.DATABASE_URL!))
     const kv = createKV('')
     app = createApp({ db, kv, sessions: createSessions(kv), appOrigin: 'http://localhost:5173' })
 
@@ -41,6 +42,10 @@ describe.skipIf(!HAS_DB)('评论（P1-3 / T2.4）', () => {
       body: '{}',
     })
     pageId = ((await page.json()) as { id: string }).id
+  })
+
+  afterAll(async () => {
+    await closeTrackedDbs()
   })
 
   test('页面级评论：建 → 列表（作者名解析）', async () => {

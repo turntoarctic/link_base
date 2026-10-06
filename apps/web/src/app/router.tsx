@@ -22,6 +22,7 @@ const WorkspaceIndexPage = lazy(() => import('@/features/workspace/workspace-ind
 const EditorPage = lazy(() => import('@/features/editor/editor-page'))
 const TrashPage = lazy(() => import('@/features/trash/trash-page'))
 const SettingsPage = lazy(() => import('@/features/settings/settings-page'))
+const SharePage = lazy(() => import('@/features/share/share-page'))
 
 /** 全局错误兜底：任何路由组件崩溃都给出可见信息 + 重载，不白屏 */
 class RouteErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
@@ -81,6 +82,7 @@ export function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/invite/:token" element={<InvitePage />} />
+        <Route path="/share/:slug" element={<SharePage />} />
             <Route element={<RequireAuth />}>
               <Route path="/:workspaceId" element={<WorkspaceLayout />}>
                 <Route index element={<WorkspaceIndexPage />} />

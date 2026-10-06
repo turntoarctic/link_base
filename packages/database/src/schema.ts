@@ -91,6 +91,9 @@ export const pages = pgTable(
     isTrash: boolean('is_trash').notNull().default(false),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     isTemplate: boolean('is_template').notNull().default(false),
+    /** 公开分享（Phase 3）：只读能力 URL /share/:slug */
+    shareEnabled: boolean('share_enabled').notNull().default(false),
+    shareSlug: text('share_slug'),
     /** 派生缓存：子页面块推导，顶级为 NULL（08 §5） */
     parentId: uuid('parent_id'),
     /** 派生缓存：正文纯文本（搜索用） */

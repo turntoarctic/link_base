@@ -122,6 +122,9 @@
       "number": "Number",
       "checkbox": "Checkbox"
     },
-    "optionN": "Option {n}"
+    "optionN": "Option {n}",
+    "filterPlaceholder": "Filter rows…",
+    "sortDefault": "Default order",
+    "sortBy": "By {column}"
   }
 }

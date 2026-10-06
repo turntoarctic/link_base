@@ -1029,3 +1029,72 @@
   background: var(--muted);
   color: var(--foreground);
 }
+
+/* ------------------------------- Base P2 打磨（筛选/排序/列宽/看板拖拽） ------------------------------- */
+
+.linkbase-base-filter {
+  width: 150px;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--input);
+  border-radius: 6px;
+  background: var(--background);
+  color: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.linkbase-base-filter:focus-visible {
+  border-color: var(--ring);
+}
+
+.linkbase-base-sort {
+  height: 26px;
+  border: 1px solid var(--input);
+  border-radius: 6px;
+  background: var(--background);
+  color: inherit;
+  font-size: 12px;
+  padding: 0 4px;
+}
+
+.linkbase-base-sortdir {
+  height: 26px;
+  min-width: 26px;
+  border: 1px solid var(--input);
+  border-radius: 6px;
+  background: var(--background);
+  color: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.linkbase-base-colhandle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+
+.linkbase-base-table th {
+  position: relative;
+}
+
+.linkbase-base-table th:hover .linkbase-base-colhandle {
+  opacity: 1;
+  background: var(--primary);
+}
+
+.linkbase-base-board-col.is-target {
+  outline: 2px dashed var(--primary);
+  outline-offset: -2px;
+  background: color-mix(in srgb, var(--primary) 6%, var(--secondary));
+}
+
+.linkbase-base-card.is-dragging {
+  opacity: 0.4;
+}

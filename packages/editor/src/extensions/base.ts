@@ -18,6 +18,8 @@ export interface BaseColumn {
   name: string
   type: 'text' | 'select' | 'date' | 'number' | 'checkbox'
   options?: Array<{ id: string; name: string }>
+  /** 列宽（P2 拖拽调整，随 Y 同步） */
+  width?: number
 }
 
 export interface BaseSource {

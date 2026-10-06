@@ -122,6 +122,9 @@
       "number": "数字",
       "checkbox": "勾选"
     },
-    "optionN": "选项 {n}"
+    "optionN": "选项 {n}",
+    "filterPlaceholder": "筛选行…",
+    "sortDefault": "默认排序",
+    "sortBy": "按 {column}"
   }
 }

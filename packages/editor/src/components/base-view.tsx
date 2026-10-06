@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { FileText, LayoutGrid, Plus, Table2, Trash2, X } from 'lucide-react'
 import * as Y from 'yjs'
 import { getBaseBridge, type BaseColumn } from '../extensions/base.ts'
+import { applyFilterSort, type RowSnapshot } from '../base-view-data.ts'
 
 const cn = (...parts: Array<string | false | null | undefined>): string => parts.filter(Boolean).join(' ')
 
@@ -16,13 +17,14 @@ type RowMap = Y.Map<any>
 interface ColumnData extends BaseColumn {}
 
 function readColumns(map: any): ColumnData[] {
-  const arr = map.get('columns') as Y.Array<Y.Map<unknown>> | undefined
+  const arr = map.get('columns') as Y.Array<Y.Map<any>> | undefined
   if (!arr) return []
   return arr.toArray().map((c: any) => ({
     id: String(c.get('id')),
     name: String(c.get('name')),
     type: c.get('type') as ColumnData['type'],
     options: c.get('options') as ColumnData['options'] | undefined,
+    width: c.get('width') as number | undefined,
   }))
 }
 
@@ -70,6 +72,13 @@ export function BaseView({ node }: NodeViewProps) {
   const [addingColumn, setAddingColumn] = useState(false)
   const [newColName, setNewColName] = useState('')
   const [newColType, setNewColType] = useState<ColumnData['type']>('text')
+  // P2 打磨：筛选/排序（本地 UI 态）+ 列宽（拖拽结束落 Y）+ 看板拖拽
+  const [filter, setFilter] = useState('')
+  const [sortBy, setSortBy] = useState<string | null>(null)
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+  const [widths, setWidths] = useState<Record<string, number>>({})
+  const [draggingRow, setDraggingRow] = useState<string | null>(null)
+  const [dragOverCol, setDragOverCol] = useState<string | null>(null)
 
   const map = ydoc ? (ydoc.getMap(`base:${baseId}`) as any) : null
   const refresh = useCallback(() => force(), [force])
@@ -91,9 +100,21 @@ export function BaseView({ node }: NodeViewProps) {
   }
 
   const columns = readColumns(map)
-  const rows = readRows(map)
+  const allRows = readRows(map)
   const rowsMap = map.get('rows') as any
   const selectColumn = columns.find((c) => c.type === 'select')
+
+  // 筛选/排序：快照过纯函数，渲染仍引用 RowMap
+  const snapshots: RowSnapshot[] = allRows.map(({ id, row }) => ({
+    id,
+    title: rowTitle(row),
+    pageId: (row.get('pageId') as string | null) ?? null,
+    cells: (row.get('cells') ?? {}) as Record<string, unknown>,
+  }))
+  const visible = new Set(
+    applyFilterSort(snapshots, columns, { filter, sortBy, sortDir }).map((r) => r.id),
+  )
+  const rows = allRows.filter((r) => visible.has(r.id))
 
   const addRow = () => {
     const row = new Y.Map() as RowMap
@@ -141,6 +162,13 @@ export function BaseView({ node }: NodeViewProps) {
       groups.push({ key: opt.id, label: opt.name, rows: rows.filter((r) => cellValue(r.row, selectColumn.id) === opt.id) })
     }
     groups.push({ key: '__none', label: t('base.noGroup'), rows: rows.filter((r) => !cellValue(r.row, selectColumn.id)) })
+  }
+
+  const moveCard = (rowId: string, groupKey: string) => {
+    if (!selectColumn) return
+    const target = allRows.find((r) => r.id === rowId)
+    if (!target) return
+    setCellValue(target.row, selectColumn.id, groupKey === '__none' ? null : groupKey)
   }
 
   const renderCell = (row: RowMap, col: ColumnData) => {
@@ -238,9 +266,36 @@ export function BaseView({ node }: NodeViewProps) {
           </button>
         </div>
         {view === 'table' ? (
-          <button type="button" className="linkbase-base-add" onClick={addRow}>
-            <Plus size={13} /> {t('base.addRow')}
-          </button>
+          <>
+            <input
+              className="linkbase-base-filter"
+              value={filter}
+              placeholder={t('base.filterPlaceholder')}
+              onChange={(e) => setFilter(e.target.value)}
+            />
+            <select
+              className="linkbase-base-sort"
+              value={sortBy ?? ''}
+              onChange={(e) => setSortBy(e.target.value || null)}
+            >
+              <option value="">{t('base.sortDefault')}</option>
+              {columns.map((col) => (
+                <option key={col.id} value={col.id}>{t('base.sortBy', { column: col.name })}</option>
+              ))}
+            </select>
+            {sortBy && (
+              <button
+                type="button"
+                className="linkbase-base-sortdir"
+                onClick={() => setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))}
+              >
+                {sortDir === 'asc' ? '↑' : '↓'}
+              </button>
+            )}
+            <button type="button" className="linkbase-base-add" onClick={addRow}>
+              <Plus size={13} /> {t('base.addRow')}
+            </button>
+          </>
         ) : (
           <span className="linkbase-base-groupby">{t('base.groupBy', { column: selectColumn?.name ?? '' })}</span>
         )}
@@ -251,7 +306,7 @@ export function BaseView({ node }: NodeViewProps) {
           <thead>
             <tr>
               {columns.map((col) => (
-                <th key={col.id}>
+                <th key={col.id} style={{ width: widths[col.id] ?? col.width }}>
                   <span className="linkbase-base-colname">
                     {col.name}
                     {col.id !== 'title' && (
@@ -261,6 +316,29 @@ export function BaseView({ node }: NodeViewProps) {
                     )}
                   </span>
                   <span className="linkbase-base-coltype">{t(`base.type.${col.type}`)}</span>
+                  <div
+                    className="linkbase-base-colhandle"
+                    contentEditable={false}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      const startX = e.clientX
+                      const startW = widths[col.id] ?? col.width ?? 140
+                      const onMove = (ev: MouseEvent) => {
+                        setWidths((prev) => ({ ...prev, [col.id]: Math.max(64, startW + ev.clientX - startX) }))
+                      }
+                      const onUp = (ev: MouseEvent) => {
+                        window.removeEventListener('mousemove', onMove)
+                        window.removeEventListener('mouseup', onUp)
+                        const colArr = map.get('columns') as Y.Array<Y.Map<any>>
+                        const target = colArr.toArray().find((c: any) => String(c.get('id')) === col.id)
+                        // columns 是 Y.Map（非元素）：宽用 set 而非 setAttribute
+                        target?.set('width', Math.max(64, startW + ev.clientX - startX))
+                      }
+                      window.addEventListener('mousemove', onMove)
+                      window.addEventListener('mouseup', onUp)
+                    }}
+                  />
                 </th>
               ))}
               <th className="linkbase-base-addcol-th">
@@ -333,13 +411,41 @@ export function BaseView({ node }: NodeViewProps) {
       {view === 'board' && (
         <div className="linkbase-base-board" contentEditable={false}>
           {groups.map((group) => (
-            <div key={group.key} className="linkbase-base-board-col">
+            <div
+              key={group.key}
+              className={cn('linkbase-base-board-col', dragOverCol === group.key && 'is-target')}
+              onDragOver={(e) => {
+                e.preventDefault()
+                e.dataTransfer.dropEffect = 'move'
+                if (dragOverCol !== group.key) setDragOverCol(group.key)
+              }}
+              onDragLeave={() => setDragOverCol((cur) => (cur === group.key ? null : cur))}
+              onDrop={(e) => {
+                e.preventDefault()
+                if (draggingRow) moveCard(draggingRow, group.key)
+                setDraggingRow(null)
+                setDragOverCol(null)
+              }}
+            >
               <div className="linkbase-base-board-colhead">
                 {group.label}
                 <span className="linkbase-base-board-count">{group.rows.length}</span>
               </div>
               {group.rows.map(({ id, row }) => (
-                <div key={id} className="linkbase-base-card">
+                <div
+                  key={id}
+                  className={cn('linkbase-base-card', draggingRow === id && 'is-dragging')}
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.effectAllowed = 'move'
+                    e.dataTransfer.setData('text/linkbase-row', id)
+                    setDraggingRow(id)
+                  }}
+                  onDragEnd={() => {
+                    setDraggingRow(null)
+                    setDragOverCol(null)
+                  }}
+                >
                   <div className="linkbase-base-card-title">{rowTitle(row) || t('base.untitled')}</div>
                   {row.get('pageId') ? (
                     <button type="button" className="linkbase-base-card-action" onClick={() => bridge?.source.onOpen(String(row.get('pageId')))}>

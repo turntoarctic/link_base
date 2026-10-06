@@ -1,6 +1,6 @@
 /**
  * @linkbase/editor 自有 UI 样式（弹层/工具条/NodeView/拖拽手柄）。
- * 颜色一律引用语义 token（06 §6），暗色模式零成本生效。
+ * 与 web 侧 shadcn/ui 视觉语言对齐：只引用语义 token，暗色模式零成本生效（06 §6）。
  */
 
 /* ------------------------------- suggestion 弹层 ------------------------------- */
@@ -8,15 +8,14 @@
 .linkbase-suggestion-popup {
   position: fixed;
   z-index: 1000;
-  min-width: 280px;
+  min-width: 288px;
   max-width: 340px;
-  max-height: 320px;
-  overflow: hidden;
   background: var(--popover);
   color: var(--popover-foreground);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: 0 0 0 1px var(--border), 0 4px 12px rgb(15 15 15 / 8%);
+  animation: linkbase-pop-in 150ms ease-out;
 }
 
 .linkbase-menu {
@@ -31,24 +30,26 @@
 }
 
 .linkbase-menu-group-title {
-  padding: 6px 8px 2px;
+  padding: 6px 8px 3px;
   font-size: 11px;
+  font-weight: 500;
   color: var(--text-tertiary);
 }
 
 .linkbase-menu-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  padding: 6px 8px;
+  padding: 5px 8px;
   border: 0;
-  border-radius: 4px;
+  border-radius: 6px;
   background: transparent;
   color: inherit;
   font-size: 14px;
   text-align: left;
   cursor: pointer;
+  transition: background-color 120ms ease-out;
 }
 
 .linkbase-menu-item[data-active='true'] {
@@ -57,6 +58,14 @@
 
 .linkbase-menu-item-icon {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--background);
   color: var(--muted-foreground);
 }
 
@@ -64,17 +73,30 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: var(--accent);
   font-size: 11px;
+  font-weight: 500;
 }
 
 .linkbase-menu-empty {
   padding: 12px 8px;
   font-size: 13px;
   color: var(--muted-foreground);
+}
+
+@keyframes linkbase-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* ------------------------------- 浮动工具条 ------------------------------- */
@@ -89,6 +111,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: 0 0 0 1px var(--border), 0 4px 12px rgb(15 15 15 / 8%);
+  animation: linkbase-pop-in 150ms ease-out;
 }
 
 .linkbase-tb + .linkbase-tb {
@@ -99,15 +122,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 26px;
-  height: 26px;
+  min-width: 28px;
+  height: 28px;
   padding: 0 6px;
   border: 0;
-  border-radius: 4px;
+  border-radius: 6px;
   background: transparent;
   color: inherit;
   font-size: 12px;
   cursor: pointer;
+  transition: background-color 120ms ease-out;
 }
 
 .linkbase-tb-btn:hover {
@@ -124,14 +148,14 @@
 }
 
 .linkbase-tb-select {
-  height: 26px;
+  height: 28px;
   margin-right: 4px;
-  padding: 0 4px;
+  padding: 0 6px;
   border: 0;
-  border-radius: 4px;
+  border-radius: 6px;
   background: transparent;
   color: inherit;
-  font-size: 12px;
+  font-size: 12.5px;
   cursor: pointer;
 }
 
@@ -146,15 +170,19 @@
 }
 
 .linkbase-tb-link input {
-  width: 200px;
-  height: 26px;
-  padding: 0 6px;
+  width: 210px;
+  height: 28px;
+  padding: 0 8px;
   border: 1px solid var(--input);
-  border-radius: 4px;
+  border-radius: 6px;
   background: var(--background);
   color: inherit;
   font-size: 12px;
   outline: none;
+}
+
+.linkbase-tb-link input:focus-visible {
+  border-color: var(--ring);
 }
 
 .linkbase-tb-swatch {
@@ -163,6 +191,11 @@
   border: 1px solid var(--border);
   border-radius: 4px;
   cursor: pointer;
+  transition: transform 120ms ease-out;
+}
+
+.linkbase-tb-swatch:hover {
+  transform: scale(1.12);
 }
 
 /* ------------------------------- 拖拽手柄 ------------------------------- */
@@ -174,14 +207,14 @@
   gap: 3px;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 22px;
-  margin-left: -26px;
+  width: 20px;
+  height: 24px;
+  margin-left: -28px;
   margin-top: 2px;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: grab;
   opacity: 0;
-  transition: opacity 120ms ease-out;
+  transition: opacity 120ms ease-out, background-color 120ms ease-out;
 }
 
 .ProseMirror:hover .linkbase-drag-handle {
@@ -232,7 +265,7 @@
 .linkbase-image-placeholder {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
   justify-content: center;
   width: 100%;
@@ -263,23 +296,30 @@
   align-items: center;
   justify-content: center;
   min-height: 80px;
-  border: 1px dashed var(--destructive);
+  border: 1px dashed color-mix(in srgb, var(--destructive) 60%, transparent);
   border-radius: var(--radius-md);
   color: var(--destructive);
   font-size: 13px;
 }
 
 .linkbase-image-error button {
-  padding: 2px 8px;
+  padding: 3px 10px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 6px;
   background: var(--background);
   color: var(--foreground);
+  font-size: 12px;
   cursor: pointer;
+  transition: background-color 120ms ease-out;
+}
+
+.linkbase-image-error button:hover {
+  background: var(--muted);
 }
 
 .linkbase-subpage-wrapper {
   width: 100%;
+  padding: 1px 0;
 }
 
 .linkbase-subpage-card {
@@ -287,18 +327,25 @@
   gap: 8px;
   align-items: center;
   width: 100%;
-  padding: 6px 10px;
+  padding: 8px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--card);
   color: var(--foreground);
   font-size: 14px;
+  font-weight: 500;
   text-align: left;
   cursor: pointer;
+  transition: background-color 120ms ease-out, box-shadow 120ms ease-out;
 }
 
 .linkbase-subpage-card:hover {
   background: var(--muted);
+  box-shadow: 0 1px 3px rgb(15 15 15 / 6%);
+}
+
+.linkbase-subpage-card > svg:first-child {
+  color: var(--muted-foreground);
 }
 
 .linkbase-subpage-title {
@@ -314,9 +361,9 @@
 
 .linkbase-callout {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  padding: 10px 12px;
+  padding: 12px 14px;
   border-radius: var(--radius-lg);
   background: var(--muted);
 }
@@ -326,11 +373,12 @@
   width: 24px;
   height: 24px;
   border: 0;
-  border-radius: 4px;
+  border-radius: 5px;
   background: transparent;
   font-size: 16px;
   cursor: pointer;
   line-height: 1;
+  transition: background-color 120ms ease-out;
 }
 
 .linkbase-callout-icon:hover {

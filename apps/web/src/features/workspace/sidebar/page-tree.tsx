@@ -1,22 +1,28 @@
 /**
- * 侧边栏页面树（06 §5.5 / P0-4）：树展示、展开收起、hover ⋯ 菜单（子页/重命名/移到回收站/复制链接）、
- * 拖拽换序换父（subpage 节点在父页文档间搬移，08 §5 派生对齐）。
+ * 侧边栏页面树（06 §5.5 / P0-4）：28px 行高、hover 渐显操作、选中底色（不用色条）、
+ * 节点菜单（DropdownMenu）、拖拽换序换父（subpage 节点在父页文档间搬移，08 §5 派生对齐）。
  */
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, FileText, MoreHorizontal, Plus } from 'lucide-react'
+import { ChevronRight, Copy, FileText, MoreHorizontal, Plus, Trash2 } from 'lucide-react'
 import { pageApi } from '@/lib/api'
 import type { PageTreeNode } from '@linkbase/types'
 import { moveSubpageNode } from '@/features/editor/doc-manager'
-import { Menu, MenuItem } from '@/components/ui/menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/cn'
 
 type DropHint = { pageId: string; position: 'child' | 'before' | 'after' } | null
 
 export function PageTree({ nodes }: { nodes: PageTreeNode[] }) {
-  const { workspaceId = '' } = useParams()
+  const { workspaceId = '', pageId: activePageId } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { t } = useTranslation(['workspace', 'common'])
@@ -96,8 +102,7 @@ export function PageTree({ nodes }: { nodes: PageTreeNode[] }) {
       }
       if (cursor === sourceId) return
     }
-    const newParentId =
-      hint.position === 'child' ? targetId : (parentOf.get(targetId) ?? null)
+    const newParentId = hint.position === 'child' ? targetId : (parentOf.get(targetId) ?? null)
     const beforePageId = hint.position === 'child' ? null : targetId
     await moveSubpageNode({
       wsId: workspaceId,
@@ -113,14 +118,18 @@ export function PageTree({ nodes }: { nodes: PageTreeNode[] }) {
   const renderNode = (node: PageTreeNode, depth: number): React.ReactNode => {
     const hasChildren = node.children.length > 0
     const isCollapsed = collapsed.has(node.id)
+    const isActive = activePageId === node.id
     const hint = dropHint?.pageId === node.id ? dropHint.position : null
 
     return (
       <div key={node.id}>
         <div
           className={cn(
-            'group relative flex h-7 items-center gap-0.5 rounded pr-1 hover:bg-(--sidebar-accent)',
+            'group relative flex h-7 items-center gap-0.5 rounded-md pr-1 transition-colors',
+            'hover:bg-(--sidebar-accent)',
+            isActive && 'bg-(--sidebar-accent) font-medium',
             hint === 'child' && 'ring-2 ring-(--sidebar-ring) ring-inset',
+            dragId === node.id && 'opacity-40',
           )}
           style={{ paddingLeft: depth * 14 + 4 }}
           draggable
@@ -150,11 +159,16 @@ export function PageTree({ nodes }: { nodes: PageTreeNode[] }) {
           <button
             type="button"
             aria-label="toggle"
-            className={cn('rounded p-0.5 text-(--muted-foreground)', !hasChildren && 'invisible')}
+            className={cn(
+              'rounded p-0.5 text-(--muted-foreground) transition-transform duration-150 hover:text-(--sidebar-foreground)',
+              !hasChildren && 'invisible',
+              !isCollapsed && 'rotate-90',
+            )}
             onClick={() => toggle(node.id)}
           >
-            <ChevronRight size={12} className={cn('transition-transform', !isCollapsed && 'rotate-90')} />
+            <ChevronRight size={12} />
           </button>
+
           <button
             type="button"
             className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
@@ -165,83 +179,68 @@ export function PageTree({ nodes }: { nodes: PageTreeNode[] }) {
             ) : (
               <FileText size={13} className="shrink-0 text-(--muted-foreground)" />
             )}
-            <span className={cn('truncate', dragId === node.id && 'opacity-40')}>
-              {node.title || t('common:untitled')}
-            </span>
+            <span className="truncate">{node.title || t('common:untitled')}</span>
           </button>
 
-          <span className="ml-auto flex items-center opacity-0 transition-opacity group-hover:opacity-100">
+          <span className="ml-auto flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
             <button
               type="button"
               aria-label={t('workspace:tree.addChild')}
-              className="rounded p-0.5 text-(--muted-foreground) hover:bg-(--accent)"
+              className="rounded p-0.5 text-(--muted-foreground) transition-colors hover:bg-(--accent) hover:text-(--sidebar-foreground)"
               onClick={() => createPage.mutate({ parentId: node.id })}
             >
               <Plus size={12} />
             </button>
-            <Menu
-              align="end"
-              trigger={(_open, toggleMenu) => (
-                <button
-                  type="button"
-                  aria-label={t('workspace:sidebar.nodeMenu')}
-                  className="rounded p-0.5 text-(--muted-foreground) hover:bg-(--accent)"
-                  onClick={toggleMenu}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <button
+                    type="button"
+                    aria-label={t('workspace:sidebar.nodeMenu')}
+                    className="rounded p-0.5 text-(--muted-foreground) transition-colors hover:bg-(--accent) hover:text-(--sidebar-foreground)"
+                  />
+                }
+              >
+                <MoreHorizontal size={12} />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[160px]">
+                <DropdownMenuItem onSelect={() => createPage.mutate({ parentId: node.id })}>
+                  <Plus />
+                  {t('workspace:tree.addChild')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => {
+                    const title = window.prompt(t('workspace:sidebar.renameTitle'), node.title)
+                    if (title !== null) {
+                      void pageApi.patch(workspaceId, node.id, { title }).then(invalidate)
+                    }
+                  }}
                 >
-                  <MoreHorizontal size={12} />
-                </button>
-              )}
-            >
-              {(close) => (
-                <>
-                  <MenuItem
-                    onSelect={() => {
-                      close()
-                      createPage.mutate({ parentId: node.id })
-                    }}
-                  >
-                    {t('workspace:tree.addChild')}
-                  </MenuItem>
-                  <MenuItem
-                    onSelect={() => {
-                      close()
-                      const title = window.prompt(t('workspace:sidebar.renameTitle'), node.title)
-                      if (title !== null) {
-                        void pageApi
-                          .patch(workspaceId, node.id, { title })
-                          .then(invalidate)
-                      }
-                    }}
-                  >
-                    {t('workspace:tree.rename')}
-                  </MenuItem>
-                  <MenuItem
-                    onSelect={() => {
-                      close()
-                      void navigator.clipboard
-                        .writeText(`${location.origin}/${workspaceId}/page/${node.id}`)
-                        .catch(() => {})
-                    }}
-                  >
-                    {t('workspace:tree.copyLink')}
-                  </MenuItem>
-                  <MenuItem
-                    danger
-                    onSelect={() => {
-                      close()
-                      trash.mutate(node.id)
-                    }}
-                  >
-                    {t('workspace:tree.moveToTrash')}
-                  </MenuItem>
-                </>
-              )}
-            </Menu>
+                  <FileText />
+                  {t('workspace:tree.rename')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => {
+                    void navigator.clipboard
+                      .writeText(`${location.origin}/${workspaceId}/page/${node.id}`)
+                      .catch(() => {})
+                  }}
+                >
+                  <Copy />
+                  {t('workspace:tree.copyLink')}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem danger onSelect={() => trash.mutate(node.id)}>
+                  <Trash2 />
+                  {t('workspace:tree.moveToTrash')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </span>
 
           {(hint === 'before' || hint === 'after') && (
             <span
-              className="pointer-events-none absolute right-0 left-4 h-0.5 bg-(--primary)"
+              className="pointer-events-none absolute right-0 left-4 z-10 h-0.5 rounded-full bg-(--primary)"
               style={hint === 'before' ? { top: -1 } : { bottom: -1 }}
             />
           )}

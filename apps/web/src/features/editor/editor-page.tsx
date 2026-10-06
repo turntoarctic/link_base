@@ -6,12 +6,20 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, MoreHorizontal, Trash2, Link2, Star } from 'lucide-react'
+import { ChevronRight, Copy, MoreHorizontal, Star, Trash2 } from 'lucide-react'
 import { pageApi, tagApi } from '@/lib/api'
 import { usePageDoc } from './use-page-doc'
 import { EditorView } from './editor-view'
-import { Menu, MenuItem } from '@/components/ui/menu'
 import { PageTagsRow } from './page-tags-row'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Skeleton } from '@/components/ui/primitives'
+import { toast } from '@/components/ui/toast'
 
 export default function EditorPage() {
   const { workspaceId = '', pageId = '' } = useParams()
@@ -69,7 +77,7 @@ export default function EditorPage() {
 
   const onTitleChange = (value: string) => {
     setTitle(value)
-    patchTitle.current(value)
+    patchTitle(value)
   }
 
   const moveToTrash = useMutation({
@@ -77,8 +85,10 @@ export default function EditorPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['pages', workspaceId] })
       void queryClient.invalidateQueries({ queryKey: ['trash', workspaceId] })
+      toast.add({ title: t('workspace:page.movedToTrash'), type: 'success' })
       navigate(`/${workspaceId}`, { replace: true })
     },
+    onError: () => toast.add({ title: t('common:operationFailed'), type: 'error' }),
   })
 
   // 收藏（P0-8）
@@ -88,111 +98,103 @@ export default function EditorPage() {
   })
   const isFavorite = favorites.data?.some((f) => f.id === pageId) ?? false
   const toggleFavorite = useMutation({
-    mutationFn: () => (isFavorite ? pageApi.unfavorite(workspaceId, pageId) : pageApi.favorite(workspaceId, pageId)),
+    mutationFn: () =>
+      isFavorite ? pageApi.unfavorite(workspaceId, pageId) : pageApi.favorite(workspaceId, pageId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['favorites', workspaceId] })
     },
   })
 
-  const wide = false // 宽块跟随 P1（05 §2.1 表格进阶时启用）
-  void wide
-
   return (
-    <div className="min-h-full px-6 py-4">
-      {/* 面包屑 */}
-      <div className="mx-auto flex h-6 max-w-(--width-content-wide) items-center justify-end gap-1 text-[12px] text-(--muted-foreground)">
-        <div className="flex min-w-0 flex-1 items-center gap-1">
+    <div className="min-h-full px-6 py-3">
+      {/* 顶部条：面包屑 + 页菜单（06 §5.4：无全局 header，右上仅 ⋯） */}
+      <div className="mx-auto flex h-8 max-w-(--width-content-wide) items-center justify-end gap-1 text-[12px] text-(--muted-foreground)">
+        <div className="flex min-w-0 flex-1 items-center gap-0.5">
           {breadcrumb.map((item) => (
-            <span key={item.id} className="flex min-w-0 items-center gap-1">
+            <span key={item.id} className="flex min-w-0 items-center gap-0.5">
               <button
                 type="button"
-                className="truncate hover:text-(--foreground)"
+                className="max-w-[160px] truncate rounded px-1 py-0.5 transition-colors hover:bg-(--muted) hover:text-(--foreground)"
                 onClick={() => navigate(`/${workspaceId}/page/${item.id}`)}
               >
                 {item.title || t('common:untitled')}
               </button>
-              <ChevronRight size={11} className="shrink-0" />
+              <ChevronRight size={11} className="shrink-0 opacity-60" />
             </span>
           ))}
         </div>
 
-        {/* 页菜单 ⋯（06 §5.4） */}
-        <Menu
-          align="end"
-          trigger={(_open, toggle) => (
-            <button
-              type="button"
-              aria-label={t('workspace:page.menu')}
-              className="rounded p-1 hover:bg-(--muted)"
-              onClick={toggle}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <button
+                type="button"
+                aria-label={t('workspace:page.menu')}
+                className="rounded-md p-1.5 text-(--muted-foreground) transition-colors hover:bg-(--muted) hover:text-(--foreground)"
+              />
+            }
+          >
+            <MoreHorizontal size={16} />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-[176px]">
+            <DropdownMenuItem onSelect={() => toggleFavorite.mutate()}>
+              <Star className={isFavorite ? 'fill-current' : ''} />
+              {isFavorite ? t('workspace:page.unfavorite') : t('workspace:page.favorite')}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => {
+                void navigator.clipboard
+                  .writeText(`${location.origin}/${workspaceId}/page/${pageId}`)
+                  .then(() => toast.add({ title: t('workspace:toast.linkCopied'), type: 'success' }))
+                  .catch(() => {})
+              }}
             >
-              <MoreHorizontal size={15} />
-            </button>
-          )}
-        >
-          {(close) => (
-            <>
-              <MenuItem
-                onSelect={() => {
-                  close()
-                  toggleFavorite.mutate()
-                }}
-              >
-                <Star size={13} className={isFavorite ? 'fill-current' : ''} />
-                {isFavorite ? t('workspace:page.unfavorite') : t('workspace:page.favorite')}
-              </MenuItem>
-              <MenuItem
-                onSelect={() => {
-                  close()
-                  void navigator.clipboard
-                    .writeText(`${location.origin}/${workspaceId}/page/${pageId}`)
-                    .catch(() => {})
-                }}
-              >
-                <Link2 size={13} /> {t('workspace:page.copyLink')}
-              </MenuItem>
-              <MenuItem
-                danger
-                onSelect={() => {
-                  close()
-                  moveToTrash.mutate()
-                }}
-              >
-                <Trash2 size={13} /> {t('workspace:page.moveToTrash')}
-              </MenuItem>
-            </>
-          )}
-        </Menu>
+              <Copy />
+              {t('workspace:page.copyLink')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem danger onSelect={() => moveToTrash.mutate()}>
+              <Trash2 />
+              {t('workspace:page.moveToTrash')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* 标题（独立输入框，非编辑器节点，05 §5） */}
-      <div className="mx-auto w-(--width-content) max-w-full">
-        <input
-          className="w-full border-0 bg-transparent text-[32px] font-semibold leading-tight text-(--foreground) outline-none placeholder:text-(--text-tertiary)"
-          value={title ?? ''}
-          placeholder={t('common:untitled')}
-          onChange={(e) => onTitleChange(e.target.value)}
-        />
+      <div className="mx-auto w-(--width-content) max-w-full pt-6">
+        {status === 'loading' ? (
+          <Skeleton className="mb-5 h-9 w-2/3" />
+        ) : (
+          <input
+            className="mb-1 w-full border-0 bg-transparent text-[32px] font-bold leading-[1.2] tracking-tight text-(--foreground) outline-none placeholder:text-(--text-tertiary)"
+            value={title ?? ''}
+            placeholder={t('common:untitled')}
+            onChange={(e) => onTitleChange(e.target.value)}
+          />
+        )}
 
         {/* 标签行 */}
-        <PageTagsRow
-          workspaceId={workspaceId}
-          pageId={pageId}
-          tags={pageTags.data ?? []}
-          onChanged={() => {
-            void queryClient.invalidateQueries({ queryKey: ['pageTags', workspaceId, pageId] })
-          }}
-        />
+        {status !== 'loading' && (
+          <PageTagsRow
+            workspaceId={workspaceId}
+            pageId={pageId}
+            tags={pageTags.data ?? []}
+            onChanged={() => {
+              void queryClient.invalidateQueries({ queryKey: ['pageTags', workspaceId, pageId] })
+            }}
+          />
+        )}
       </div>
 
       {/* 编辑器 */}
-      <div className={`linkbase-editor-content${wide ? ' wide' : ''}`}>
+      <div className="linkbase-editor-content">
         {status === 'loading' && (
-          <div className="animate-pulse" aria-busy="true">
-            <div className="mb-4 h-8 w-2/3 rounded bg-(--muted)" />
-            <div className="mb-3 h-4 w-full rounded bg-(--muted)" />
-            <div className="mb-3 h-4 w-5/6 rounded bg-(--muted)" />
-            <div className="h-4 w-3/4 rounded bg-(--muted)" />
+          <div className="flex flex-col gap-3.5" aria-busy="true">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="mt-3 h-24 w-full rounded-lg" />
           </div>
         )}
         {status === 'error' && (
@@ -214,7 +216,7 @@ function flattenTree(node: {
   id: string
   title: string
   parentId: string | null
-  children: Array<{ id: string; title: string; parentId: string | null; children: never[] } | never>
+  children: unknown[]
 }): TreeFlattenNode[] {
   const out: TreeFlattenNode[] = [{ id: node.id, title: node.title, parentId: node.parentId }]
   for (const child of node.children as unknown as Parameters<typeof flattenTree>[0][]) {

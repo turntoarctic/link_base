@@ -6,6 +6,8 @@ import './styles/index.css'
 import { initI18n } from './i18n'
 import { App } from './app/router'
 import { initTheme } from './stores/ui'
+import { TooltipProvider } from './components/ui/tooltip'
+import { Toaster } from './components/ui/toast'
 
 const queryClient = new QueryClient({
   gcTime: 5 * 60 * 1000,
@@ -17,7 +19,10 @@ initI18n().then((i18n) => {
     <StrictMode>
       <I18nextProvider i18n={i18n}>
         <QueryClientProvider client={queryClient}>
-          <App />
+          <TooltipProvider>
+            <App />
+            <Toaster />
+          </TooltipProvider>
         </QueryClientProvider>
       </I18nextProvider>
     </StrictMode>,

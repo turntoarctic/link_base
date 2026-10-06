@@ -5,11 +5,18 @@ import { cn } from '@/lib/cn'
 
 export const Field = BaseField.Root
 
-export function FieldLabel({ children, className }: { children: ReactNode; className?: string }) {
+export function FieldLabel({
+  children,
+  className,
+  htmlFor,
+}: {
+  children: ReactNode
+  className?: string
+  /** 原生 input 需显式关联（Base UI Field.Control 未使用时） */
+  htmlFor?: string
+}) {
   return (
-    <BaseField.Label
-      className={cn('block text-[13px] font-medium text-(--foreground)', className)}
-    >
+    <BaseField.Label htmlFor={htmlFor} className={cn('block text-[13px] font-medium text-(--foreground)', className)}>
       {children}
     </BaseField.Label>
   )

@@ -11,10 +11,13 @@ import { useAuthStore } from '@/stores/auth'
 import { changeLocale } from '@/i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Card } from '@/components/ui/card'
+import { Field, FieldLabel } from '@/components/ui/field'
 import { LanguageSwitcher } from '@/components/language-switcher'
+import { BrandMark } from '@/components/brand-mark'
 
 export default function RegisterPage() {
-  const { t } = useTranslation(['auth', 'common'])
+  const { t } = useTranslation(['auth', 'common', 'errors'])
   const navigate = useNavigate()
   const setUser = useAuthStore((s) => s.setUser)
   const [error, setError] = useState<string | null>(null)
@@ -39,53 +42,73 @@ export default function RegisterPage() {
       }
       navigate('/', { replace: true })
     } catch (err) {
-      if (err instanceof HttpError) setError(t(`errors.${err.code}`, { ns: 'errors' }))
-      else setError(t('errors.LB_INTERNAL', { ns: 'errors' }))
+      if (err instanceof HttpError) setError(t(`errors:${err.code}`))
+      else setError(t('errors:LB_INTERNAL'))
     }
   })
 
+  const fieldError = form.formState.errors.name ?? form.formState.errors.email ?? form.formState.errors.password
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-(--background) px-4">
-      <div className="absolute top-4 right-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-(--background) px-4">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,color-mix(in_srgb,var(--primary)_7%,transparent),transparent)]"
+      />
+      <div className="absolute top-4 right-4 z-10">
         <LanguageSwitcher onChange={(locale) => void changeLocale(locale)} />
       </div>
-      <div className="w-[360px]">
-        <div className="mb-8 text-center">
-          <div className="text-2xl font-semibold tracking-tight">Linkbase</div>
-          <div className="mt-1 text-[13px] text-(--muted-foreground)">{t('auth:register.subtitle')}</div>
+
+      <Card className="relative w-[400px] p-8 shadow-(--shadow-pop)">
+        <div className="mb-7 flex flex-col items-center gap-3 text-center">
+          <BrandMark size={40} />
+          <div>
+            <div className="text-[22px] font-semibold tracking-tight">Linkbase</div>
+            <div className="mt-1 text-[13px] text-(--muted-foreground)">{t('auth:register.subtitle')}</div>
+          </div>
         </div>
-        <form className="flex flex-col gap-3" onSubmit={onSubmit} noValidate>
-          <label className="text-[13px] text-(--muted-foreground)" htmlFor="reg-name">
-            {t('auth:register.name')}
-          </label>
-          <Input id="reg-name" autoComplete="name" {...form.register('name')} />
-          <label className="text-[13px] text-(--muted-foreground)" htmlFor="reg-email">
-            {t('auth:register.email')}
-          </label>
-          <Input id="reg-email" type="email" autoComplete="email" {...form.register('email')} />
-          <label className="text-[13px] text-(--muted-foreground)" htmlFor="reg-password">
-            {t('auth:register.password')}
-          </label>
-          <Input
-            id="reg-password"
-            type="password"
-            autoComplete="new-password"
-            {...form.register('password')}
-          />
-          {form.formState.errors.name && (
-            <div className="text-[13px] text-(--destructive)">{t('errors.LB_VALIDATION', { ns: 'errors' })}</div>
+
+        <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
+          <Field>
+            <FieldLabel htmlFor="reg-name">{t('auth:register.name')}</FieldLabel>
+            <Input id="reg-name" autoComplete="name" className="mt-1.5" {...form.register('name')} />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="reg-email">{t('auth:register.email')}</FieldLabel>
+            <Input
+              id="reg-email"
+              type="email"
+              autoComplete="email"
+              className="mt-1.5"
+              {...form.register('email')}
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="reg-password">{t('auth:register.password')}</FieldLabel>
+            <Input
+              id="reg-password"
+              type="password"
+              autoComplete="new-password"
+              className="mt-1.5"
+              {...form.register('password')}
+            />
+          </Field>
+          {(fieldError || error) && (
+            <div className="text-[13px] text-(--destructive)">
+              {error ?? t('errors:LB_VALIDATION')}
+            </div>
           )}
-          {error && <div className="text-[13px] text-(--destructive)">{error}</div>}
-          <Button type="submit" className="mt-2 h-9" disabled={form.formState.isSubmitting}>
+          <Button type="submit" size="lg" className="mt-1 w-full" disabled={form.formState.isSubmitting}>
             {t('auth:register.submit')}
           </Button>
         </form>
-        <div className="mt-4 text-center text-[13px]">
+
+        <div className="mt-5 border-t border-(--border) pt-4 text-center text-[13px] text-(--muted-foreground)">
           <a className="text-(--primary) hover:underline" href="/login">
             {t('auth:register.toLogin')}
           </a>
         </div>
-      </div>
+      </Card>
     </div>
   )
 }

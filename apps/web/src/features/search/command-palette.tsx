@@ -1,14 +1,15 @@
 /**
- * ⌘K 命令面板（P0-11）：快速跳页 / 搜索 / 新建三合一（06 §5.5）。
- * 输入即搜（标题+正文），↑↓ 选择，⏎ 打开，⌘⏎ 新建名为关键词的页面。
+ * ⌘K 命令面板（P0-11）：快速跳页 / 搜索 / 新建三合一（06 §5.5：居中 640px 浮层）。
+ * 输入即搜（标题+正文），↑↓ 选择，⏎ 打开，⏎ 新建名为关键词的页面（无结果置顶）。
  */
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Search } from 'lucide-react'
+import { CornerDownLeft, FileText, Plus, Search } from 'lucide-react'
 import { pageApi, searchApi } from '@/lib/api'
+import { Kbd } from '@/components/ui/primitives'
 
 let opener: (() => void) | null = null
 
@@ -99,9 +100,13 @@ export function CommandPalette({ workspaceId }: { workspaceId: string }) {
         if (e.target === e.currentTarget) setOpen(false)
       }}
     >
-      <div className="w-[640px] max-w-[calc(100vw-32px)] overflow-hidden rounded-lg border border-(--border) bg-(--popover) text-(--popover-foreground) shadow-(--shadow-modal)">
-        <div className="flex items-center gap-2 border-b border-(--border) px-3">
-          <Search size={14} className="text-(--muted-foreground)" />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="w-[640px] max-w-[calc(100vw-32px)] overflow-hidden rounded-lg border border-(--border) bg-(--popover) text-(--popover-foreground) shadow-(--shadow-modal)"
+      >
+        <div className="flex items-center gap-2.5 border-b border-(--border) px-4">
+          <Search size={15} className="shrink-0 text-(--muted-foreground)" />
           <input
             ref={inputRef}
             value={query}
@@ -110,7 +115,7 @@ export function CommandPalette({ workspaceId }: { workspaceId: string }) {
               setActive(0)
             }}
             placeholder={t('search.placeholder')}
-            className="h-11 flex-1 border-0 bg-transparent text-[14px] outline-none placeholder:text-(--text-tertiary)"
+            className="h-12 flex-1 border-0 bg-transparent text-[15px] outline-none placeholder:text-(--text-tertiary)"
             onKeyDown={(e) => {
               if (e.key === 'ArrowDown') {
                 e.preventDefault()
@@ -126,22 +131,24 @@ export function CommandPalette({ workspaceId }: { workspaceId: string }) {
               }
             }}
           />
+          <Kbd>esc</Kbd>
         </div>
+
         <div className="max-h-[320px] overflow-y-auto p-1.5">
           {items.length === 0 && !debounced.trim() && (
-            <div className="px-2 py-6 text-center text-[13px] text-(--muted-foreground)">
+            <div className="px-3 py-8 text-center text-[13px] text-(--muted-foreground)">
               {t('search.placeholder')}
             </div>
           )}
-          {items.length === 0 && debounced.trim() && results.isLoading && (
-            <div className="px-2 py-6 text-center text-[13px] text-(--muted-foreground)">…</div>
+          {items.length === 0 && debounced.trim() && results.isPending && (
+            <div className="px-3 py-8 text-center text-[13px] text-(--muted-foreground)">…</div>
           )}
           {items.map((item, index) => (
             <button
               key={item.kind === 'page' ? item.id : `create:${item.title}`}
               type="button"
               className={
-                'flex w-full items-center gap-2 rounded px-2 py-2 text-left text-[14px] ' +
+                'flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[14px] transition-colors ' +
                 (index === active ? 'bg-(--muted)' : '')
               }
               onMouseEnter={() => setActive(index)}
@@ -149,23 +156,37 @@ export function CommandPalette({ workspaceId }: { workspaceId: string }) {
             >
               {item.kind === 'page' ? (
                 <>
+                  <FileText size={15} className="shrink-0 text-(--muted-foreground)" />
                   <span className="min-w-0 flex-1 truncate">
                     {item.title || t('common:untitled', { ns: 'common' })}
                   </span>
                   {item.breadcrumb.length > 0 && (
-                    <span className="shrink-0 text-[12px] text-(--text-tertiary)">
+                    <span className="max-w-[200px] shrink-0 truncate text-[12px] text-(--text-tertiary)">
                       {item.breadcrumb.join(' / ')}
                     </span>
                   )}
                 </>
               ) : (
-                <span className="text-(--primary)">⏎ {t('search.newPage', { title: item.title })}</span>
+                <>
+                  <Plus size={15} className="shrink-0 text-(--primary)" />
+                  <span className="text-(--primary)">{t('search.newPage', { title: item.title })}</span>
+                </>
               )}
             </button>
           ))}
         </div>
-        <div className="border-t border-(--border) px-3 py-1.5 text-[11px] text-(--text-tertiary)">
-          {t('search.hint')}
+
+        <div className="flex items-center gap-4 border-t border-(--border) px-4 py-2 text-[11px] text-(--text-tertiary)">
+          <span className="flex items-center gap-1">
+            <Kbd>↑</Kbd>
+            <Kbd>↓</Kbd>
+          </span>
+          <span className="flex items-center gap-1">
+            <Kbd>
+              <CornerDownLeft size={10} />
+            </Kbd>
+            {t('search.hint')}
+          </span>
         </div>
       </div>
     </div>,

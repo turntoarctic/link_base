@@ -1,10 +1,11 @@
-/** 页面标签行（06 §5.5：圆角胶囊 tag 色板，行内可增删） */
+/** 页面标签行（06 §5.5：圆角胶囊 tag 色板，行内可增删；添加经 Popover） */
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { tagApi } from '@/lib/api'
 import type { TagDto } from '@linkbase/types'
-import { Menu } from '@/components/ui/menu'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/cn'
 
 export function PageTagsRow({
@@ -30,71 +31,64 @@ export function PageTagsRow({
     onSuccess: onChanged,
   })
 
+  const candidates = (allTags.data ?? []).filter((tag) => !tags.some((existing) => existing.id === tag.id))
+
   return (
-    <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[12px]">
+    <div className="mb-4 flex flex-wrap items-center gap-1.5">
       {tags.map((tag) => (
-        <span
-          key={tag.id}
-          className="inline-flex items-center gap-1 rounded-full px-2 py-0.5"
-          style={{
-            background: `var(--tag-${tag.color}-bg)`,
-            color: `var(--tag-${tag.color}-fg)`,
-          }}
-        >
+        <Badge key={tag.id} className="gap-0.5 pr-1" style={tagStyle(tag)}>
           {tag.name}
           <button
             type="button"
             aria-label={t('common:delete')}
             onClick={() => removeTag.mutate(tag.id)}
-            className="opacity-60 hover:opacity-100"
+            className="rounded-full p-0.5 opacity-60 transition-opacity hover:opacity-100"
           >
             <X size={11} />
           </button>
-        </span>
+        </Badge>
       ))}
 
-      <Menu
-        align="start"
-        className="w-[200px] max-h-[240px] overflow-y-auto"
-        trigger={(_open, toggle) => (
-          <button
-            type="button"
-            className="rounded-full px-2 py-0.5 text-(--muted-foreground) hover:bg-(--muted)"
-            onClick={toggle}
-          >
-            + {t('page.addTag')}
-          </button>
-        )}
-      >
-        {(close) => (
-          <>
-            {(allTags.data ?? [])
-              .filter((tag) => !tags.some((existing) => existing.id === tag.id))
-              .map((tag) => (
-                <button
-                  key={tag.id}
-                  type="button"
-                  className={cn(
-                    'flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[13px] hover:bg-(--muted)',
-                  )}
-                  onClick={() => {
-                    close()
-                    addTag.mutate(tag.id)
-                  }}
-                >
-                  <span
-                    className="inline-block h-2.5 w-2.5 rounded-full"
-                    style={{ background: `var(--tag-${tag.color}-bg)` }}
-                  />
-                  {tag.name}
-                </button>
-              ))}
-            {(allTags.data ?? []).length === 0 && (
-              <div className="px-2 py-1.5 text-[12px] text-(--muted-foreground)">{t('tags.empty')}</div>
-            )}
-          </>
-        )}
-      </Menu>
+      <Popover>
+        <PopoverTrigger
+          render={
+            <button
+              type="button"
+              className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[12px] font-medium text-(--muted-foreground) transition-colors hover:bg-(--muted)"
+            />
+          }
+        >
+          <Plus size={12} />
+          {t('page.addTag')}
+        </PopoverTrigger>
+        <PopoverContent className="max-h-[240px] w-[200px] overflow-y-auto">
+          {candidates.length === 0 && (
+            <div className="px-2 py-3 text-center text-[12px] text-(--muted-foreground)">
+              {t('tags.empty')}
+            </div>
+          )}
+          {candidates.map((tag) => (
+            <button
+              key={tag.id}
+              type="button"
+              className={cn(
+                'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-(--muted)',
+              )}
+              onClick={() => addTag.mutate(tag.id)}
+            >
+              <span
+                className="size-2.5 shrink-0 rounded-full"
+                style={{ background: `var(--tag-${tag.color}-bg)` }}
+              />
+              {tag.name}
+            </button>
+          ))}
+        </PopoverContent>
+      </Popover>
     </div>
   )
+}
+
+function tagStyle(tag: TagDto): React.CSSProperties {
+  return { background: `var(--tag-${tag.color}-bg)`, color: `var(--tag-${tag.color}-fg)`, borderColor: 'transparent' }
 }

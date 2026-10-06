@@ -14,16 +14,18 @@ export function DropdownMenuContent({
   children,
   className,
   align = 'start',
+  side,
   sideOffset = 6,
 }: {
   children: ReactNode
   className?: string
   align?: 'start' | 'center' | 'end'
+  side?: 'top' | 'right' | 'bottom' | 'left'
   sideOffset?: number
 }) {
   return (
     <Menu.Portal>
-      <Menu.Positioner align={align} sideOffset={sideOffset} className="z-[180] outline-none">
+      <Menu.Positioner align={align} side={side} sideOffset={sideOffset} className="z-[180] outline-none">
         <Menu.Popup className={cn('ui-popup ui-menu min-w-[184px] p-1', className)}>{children}</Menu.Popup>
       </Menu.Positioner>
     </Menu.Portal>

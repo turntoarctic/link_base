@@ -2,13 +2,15 @@
  * 编辑器页（06 §2 唯一复杂页）：面包屑 + 标题（直写 PATCH，05 §5）+ 标签行 +
  * 页菜单（⋯）+ 编辑器。骨架加载（06 §5.5 禁止整页 spinner）。
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, Copy, MoreHorizontal, Star, Trash2 } from 'lucide-react'
+import { ChevronRight, CloudOff, Copy, MoreHorizontal, Star, Trash2 } from 'lucide-react'
 import { pageApi, tagApi } from '@/lib/api'
 import type { PageTreeNode } from '@linkbase/types'
+import { updateSubpageTitle } from './doc-manager'
+import { useDocPushFailed } from './use-doc-sync'
 import { useUiStore } from '@/stores/ui'
 import { cn } from '@/lib/cn'
 import { usePageDoc } from './use-page-doc'
@@ -29,6 +31,7 @@ export default function EditorPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed)
+  const pushFailed = useDocPushFailed(pageId)
   const { t } = useTranslation(['workspace', 'common'])
 
   const { status, ydoc } = usePageDoc(workspaceId, pageId)
@@ -75,12 +78,21 @@ export default function EditorPage() {
   }, [meta.data, title])
 
   // 依赖路由参数：切换页面时重建，避免闭包打到旧页面（05 §5 标题直写）
+  // 成功后同步父页文档里的子页卡片标题（title 真相在 pages 列，卡片 attr 随动）
+  const metaRef = useRef(meta.data)
+  metaRef.current = meta.data
   const patchTitle = useMemo(
     () =>
       debounce((value: string) => {
         void pageApi
           .patch(workspaceId, pageId, { title: value })
-          .then(() => queryClient.invalidateQueries({ queryKey: ['pages', workspaceId] }))
+          .then(() => {
+            void queryClient.invalidateQueries({ queryKey: ['pages', workspaceId] })
+            const parentId = metaRef.current?.parentId
+            if (parentId) {
+              void updateSubpageTitle(workspaceId, parentId, pageId, value).catch(() => {})
+            }
+          })
           .catch(() => {})
       }, 500),
     [workspaceId, pageId, queryClient],
@@ -134,6 +146,15 @@ export default function EditorPage() {
               <ChevronRight size={11} className="shrink-0 opacity-60" />
             </span>
           ))}
+          {pushFailed && (
+            <span
+              title={t('common:syncOffline')}
+              className="ml-1 flex shrink-0 items-center gap-1 rounded-full bg-(--muted) px-2 py-0.5 text-[11px] text-(--muted-foreground)"
+            >
+              <CloudOff size={11} />
+              {t('common:syncOffline')}
+            </span>
+          )}
         </div>
 
         <DropdownMenu>

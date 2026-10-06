@@ -24,5 +24,6 @@
   "operationFailed": "Operation failed, please try again",
   "workspace": "Workspace",
   "pageError": "Something went wrong",
-  "reload": "Reload"
+  "reload": "Reload",
+  "syncOffline": "Offline · changes saved locally, will sync"
 }

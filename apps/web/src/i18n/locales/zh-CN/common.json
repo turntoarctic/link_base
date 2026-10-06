@@ -24,5 +24,6 @@
   "operationFailed": "操作失败，请重试",
   "workspace": "工作空间",
   "pageError": "页面出错了",
-  "reload": "重新加载"
+  "reload": "重新加载",
+  "syncOffline": "离线 · 改动已存本地，恢复后自动同步"
 }

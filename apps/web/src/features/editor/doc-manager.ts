@@ -23,10 +23,35 @@ interface Entry {
   channel: BroadcastChannel
   pending: Uint8Array[]
   timer: ReturnType<typeof setTimeout> | null
+  /** 断网补推重试定时器（指数退避，05 §3.2） */
+  retryTimer: ReturnType<typeof setTimeout> | null
+  retryAttempts: number
   pushFailed: boolean
 }
 
 const entries = new Map<string, Entry>()
+
+/** push 失败的页（离线徽标数据源；05 §3.2 断网可见性） */
+const failedPages = new Set<string>()
+const syncListeners = new Set<() => void>()
+
+function setPushFailed(pageId: string, failed: boolean): void {
+  if (failedPages.has(pageId) === failed) return
+  if (failed) failedPages.add(pageId)
+  else failedPages.delete(pageId)
+  for (const listener of syncListeners) listener()
+}
+
+export function subscribeDocSync(listener: () => void): () => void {
+  syncListeners.add(listener)
+  return () => {
+    syncListeners.delete(listener)
+  }
+}
+
+export function isPushFailed(pageId: string): boolean {
+  return failedPages.has(pageId)
+}
 
 function hasContent(ydoc: Y.Doc): boolean {
   return ydoc.getXmlFragment(Y_FRAGMENT_NAME).length > 0
@@ -61,6 +86,8 @@ export async function openPageDoc(wsId: string, pageId: string): Promise<OpenDoc
     channel: new BroadcastChannel(CHANNEL_NAME),
     pending: [],
     timer: null,
+    retryTimer: null,
+    retryAttempts: 0,
     pushFailed: false,
   }
 
@@ -115,6 +142,17 @@ function scheduleFlush(wsId: string, pageId: string, entry: Entry): void {
   }, PUSH_DEBOUNCE_MS)
 }
 
+/** 断网补推：指数退避（1s 起步，封顶 30s）；恢复上线时由 online 事件立即触发 */
+function scheduleRetry(wsId: string, pageId: string, entry: Entry): void {
+  if (entry.retryTimer) return
+  entry.retryAttempts += 1
+  const delay = Math.min(1000 * 2 ** entry.retryAttempts, 30_000)
+  entry.retryTimer = setTimeout(() => {
+    entry.retryTimer = null
+    void flushEntry(wsId, pageId, entry)
+  }, delay)
+}
+
 async function flushEntry(wsId: string, pageId: string, entry: Entry): Promise<void> {
   if (entry.pending.length === 0) return
   const merged = entry.pending.length === 1 ? entry.pending[0]! : Y.mergeUpdates(entry.pending)
@@ -122,11 +160,15 @@ async function flushEntry(wsId: string, pageId: string, entry: Entry): Promise<v
   try {
     await api.pushBytes(`/workspaces/${wsId}/pages/${pageId}/doc`, merged)
     entry.pushFailed = false
+    entry.retryAttempts = 0
+    setPushFailed(pageId, false)
   } catch (error) {
-    // 401/429 由 fetch 层处理；断网时重新排队，恢复后补推（05 §3.2）
+    // 401/429 由 fetch 层处理；断网时重新排队并退避重试（05 §3.2）
     entry.pending.push(merged)
     entry.pushFailed = true
+    setPushFailed(pageId, true)
     console.warn('[doc-sync] push failed, queued for retry', error)
+    scheduleRetry(wsId, pageId, entry)
   }
 }
 
@@ -142,10 +184,21 @@ export async function closePageDoc(wsId: string, pageId: string): Promise<void> 
   if (!entry) return
   entries.delete(pageId)
   if (entry.timer) clearTimeout(entry.timer)
+  if (entry.retryTimer) clearTimeout(entry.retryTimer)
   await flushEntry(wsId, pageId, entry)
+  setPushFailed(pageId, false)
   entry.channel.close()
   entry.idb.destroy()
   entry.ydoc.destroy()
+}
+
+/** 恢复上线：全部待推队列立即补推（05 §3.2 断网编辑 → 恢复自动补推） */
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => {
+    for (const [pageId, entry] of entries) {
+      if (entry.pending.length > 0) void flushEntry(entry.wsId, pageId, entry)
+    }
+  })
 }
 
 /**
@@ -242,6 +295,20 @@ export async function removeSubpageNode(
   const fragment = ydoc.getXmlFragment(Y_FRAGMENT_NAME)
   const found = findSubpageNodes(ydoc).find((s) => s.pageId === pageId)
   if (found) fragment.delete(found.index, 1)
+}
+
+/** 子页改名后同步父页卡片标题（title 真相在 pages 列，卡片 attr 是派生显示） */
+export async function updateSubpageTitle(
+  wsId: string,
+  parentId: string,
+  pageId: string,
+  title: string,
+): Promise<void> {
+  const { ydoc } = await openPageDoc(wsId, parentId)
+  const found = findSubpageNodes(ydoc).find((s) => s.pageId === pageId)
+  if (found && found.node.getAttribute(SUBPAGE_ATTR.title) !== title) {
+    found.node.setAttribute(SUBPAGE_ATTR.title, title)
+  }
 }
 
 /**

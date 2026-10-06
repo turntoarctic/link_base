@@ -26,6 +26,7 @@ import { MarkdownPaste } from './extensions/markdown.ts'
 import { DragHandle } from './extensions/drag-handle.ts'
 import { TaskListInputRule } from './extensions/task-input-rule.ts'
 import { CommentsHighlight, refreshComments, type CommentAnchorSpec } from './extensions/comments.ts'
+import { Attachment, type AttachmentAttrs } from './extensions/attachment.ts'
 
 export type { ImageUploadOptions }
 
@@ -40,6 +41,8 @@ export interface EditorKitOptions {
   createSubpage?: SlashMenuOptions['createSubpage']
   /** slash「图片」文件选择（宿主注入） */
   pickImage?: () => Promise<File | null>
+  /** slash「附件」：选择任意文件并上传，返回卡片属性（宿主注入） */
+  pickAttachment?: () => Promise<AttachmentAttrs | null>
   /** @ 提及候选（工作空间成员；getter 供异步加载） */
   members?: () => MentionUser[]
   /** awareness 实例（T2.2 协作光标）：WS relay 未连接时缺省，不装 caret */
@@ -108,7 +111,9 @@ export function buildEditorKit(options: EditorKitOptions) {
     SlashMenu.configure({
       createSubpage: options.createSubpage,
       pickImage: options.pickImage,
+      pickAttachment: options.pickAttachment,
     }),
+    Attachment,
     DragHandle,
     MarkdownPaste,
     CommentsHighlight.configure({
@@ -137,3 +142,4 @@ export { SlashMenu as SlashMenuExtension } from './extensions/slash-menu.ts'
 export { DragHandle as DragHandleExtension } from './extensions/drag-handle.ts'
 export { MarkdownPaste as MarkdownPasteExtension, markdownToPmJson, looksLikeMarkdown } from './extensions/markdown.ts'
 export { CommentsHighlight as CommentsHighlightExtension, refreshComments, type CommentAnchorSpec } from './extensions/comments.ts'
+export { Attachment as AttachmentExtension, type AttachmentAttrs } from './extensions/attachment.ts'

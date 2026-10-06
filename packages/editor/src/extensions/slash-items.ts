@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react'
 import {
   Code2,
   FilePlus2,
+  Paperclip,
   Heading1,
   Heading2,
   Heading3,
@@ -77,6 +78,19 @@ export function buildSlashItems(options: SlashMenuOptions): SlashItem[] {
         chain(editor, range).run()
         const file = (await options.pickImage?.()) ?? null
         if (file) editor.commands.uploadImage(file)
+      },
+    },
+    {
+      id: 'attachment',
+      group: 'media',
+      icon: Paperclip,
+      keywords: ['attachment', 'file', '附件', '文件'],
+      action: async ({ editor, range }) => {
+        chain(editor, range).run()
+        const uploaded = (await options.pickAttachment?.()) ?? null
+        if (uploaded) {
+          editor.chain().focus().insertAttachment({ blobId: uploaded.blobId, name: uploaded.name, size: uploaded.size, mime: uploaded.mime }).run()
+        }
       },
     },
     {

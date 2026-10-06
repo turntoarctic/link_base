@@ -10,6 +10,11 @@ describe('buildEditorKit', () => {
     expect(names).toContain('taskList')
     expect(names).toContain('taskItem')
   })
+
+  test('装配包含附件节点（P1-6 / T2.6）', () => {
+    const names = buildEditorKit({ ydoc: new Y.Doc(), uploadImage: async () => ({ url: '' }) }).map((e) => e.name)
+    expect(names).toContain('attachment')
+  })
 })
 
 describe('markdownToPmJson', () => {

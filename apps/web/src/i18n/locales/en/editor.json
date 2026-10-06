@@ -23,7 +23,8 @@
       "callout": "Callout",
       "image": "Image",
       "subpage": "Subpage",
-      "mention": "Mention (type @)"
+      "mention": "Mention (type @)",
+      "attachment": "Attachment"
     }
   },
   "toolbar": {
@@ -71,5 +72,10 @@
   },
   "codeBlock": {
     "language": "Code language"
+  },
+  "attachment": {
+    "download": "Download {name}",
+    "untitled": "Untitled file",
+    "uploadFailed": "Attachment upload failed, please retry"
   }
 }

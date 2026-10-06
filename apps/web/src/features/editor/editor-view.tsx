@@ -100,6 +100,19 @@ export function EditorView({
         }
       },
       pickImage: () => pickFile('image/*'),
+      // 附件：任意文件 → blobs（内容寻址）→ 卡片节点
+      pickAttachment: async () => {
+        const file = await pickFile('*/*')
+        if (!file) return null
+        try {
+          const blob = await blobApi.upload(wsId, file)
+          return { blobId: blob.id, name: file.name, size: file.size, mime: file.type || 'application/octet-stream' }
+        } catch (error) {
+          console.error('[attachment] upload failed', error)
+          toast.error(t('attachment.uploadFailed'))
+          return null
+        }
+      },
     }),
   }, [ydoc, wsId, pageId])
 

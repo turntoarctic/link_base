@@ -23,7 +23,8 @@
       "callout": "标注块",
       "image": "图片",
       "subpage": "子页面",
-      "mention": "提及（输入 @）"
+      "mention": "提及（输入 @）",
+      "attachment": "附件"
     }
   },
   "toolbar": {
@@ -71,5 +72,10 @@
   },
   "codeBlock": {
     "language": "代码语言"
+  },
+  "attachment": {
+    "download": "下载 {name}",
+    "untitled": "未命名文件",
+    "uploadFailed": "附件上传失败，请重试"
   }
 }

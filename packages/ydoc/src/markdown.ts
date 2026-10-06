@@ -297,6 +297,10 @@ function blockToMarkdown(node: YNode, indent: string): string[] {
     }
     case 'image':
       return [`${indent}![${String(node.getAttribute('alt') ?? '')}](${String(node.getAttribute('src') ?? '')})`]
+    case 'attachment':
+      return [
+        `${indent}[📎 ${String(node.getAttribute('name') ?? 'attachment')}](/blobs/${String(node.getAttribute('blobId') ?? '')})`,
+      ]
     case 'subpage': {
       const title = String(node.getAttribute('title') ?? '')
       return [`${indent}- [${title || '子页面'}](/page/${String(node.getAttribute('pageId') ?? '')})`]

@@ -11,6 +11,8 @@ export interface SlashMenuOptions {
   createSubpage?: () => Promise<{ pageId: string; title: string } | null>
   /** 「图片」入口：宿主打开系统文件选择框 */
   pickImage?: () => Promise<File | null>
+  /** 「附件」入口：宿主选择任意文件并上传到 blobs */
+  pickAttachment?: () => Promise<{ blobId: string; name: string; size: number; mime: string } | null>
 }
 
 const renderer = createSuggestionRenderer<SlashItem>(SlashPopup)

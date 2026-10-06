@@ -16,6 +16,9 @@ export const SUBPAGE_ATTR = {
   title: 'title',
 } as const
 
+/** 附件卡片（P1-6） */
+export const NODE_ATTACHMENT = 'attachment'
+
 /** Callout 块 */
 export const NODE_CALLOUT = 'callout'
 export const CALLOUT_ATTR = {

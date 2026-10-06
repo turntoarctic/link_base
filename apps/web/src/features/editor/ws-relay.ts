@@ -1,12 +1,14 @@
 /**
- * WS provider（09 §6，T2.1）：内容实时互见（awareness/光标属 T2.2）。
+ * WS provider（09 §6，T2.1/T2.2）：内容实时互见 + awareness（光标/在线状态）。
  * 连接 → sync step1/2 全量对齐 → 本地 update 即时帧发；远端回放带 remoteOrigin，
  * REST 推送与 BC 广播自动跳过。REST 去抖推送保留作兜底（Yjs update 幂等，双通道无冲突）。
- * 断线重连：指数退避（1s → 15s 封顶），重连重新取票 + 全量对齐。
+ * awareness：type 3 帧（varBytes = encodeAwarenessUpdate）；本端状态变更即时广播，
+ * y-protocols 心跳（15s）兜底重播；断线重连：指数退避（1s → 15s 封顶），重连重新取票 + 对齐。
  */
 import * as Y from 'yjs'
 import * as encoding from 'lib0/encoding'
 import * as decoding from 'lib0/decoding'
+import { Awareness, applyAwarenessUpdate, encodeAwarenessUpdate } from 'y-protocols/awareness'
 import { api, getAccessToken } from '@/lib/fetch'
 import { remoteOrigin, type RemoteOrigin } from './sync-origin'
 
@@ -14,6 +16,11 @@ const RECONNECT_BASE_MS = 1000
 const RECONNECT_MAX_MS = 15_000
 
 export interface WsRelay {
+  destroy(): void
+}
+
+export interface AwarenessRelay {
+  awareness: Awareness
   destroy(): void
 }
 
@@ -30,7 +37,8 @@ export function startWsRelay(
   pageId: string,
   ydoc: Y.Doc,
   remoteOrigin: RemoteOrigin,
-): WsRelay {
+): AwarenessRelay & WsRelay {
+  const awareness = new Awareness(ydoc)
   let ws: WebSocket | null = null
   let closed = false
   let attempts = 0
@@ -39,6 +47,19 @@ export function startWsRelay(
   const sendNow = (subType: number, payload?: Uint8Array): void => {
     if (ws && ws.readyState === WebSocket.OPEN) ws.send(frame(subType, payload))
   }
+
+  // 本端 awareness 变更（光标/昵称/心跳）→ type 3 帧；远端回放（origin=remote）不回发
+  awareness.on(
+    'update',
+    (
+      { added, updated, removed }: { added: number[]; updated: number[]; removed: number[] },
+      origin: unknown,
+    ) => {
+      if (origin === remoteOrigin) return
+      const clients = [...added, ...updated, ...removed]
+      sendNow(3, encodeAwarenessUpdate(awareness, clients))
+    },
+  )
 
   async function connect(): Promise<void> {
     if (closed) return
@@ -62,6 +83,8 @@ export function startWsRelay(
     ws.onopen = () => {
       attempts = 0
       sendNow(0, Y.encodeStateVector(ydoc))
+      // 重连/加入房间后立即播报本端 awareness（服务端不存 awareness 状态）
+      sendNow(3, encodeAwarenessUpdate(awareness, [awareness.clientID]))
     }
     ws.onmessage = (ev) => {
       const data = new Uint8Array(ev.data as ArrayBuffer)
@@ -73,6 +96,8 @@ export function startWsRelay(
         sendNow(1, Y.encodeStateAsUpdate(ydoc, sv))
       } else if (type === 1 || type === 2) {
         Y.applyUpdate(ydoc, decoding.readVarUint8Array(decoder), remoteOrigin)
+      } else if (type === 3) {
+        applyAwarenessUpdate(awareness, decoding.readVarUint8Array(decoder), remoteOrigin)
       }
     }
     ws.onclose = () => {
@@ -101,10 +126,12 @@ export function startWsRelay(
   void connect()
 
   return {
+    awareness,
     destroy() {
       closed = true
       if (retryTimer) clearTimeout(retryTimer)
       ydoc.off('update', onUpdate)
+      awareness.destroy()
       if (ws) {
         ws.onclose = null
         ws.close()

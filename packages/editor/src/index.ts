@@ -8,6 +8,7 @@
 import { Editor } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import { Collaboration } from '@tiptap/extension-collaboration'
+import { CollaborationCaret } from '@tiptap/extension-collaboration-caret'
 import { Placeholder } from '@tiptap/extensions'
 import { Highlight } from '@tiptap/extension-highlight'
 import { TableKit } from '@tiptap/extension-table'
@@ -40,6 +41,10 @@ export interface EditorKitOptions {
   pickImage?: () => Promise<File | null>
   /** @ 提及候选（工作空间成员；getter 供异步加载） */
   members?: () => MentionUser[]
+  /** awareness 实例（T2.2 协作光标）：WS relay 未连接时缺省，不装 caret */
+  awareness?: { awareness: unknown }
+  /** 本端协作身份（T2.2）：name 显示在光标标签，color 由宿主按用户稳定分配 */
+  collaborationUser?: { name: string; color: string }
 }
 
 const lowlight = createLowlight(common)
@@ -71,6 +76,26 @@ export function buildEditorKit(options: EditorKitOptions) {
       placeholder: () => i18next.t('editor:placeholder'),
     }),
     Collaboration.configure({ document: options.ydoc }),
+    // 协作光标（T2.2，09 §6）：需要 awareness + 本端身份；自绘光标样式走 linkbase-caret
+    ...(options.awareness && options.collaborationUser
+      ? [
+          CollaborationCaret.configure({
+            provider: options.awareness,
+            user: options.collaborationUser,
+            render: (user: { name: string; color: string }) => {
+              const cursor = document.createElement('span')
+              cursor.classList.add('linkbase-caret')
+              cursor.style.borderColor = user.color
+              const label = document.createElement('div')
+              label.classList.add('linkbase-caret-label')
+              label.style.backgroundColor = user.color
+              label.textContent = user.name
+              cursor.appendChild(label)
+              return cursor
+            },
+          }),
+        ]
+      : []),
     ImageUpload.configure({ upload: options.uploadImage }),
     Mention.configure({ users: options.members ?? (() => []) }),
     Subpage.configure({ onOpen: options.onSubpageOpen }),

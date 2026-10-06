@@ -11,6 +11,7 @@ import { pageApi, tagApi } from '@/lib/api'
 import type { PageTreeNode } from '@linkbase/types'
 import { updateSubpageTitle } from './doc-manager'
 import { useDocPushFailed } from './use-doc-sync'
+import { useAwarenessUsers } from './use-awareness-users'
 import { useUiStore } from '@/stores/ui'
 import { cn } from '@/lib/cn'
 import { usePageDoc } from './use-page-doc'
@@ -32,6 +33,7 @@ export default function EditorPage() {
   const queryClient = useQueryClient()
   const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed)
   const pushFailed = useDocPushFailed(pageId)
+  const onlineUsers = useAwarenessUsers(pageId)
   const { t } = useTranslation(['workspace', 'common'])
 
   const { status, ydoc } = usePageDoc(workspaceId, pageId)
@@ -155,6 +157,20 @@ export default function EditorPage() {
               {t('common:syncOffline')}
             </span>
           )}
+        </div>
+
+        {/* 在线协作成员（T2.2，09 §6）+ ⋯ 页菜单 */}
+        <div className="flex shrink-0 items-center -space-x-1 pr-1">
+          {onlineUsers.map((u) => (
+            <span
+              key={u.clientID}
+              title={u.name}
+              className="flex size-5 items-center justify-center rounded-full text-[10px] font-semibold text-white ring-2 ring-(--background)"
+              style={{ background: u.color }}
+            >
+              {u.name.slice(0, 1).toUpperCase()}
+            </span>
+          ))}
         </div>
 
         <DropdownMenu>

@@ -4,10 +4,11 @@
  * Provider 层挂在工作空间壳上（06 §2），切页仅切换 Y.Doc。
  */
 import * as Y from 'yjs'
+import type { Awareness } from 'y-protocols/awareness'
 import { IndexeddbPersistence } from 'y-indexeddb'
 import { NODE_SUBPAGE, SUBPAGE_ATTR, Y_FRAGMENT_NAME } from '@linkbase/editor/server'
 import { api, getAccessToken } from '@/lib/fetch'
-import { startWsRelay, type WsRelay } from './ws-relay'
+import { startWsRelay, type AwarenessRelay } from './ws-relay'
 import { remoteOrigin } from './sync-origin'
 
 export { remoteOrigin }
@@ -30,7 +31,7 @@ interface Entry {
   retryAttempts: number
   pushFailed: boolean
   /** WS 实时通道（09 §6）；REST 去抖推送保留为兜底 */
-  relay: WsRelay | null
+  relay: AwarenessRelay | null
 }
 
 const entries = new Map<string, Entry>()
@@ -305,6 +306,11 @@ export async function removeSubpageNode(
   const fragment = ydoc.getXmlFragment(Y_FRAGMENT_NAME)
   const found = findSubpageNodes(ydoc).find((s) => s.pageId === pageId)
   if (found) fragment.delete(found.index, 1)
+}
+
+/** 当前页的 awareness（T2.2 协作光标/在线头像）；未连 WS 返回 null */
+export function getPageAwareness(pageId: string): Awareness | null {
+  return entries.get(pageId)?.relay?.awareness ?? null
 }
 
 /** 子页改名后同步父页卡片标题（title 真相在 pages 列，卡片 attr 是派生显示） */

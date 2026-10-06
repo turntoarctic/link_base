@@ -16,6 +16,7 @@
     "@tiptap/core": "catalog:",
     "@tiptap/extension-code-block-lowlight": "catalog:",
     "@tiptap/extension-collaboration": "catalog:",
+    "@tiptap/extension-collaboration-caret": "catalog:",
     "@tiptap/extension-highlight": "catalog:",
     "@tiptap/extension-list": "catalog:",
     "@tiptap/extension-table": "catalog:",

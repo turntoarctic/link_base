@@ -2,11 +2,12 @@
  * WS 房间集成测试（09 §8，DB 门控）：真实 Bun.serve + Bun WebSocket 客户端。
  * 覆盖：4001 无效票据 / 4003 非成员 / 用例 1（双端实时同步）/ 去抖落库。
  */
-import { beforeAll, describe, expect, test } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { eq } from 'drizzle-orm'
 import * as Y from 'yjs'
 import * as encoding from 'lib0/encoding'
 import * as decoding from 'lib0/decoding'
+import { Awareness, applyAwarenessUpdate, encodeAwarenessUpdate } from 'y-protocols/awareness'
 import { createDb, pages, workspaceMembers } from '@linkbase/database'
 import { extractPageMeta } from '@linkbase/ydoc'
 import { getPageState } from '../../src/services/docs.service.ts'
@@ -34,14 +35,25 @@ function waitClose(ws: WebSocket): Promise<number> {
   })
 }
 
+async function until(pred: () => boolean, ms = 5000): Promise<void> {
+  const t0 = Date.now()
+  while (!pred()) {
+    if (Date.now() - t0 > ms) throw new Error('until timeout')
+    await new Promise((r) => setTimeout(r, 50))
+  }
+}
+
 function connectTestClient(url: string): Promise<{
   doc: Y.Doc
+  awareness: Awareness
+  setAwarenessUser(user: { name: string; color: string }): void
   send(subType: number, payload?: Uint8Array): void
   close(): void
   waitFor(pred: (doc: Y.Doc) => boolean, ms?: number): Promise<void>
 }> {
   return new Promise((resolve, reject) => {
     const doc = new Y.Doc()
+    const awareness = new Awareness(doc)
     const ws = new WebSocket(url)
     ws.binaryType = 'arraybuffer'
     const timer = setTimeout(() => reject(new Error('ws connect timeout')), 5000)
@@ -51,8 +63,13 @@ function connectTestClient(url: string): Promise<{
       ws.send(frame(0, Y.encodeStateVector(doc)))
       resolve({
         doc,
+        awareness,
+        setAwarenessUser: (user) => awareness.setLocalStateField('user', user),
         send: (subType, payload) => ws.send(frame(subType, payload)),
-        close: () => ws.close(),
+        close: () => {
+          awareness.destroy()
+          ws.close()
+        },
         waitFor: (pred, ms = 5000) =>
           new Promise((res, rej) => {
             const check = () => {
@@ -82,8 +99,15 @@ function connectTestClient(url: string): Promise<{
         ws.send(frame(1, Y.encodeStateAsUpdate(doc, sv)))
       } else if (type === 1 || type === 2) {
         Y.applyUpdate(doc, decoding.readVarUint8Array(decoder))
+      } else if (type === 3) {
+        applyAwarenessUpdate(awareness, decoding.readVarUint8Array(decoder), 'remote')
       }
     }
+    // 本端 awareness 变更 → type 3 帧（origin=remote 的回放不回发）
+    awareness.on('update', ({ added, updated, removed }: { added: number[]; updated: number[]; removed: number[] }, origin: unknown) => {
+      if (origin === 'remote') return
+      ws.send(frame(3, encodeAwarenessUpdate(awareness, [...added, ...updated, ...removed])))
+    })
   })
 }
 
@@ -199,6 +223,25 @@ describe.skipIf(!HAS_DB)('WS 房间（09 §8）', () => {
 
     a.close()
     b.close()
-    closeServer()
   })
+
+  test('用例 2：awareness 互见（协作光标数据源）', async () => {
+    const a = await connectTestClient(`ws://${base.replace('http://', '')}/ws?ticket=${await ticket('owner')}&workspaceId=${wsId}&pageId=${pageId}`)
+    a.setAwarenessUser({ name: 'Owner', color: '#e5484d' })
+    const b = await connectTestClient(`ws://${base.replace('http://', '')}/ws?ticket=${await ticket('member')}&workspaceId=${wsId}&pageId=${pageId}`)
+    // A 端光标移动会重播 awareness（等同真实使用）；这里显式重设触发即时帧
+    a.setAwarenessUser({ name: 'Owner', color: '#e5484d' })
+    await until(() =>
+      [...b.awareness.getStates().values()].some((s) => (s as { user?: { name: string } }).user?.name === 'Owner'),
+    )
+    // 反向：B 的 awareness 也应到达 A
+    b.setAwarenessUser({ name: 'Member', color: '#3b82d0' })
+    await until(() =>
+      [...a.awareness.getStates().values()].some((s) => (s as { user?: { name: string } }).user?.name === 'Member'),
+    )
+    a.close()
+    b.close()
+  })
+
+  afterAll(() => closeServer())
 })

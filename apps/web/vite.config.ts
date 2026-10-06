@@ -3,11 +3,9 @@ import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 
-// React Compiler 默认关闭（实验特性，06 §1.1）；REACT_COMPILER=1 时开启
-const enableCompiler = process.env.REACT_COMPILER === '1'
-
 export default defineConfig({
-  plugins: [react({ compiler: enableCompiler }), tailwindcss()],
+  // React Compiler 为 P1 评估项（06 §1）：届时按 @vitejs/plugin-react 实际选项接入，默认关闭
+  plugins: [react(), tailwindcss()],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   server: {
     port: 5173,
@@ -17,3 +15,4 @@ export default defineConfig({
     },
   },
 })
+

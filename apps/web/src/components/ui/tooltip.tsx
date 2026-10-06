@@ -1,36 +1,31 @@
-/** shadcn/ui Tooltip（Base UI Tooltip 封装）：侧边栏折叠按钮等悬停提示 */
-import type { ReactNode } from 'react'
-import { Tooltip as BaseTooltip } from '@base-ui-components/react/tooltip'
+/** shadcn/ui new-york Tooltip（@radix-ui/react-tooltip 封装；<TooltipProvider> 已挂在 main.tsx） */
+import { forwardRef, type ComponentProps } from 'react'
+import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import { cn } from '@/lib/cn'
 
-export function TooltipProvider({ children }: { children: ReactNode }) {
-  return <BaseTooltip.Provider>{children}</BaseTooltip.Provider>
-}
-
-export const Tooltip = BaseTooltip.Root
-export const TooltipTrigger = BaseTooltip.Trigger
+export const TooltipProvider = TooltipPrimitive.Provider
+export const Tooltip = TooltipPrimitive.Root
+export const TooltipTrigger = TooltipPrimitive.Trigger
 
 export function TooltipContent({
-  children,
   className,
-  sideOffset = 6,
-}: {
-  children: ReactNode
-  className?: string
-  sideOffset?: number
-}) {
+  sideOffset = 4,
+  children,
+  ...props
+}: ComponentProps<typeof TooltipPrimitive.Content>) {
   return (
-    <BaseTooltip.Portal>
-      <BaseTooltip.Positioner sideOffset={sideOffset} className="z-[200] outline-none">
-        <BaseTooltip.Popup
-          className={cn(
-            'ui-tooltip rounded-md bg-(--foreground) px-2 py-1 text-[12px] text-(--background) shadow-(--shadow-pop)',
-            className,
-          )}
-        >
-          {children}
-        </BaseTooltip.Popup>
-      </BaseTooltip.Positioner>
-    </BaseTooltip.Portal>
+    <TooltipPrimitive.Portal>
+      <TooltipPrimitive.Content
+        data-slot="tooltip-content"
+        sideOffset={sideOffset}
+        className={cn(
+          'bg-primary text-primary-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-fit rounded-md px-2 py-1 text-[12px] font-medium',
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </TooltipPrimitive.Content>
+    </TooltipPrimitive.Portal>
   )
 }

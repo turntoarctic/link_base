@@ -192,16 +192,14 @@ export function PageTree({ nodes }: { nodes: PageTreeNode[] }) {
               <Plus size={12} />
             </button>
             <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <button
-                    type="button"
-                    aria-label={t('workspace:sidebar.nodeMenu')}
-                    className="rounded p-0.5 text-(--muted-foreground) transition-colors hover:bg-(--accent) hover:text-(--sidebar-foreground)"
-                  />
-                }
-              >
-                <MoreHorizontal size={12} />
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label={t('workspace:sidebar.nodeMenu')}
+                  className="rounded p-0.5 text-(--muted-foreground) transition-colors hover:bg-(--accent) hover:text-(--sidebar-foreground)"
+                >
+                  <MoreHorizontal size={12} />
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[160px]">
                 <DropdownMenuItem onSelect={() => createPage.mutate({ parentId: node.id })}>
@@ -230,7 +228,7 @@ export function PageTree({ nodes }: { nodes: PageTreeNode[] }) {
                   {t('workspace:tree.copyLink')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem danger onSelect={() => trash.mutate(node.id)}>
+                <DropdownMenuItem variant="destructive" onSelect={() => trash.mutate(node.id)}>
                   <Trash2 />
                   {t('workspace:tree.moveToTrash')}
                 </DropdownMenuItem>

@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { EmptyState, Skeleton } from '@/components/ui/primitives'
-import { toast } from '@/components/ui/toast'
+import { toast } from '@/components/ui/sonner'
 
 export default function TrashPage() {
   const { workspaceId = '' } = useParams()
@@ -33,9 +33,9 @@ export default function TrashPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['trash', workspaceId] })
       void queryClient.invalidateQueries({ queryKey: ['pages', workspaceId] })
-      toast.add({ title: t('workspace:toast.restored'), type: 'success' })
+      toast.success(t('workspace:toast.restored'))
     },
-    onError: () => toast.add({ title: t('common:operationFailed'), type: 'error' }),
+    onError: () => toast.error(t('common:operationFailed')),
   })
 
   const permanent = useMutation({
@@ -43,9 +43,9 @@ export default function TrashPage() {
     onSuccess: () => {
       setConfirmId(null)
       void queryClient.invalidateQueries({ queryKey: ['trash', workspaceId] })
-      toast.add({ title: t('workspace:toast.deletedPermanently'), type: 'success' })
+      toast.success(t('workspace:toast.deletedPermanently'))
     },
-    onError: () => toast.add({ title: t('common:operationFailed'), type: 'error' }),
+    onError: () => toast.error(t('common:operationFailed')),
   })
 
   const confirmItem = (trash.data ?? []).find((item) => item.id === confirmId)
@@ -117,7 +117,7 @@ export default function TrashPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-(--destructive) hover:text-(--destructive)"
+                      className="text-destructive hover:text-destructive"
                       onClick={() => setConfirmId(item.id)}
                     >
                       <Trash2 size={12} />

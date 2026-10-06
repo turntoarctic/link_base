@@ -1,65 +1,105 @@
-/**
- * shadcn/ui Dialog（Base UI Dialog 封装）。
- * Base UI 语法（06 §1.1-5）：触发器用 render={<Button/>}；动画走 data-starting-style/data-ending-style（index.css）。
- */
-import type { ReactNode } from 'react'
-import { Dialog as BaseDialog } from '@base-ui-components/react/dialog'
-import { X } from 'lucide-react'
+/** shadcn/ui new-york Dialog（@radix-ui/react-dialog 封装；触发器用 asChild） */
+import { forwardRef, type ComponentProps } from 'react'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
+import { XIcon } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
-export const Dialog = BaseDialog.Root
-export const DialogTrigger = BaseDialog.Trigger
-export const DialogClose = BaseDialog.Close
+export const Dialog = DialogPrimitive.Root
+export const DialogTrigger = DialogPrimitive.Trigger
+export const DialogPortal = DialogPrimitive.Portal
+export const DialogClose = DialogPrimitive.Close
+
+export function DialogOverlay({
+  className,
+  ...props
+}: ComponentProps<typeof DialogPrimitive.Overlay>) {
+  return (
+    <DialogPrimitive.Overlay
+      data-slot="dialog-overlay"
+      className={cn(
+        'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
 
 export function DialogContent({
-  children,
   className,
-  showClose = true,
-}: {
-  children: ReactNode
-  className?: string
-  showClose?: boolean
-}) {
+  children,
+  showCloseButton = true,
+  ...props
+}: ComponentProps<typeof DialogPrimitive.Content> & { showCloseButton?: boolean }) {
   return (
-    <BaseDialog.Portal>
-      <BaseDialog.Backdrop className="ui-backdrop" />
-      <BaseDialog.Popup className={cn('ui-popup ui-dialog', className)}>
-        {children}
-        {showClose && (
-          <BaseDialog.Close
-            aria-label="close"
-            className="absolute top-3.5 right-3.5 rounded-md p-1 text-(--muted-foreground) transition-colors hover:bg-(--muted) hover:text-(--foreground)"
-          >
-            <X size={16} />
-          </BaseDialog.Close>
+    <DialogPortal data-slot="dialog-portal">
+      <DialogOverlay />
+      <DialogPrimitive.Content
+        data-slot="dialog-content"
+        className={cn(
+          'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-5 shadow-lg duration-200 sm:max-w-[460px]',
+          className,
         )}
-      </BaseDialog.Popup>
-    </BaseDialog.Portal>
+        {...props}
+      >
+        {children}
+        {showCloseButton && (
+          <DialogPrimitive.Close
+            data-slot="dialog-close"
+            className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-3.5 right-3.5 rounded-md p-1 opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+          >
+            <XIcon />
+            <span className="sr-only">Close</span>
+          </DialogPrimitive.Close>
+        )}
+      </DialogPrimitive.Content>
+    </DialogPortal>
   )
 }
 
-export function DialogHeader({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn('mb-4 flex flex-col gap-1', className)}>{children}</div>
-}
-
-export function DialogFooter({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn('mt-5 flex justify-end gap-2', className)}>{children}</div>
-}
-
-export function DialogTitle({ children, className }: { children: ReactNode; className?: string }) {
-  return <BaseDialog.Title className={cn('text-[15px] leading-none font-semibold', className)}>{children}</BaseDialog.Title>
-}
-
-export function DialogDescription({
-  children,
-  className,
-}: {
-  children: ReactNode
-  className?: string
-}) {
+export function DialogHeader({ className, ...props }: ComponentProps<'div'>) {
   return (
-    <BaseDialog.Description className={cn('text-[13px] leading-relaxed text-(--muted-foreground)', className)}>
-      {children}
-    </BaseDialog.Description>
+    <div
+      data-slot="dialog-header"
+      className={cn('flex flex-col gap-1.5 text-center sm:text-left', className)}
+      {...props}
+    />
   )
 }
+
+export function DialogFooter({ className, ...props }: ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="dialog-footer"
+      className={cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', className)}
+      {...props}
+    />
+  )
+}
+
+export const DialogTitle = forwardRef<HTMLHeadingElement, ComponentProps<typeof DialogPrimitive.Title>>(
+  function DialogTitle({ className, ...props }, ref) {
+    return (
+      <DialogPrimitive.Title
+        ref={ref}
+        data-slot="dialog-title"
+        className={cn('text-[15px] leading-none font-semibold', className)}
+        {...props}
+      />
+    )
+  },
+)
+
+export const DialogDescription = forwardRef<
+  HTMLParagraphElement,
+  ComponentProps<typeof DialogPrimitive.Description>
+>(function DialogDescription({ className, ...props }, ref) {
+  return (
+    <DialogPrimitive.Description
+      ref={ref}
+      data-slot="dialog-description"
+      className={cn('text-muted-foreground text-[13px] leading-relaxed', className)}
+      {...props}
+    />
+  )
+})

@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/primitives'
-import { toast } from '@/components/ui/toast'
+import { toast } from '@/components/ui/sonner'
 
 export default function EditorPage() {
   const { workspaceId = '', pageId = '' } = useParams()
@@ -85,10 +85,10 @@ export default function EditorPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['pages', workspaceId] })
       void queryClient.invalidateQueries({ queryKey: ['trash', workspaceId] })
-      toast.add({ title: t('workspace:page.movedToTrash'), type: 'success' })
+      toast.success(t('workspace:page.movedToTrash'))
       navigate(`/${workspaceId}`, { replace: true })
     },
-    onError: () => toast.add({ title: t('common:operationFailed'), type: 'error' }),
+    onError: () => toast.error(t('common:operationFailed')),
   })
 
   // 收藏（P0-8）
@@ -125,16 +125,14 @@ export default function EditorPage() {
         </div>
 
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button
-                type="button"
-                aria-label={t('workspace:page.menu')}
-                className="rounded-md p-1.5 text-(--muted-foreground) transition-colors hover:bg-(--muted) hover:text-(--foreground)"
-              />
-            }
-          >
-            <MoreHorizontal size={16} />
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label={t('workspace:page.menu')}
+              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <MoreHorizontal size={16} />
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-[176px]">
             <DropdownMenuItem onSelect={() => toggleFavorite.mutate()}>
@@ -145,7 +143,7 @@ export default function EditorPage() {
               onSelect={() => {
                 void navigator.clipboard
                   .writeText(`${location.origin}/${workspaceId}/page/${pageId}`)
-                  .then(() => toast.add({ title: t('workspace:toast.linkCopied'), type: 'success' }))
+                  .then(() => toast.success(t('workspace:toast.linkCopied')))
                   .catch(() => {})
               }}
             >
@@ -153,7 +151,7 @@ export default function EditorPage() {
               {t('workspace:page.copyLink')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem danger onSelect={() => moveToTrash.mutate()}>
+            <DropdownMenuItem variant="destructive" onSelect={() => moveToTrash.mutate()}>
               <Trash2 />
               {t('workspace:page.moveToTrash')}
             </DropdownMenuItem>

@@ -53,7 +53,7 @@ export default function InvitePage() {
               <UsersRound size={20} />
             </div>
             <div className="text-[15px] font-semibold">{t('auth:invite.title')}</div>
-            <div className="mt-1.5 text-[13px] text-(--destructive)">
+            <div className="mt-1.5 text-[13px] text-destructive">
               {error ?? t('auth:invite.expired')}
             </div>
             <Button variant="secondary" className="mt-6 h-9 w-full" onClick={() => navigate('/')}>

@@ -9,7 +9,7 @@
 | 层 | 选型 |
 |------|------|
 | 编辑器 | **Tiptap v3**（ProseMirror，@tiptap/react 原生 React 集成）+ 自研扩展包 `packages/editor`；内容真相仍是 Y.Doc，经 y-prosemirror 绑定编辑器，方案见 05 |
-| 前端 | React 19 + TypeScript + Vite 8 + Tailwind CSS 4 + shadcn/ui（Base UI）+ TanStack Query + react-router + i18next（zh-CN/en，见 13），界面风格对标 Notion；**版本与兼容红线见 06 §1.1**（yjs 单实例优先） |
+| 前端 | React 19 + TypeScript + Vite 8 + Tailwind CSS 4 + shadcn/ui（new-york preset，Radix UI）+ TanStack Query + react-router + i18next（zh-CN/en，见 13），界面风格对标 Notion；**版本与兼容红线见 06 §1.1**（yjs 单实例优先） |
 | 后端 | **Hono**（运行于 Bun，函数式路由/中间件，无 DI / 无装饰器）+ Zod 校验 |
 | 数据库 | **PostgreSQL 唯一数据库**（Drizzle ORM，`Bun.SQL` 原生驱动），Redis（会话/邀请/票据/限流） |
 | 协作 | Yjs + y-prosemirror + Bun 原生 WebSocket，内容存储即 Y.Doc（增量 updates + 快照） |

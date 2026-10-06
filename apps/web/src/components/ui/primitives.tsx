@@ -15,7 +15,7 @@ export function Avatar({
   return (
     <span
       className={cn(
-        'relative inline-flex size-7 shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-(--primary) text-[11px] font-medium text-white',
+        'bg-primary relative inline-flex size-7 shrink-0 select-none items-center justify-center overflow-hidden rounded-full text-[11px] font-medium text-white',
         className,
       )}
     >
@@ -30,7 +30,7 @@ export function Avatar({
 
 /** 骨架占位（06 §5.5：禁止整页 spinner，用灰块） */
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cn('animate-pulse rounded-md bg-(--muted)', className)} />
+  return <div data-slot="skeleton" className={cn('bg-muted animate-pulse rounded-md', className)} />
 }
 
 export function Separator({
@@ -43,7 +43,8 @@ export function Separator({
   return (
     <div
       role="separator"
-      className={cn('bg-(--border)', vertical ? 'w-px self-stretch' : 'h-px w-full', className)}
+      data-slot="separator"
+      className={cn('bg-border shrink-0', vertical ? 'w-px self-stretch' : 'h-px w-full', className)}
     />
   )
 }
@@ -53,7 +54,7 @@ export function Kbd({ children, className }: { children: ReactNode; className?: 
   return (
     <kbd
       className={cn(
-        'inline-flex h-5 min-w-5 items-center justify-center rounded border border-(--border) bg-(--secondary) px-1 font-sans text-[11px] font-medium text-(--muted-foreground)',
+        'border-border bg-secondary text-muted-foreground inline-flex h-5 min-w-5 items-center justify-center rounded border px-1 font-sans text-[11px] font-medium',
         className,
       )}
     >
@@ -77,12 +78,12 @@ export function EmptyState({
   return (
     <div className={cn('flex flex-col items-center justify-center gap-2 py-16 text-center', className)}>
       {icon && (
-        <div className="mb-1 flex size-11 items-center justify-center rounded-full bg-(--muted) text-(--muted-foreground)">
+        <div className="bg-muted text-muted-foreground mb-1 flex size-11 items-center justify-center rounded-full">
           {icon}
         </div>
       )}
       <div className="text-[14px] font-medium">{title}</div>
-      {description && <div className="max-w-[320px] text-[13px] text-(--muted-foreground)">{description}</div>}
+      {description && <div className="text-muted-foreground max-w-[320px] text-[13px]">{description}</div>}
     </div>
   )
 }

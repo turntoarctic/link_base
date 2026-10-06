@@ -83,17 +83,15 @@ export function Sidebar({
       {/* 空间切换（Notion 式顶栏） */}
       <div className="flex items-center gap-1 px-2 pt-2">
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button
-                type="button"
-                className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md px-1.5 py-1.5 transition-colors hover:bg-(--sidebar-accent)"
-              >
-                <span className="truncate font-medium">{workspaceName || 'Linkbase'}</span>
-                <ChevronRight size={13} className="ml-auto shrink-0 rotate-90 text-(--muted-foreground)" />
-              </button>
-            }
-          />
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md px-1.5 py-1.5 transition-colors hover:bg-sidebar-accent"
+            >
+              <span className="truncate font-medium">{workspaceName || 'Linkbase'}</span>
+              <ChevronRight size={13} className="ml-auto shrink-0 rotate-90 text-muted-foreground" />
+            </button>
+          </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-[220px]">
             <DropdownMenuLabel>{t('common:workspace')}</DropdownMenuLabel>
             {workspaces.map((ws) => (
@@ -201,18 +199,16 @@ export function Sidebar({
         </button>
 
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button
-                type="button"
-                className="flex w-full items-center gap-2 rounded-md px-1.5 py-1.5 transition-colors hover:bg-(--sidebar-accent)"
-              >
-                <Avatar fallback={user?.name ?? '?'} className="size-5 text-[10px]" />
-                <span className="min-w-0 flex-1 truncate text-left">{user?.name}</span>
-                <ChevronRight size={12} className="shrink-0 rotate-90 text-(--muted-foreground)" />
-              </button>
-            }
-          />
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="flex w-full items-center gap-2 rounded-md px-1.5 py-1.5 transition-colors hover:bg-sidebar-accent"
+            >
+              <Avatar fallback={user?.name ?? '?'} className="size-5 text-[10px]" />
+              <span className="min-w-0 flex-1 truncate text-left">{user?.name}</span>
+              <ChevronRight size={12} className="shrink-0 rotate-90 text-muted-foreground" />
+            </button>
+          </DropdownMenuTrigger>
           <DropdownMenuContent align="start" side="top" className="w-[230px]">
             <DropdownMenuItem
               onSelect={() => navigate(`/${workspaceId}/settings?tab=general`)}
@@ -244,7 +240,7 @@ export function Sidebar({
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              danger
+              variant="destructive"
               onSelect={() => {
                 void authApi.logout(localStorage.getItem('linkbase.refreshToken') ?? '')
                 clearTokens()

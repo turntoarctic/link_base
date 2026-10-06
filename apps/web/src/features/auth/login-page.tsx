@@ -11,8 +11,8 @@ import { useAuthStore } from '@/stores/auth'
 import { changeLocale } from '@/i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
-import { Field, FieldLabel } from '@/components/ui/field'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { BrandMark } from '@/components/brand-mark'
 
@@ -63,29 +63,27 @@ export default function LoginPage() {
         </div>
 
         <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
-          <Field>
-            <FieldLabel htmlFor="login-email">{t('auth:login.email')}</FieldLabel>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="login-email">{t('auth:login.email')}</Label>
             <Input
               id="login-email"
               type="email"
               autoComplete="email"
               placeholder={t('auth:login.emailPlaceholder')}
-              className="mt-1.5"
               {...form.register('email')}
             />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="login-password">{t('auth:login.password')}</FieldLabel>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="login-password">{t('auth:login.password')}</Label>
             <Input
               id="login-password"
               type="password"
               autoComplete="current-password"
               placeholder={t('auth:login.passwordPlaceholder')}
-              className="mt-1.5"
               {...form.register('password')}
             />
-          </Field>
-          {error && <div className="text-[13px] text-(--destructive)">{error}</div>}
+          </div>
+          {error && <div className="text-[13px] text-destructive">{error}</div>}
           <Button type="submit" size="lg" className="mt-1 w-full" disabled={form.formState.isSubmitting}>
             {t('auth:login.submit')}
           </Button>

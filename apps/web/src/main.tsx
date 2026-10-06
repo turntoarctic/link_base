@@ -7,7 +7,7 @@ import { initI18n } from './i18n'
 import { App } from './app/router'
 import { initTheme } from './stores/ui'
 import { TooltipProvider } from './components/ui/tooltip'
-import { Toaster } from './components/ui/toast'
+import { Toaster } from './components/ui/sonner'
 
 const queryClient = new QueryClient({
   gcTime: 5 * 60 * 1000,

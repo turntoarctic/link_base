@@ -50,18 +50,16 @@ export function PageTagsRow({
       ))}
 
       <Popover>
-        <PopoverTrigger
-          render={
-            <button
-              type="button"
-              className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[12px] font-medium text-(--muted-foreground) transition-colors hover:bg-(--muted)"
-            />
-          }
-        >
-          <Plus size={12} />
-          {t('page.addTag')}
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className="text-muted-foreground inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[12px] font-medium transition-colors hover:bg-muted"
+          >
+            <Plus size={12} />
+            {t('page.addTag')}
+          </button>
         </PopoverTrigger>
-        <PopoverContent className="max-h-[240px] w-[200px] overflow-y-auto">
+        <PopoverContent className="max-h-[240px] w-[200px] overflow-y-auto p-1">
           {candidates.length === 0 && (
             <div className="px-2 py-3 text-center text-[12px] text-(--muted-foreground)">
               {t('tags.empty')}

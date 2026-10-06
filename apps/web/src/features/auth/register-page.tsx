@@ -11,8 +11,8 @@ import { useAuthStore } from '@/stores/auth'
 import { changeLocale } from '@/i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
-import { Field, FieldLabel } from '@/components/ui/field'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { BrandMark } from '@/components/brand-mark'
 
@@ -69,34 +69,25 @@ export default function RegisterPage() {
         </div>
 
         <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
-          <Field>
-            <FieldLabel htmlFor="reg-name">{t('auth:register.name')}</FieldLabel>
-            <Input id="reg-name" autoComplete="name" className="mt-1.5" {...form.register('name')} />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="reg-email">{t('auth:register.email')}</FieldLabel>
-            <Input
-              id="reg-email"
-              type="email"
-              autoComplete="email"
-              className="mt-1.5"
-              {...form.register('email')}
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="reg-password">{t('auth:register.password')}</FieldLabel>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="reg-name">{t('auth:register.name')}</Label>
+            <Input id="reg-name" autoComplete="name" {...form.register('name')} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="reg-email">{t('auth:register.email')}</Label>
+            <Input id="reg-email" type="email" autoComplete="email" {...form.register('email')} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="reg-password">{t('auth:register.password')}</Label>
             <Input
               id="reg-password"
               type="password"
               autoComplete="new-password"
-              className="mt-1.5"
               {...form.register('password')}
             />
-          </Field>
+          </div>
           {(fieldError || error) && (
-            <div className="text-[13px] text-(--destructive)">
-              {error ?? t('errors:LB_VALIDATION')}
-            </div>
+            <div className="text-[13px] text-destructive">{error ?? t('errors:LB_VALIDATION')}</div>
           )}
           <Button type="submit" size="lg" className="mt-1 w-full" disabled={form.formState.isSubmitting}>
             {t('auth:register.submit')}

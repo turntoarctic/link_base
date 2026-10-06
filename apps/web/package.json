@@ -11,11 +11,16 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui-components/react": "catalog:",
     "@hookform/resolvers": "catalog:",
     "@linkbase/contracts": "workspace:*",
     "@linkbase/editor": "workspace:*",
     "@linkbase/types": "workspace:*",
+    "@radix-ui/react-dialog": "catalog:",
+    "@radix-ui/react-dropdown-menu": "catalog:",
+    "@radix-ui/react-label": "catalog:",
+    "@radix-ui/react-popover": "catalog:",
+    "@radix-ui/react-slot": "catalog:",
+    "@radix-ui/react-tooltip": "catalog:",
     "@tanstack/react-query": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
@@ -27,7 +32,9 @@
     "react-hook-form": "catalog:",
     "react-i18next": "catalog:",
     "react-router": "catalog:",
+    "sonner": "catalog:",
     "tailwind-merge": "catalog:",
+    "tw-animate-css": "catalog:",
     "y-indexeddb": "catalog:",
     "yjs": "catalog:",
     "zustand": "catalog:"

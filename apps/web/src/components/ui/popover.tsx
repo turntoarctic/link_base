@@ -1,28 +1,31 @@
-/** shadcn/ui Popover（Base UI Popover 封装）：标签选择器等轻浮层 */
-import type { ReactNode } from 'react'
-import { Popover as BasePopover } from '@base-ui-components/react/popover'
+/** shadcn/ui new-york Popover（@radix-ui/react-popover 封装；触发器用 asChild） */
+import { forwardRef, type ComponentProps } from 'react'
+import * as PopoverPrimitive from '@radix-ui/react-popover'
 import { cn } from '@/lib/cn'
 
-export const Popover = BasePopover.Root
-export const PopoverTrigger = BasePopover.Trigger
-export const PopoverClose = BasePopover.Close
+export const Popover = PopoverPrimitive.Root
+export const PopoverTrigger = PopoverPrimitive.Trigger
+export const PopoverAnchor = PopoverPrimitive.Anchor
+export const PopoverClose = PopoverPrimitive.Close
 
 export function PopoverContent({
-  children,
   className,
   align = 'start',
-  sideOffset = 6,
-}: {
-  children: ReactNode
-  className?: string
-  align?: 'start' | 'center' | 'end'
-  sideOffset?: number
-}) {
+  sideOffset = 4,
+  ...props
+}: ComponentProps<typeof PopoverPrimitive.Content>) {
   return (
-    <BasePopover.Portal>
-      <BasePopover.Positioner align={align} sideOffset={sideOffset} className="z-[180] outline-none">
-        <BasePopover.Popup className={cn('ui-popup ui-menu p-1', className)}>{children}</BasePopover.Popup>
-      </BasePopover.Positioner>
-    </BasePopover.Portal>
+    <PopoverPrimitive.Portal>
+      <PopoverPrimitive.Content
+        data-slot="popover-content"
+        align={align}
+        sideOffset={sideOffset}
+        className={cn(
+          'bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-72 origin-(--radix-popover-content-transform-origin) rounded-md border p-1 shadow-md outline-hidden',
+          className,
+        )}
+        {...props}
+      />
+    </PopoverPrimitive.Portal>
   )
 }

@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar } from '@/components/ui/primitives'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '@/components/ui/dialog'
 import { LanguageSwitcher } from '@/components/language-switcher'
-import { toast } from '@/components/ui/toast'
+import { toast } from '@/components/ui/sonner'
 import { cn } from '@/lib/cn'
 
 type Tab = 'general' | 'members' | 'tags'
@@ -78,9 +78,9 @@ function GeneralTab({ workspaceId, name }: { workspaceId: string; name: string }
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['ws', workspaceId] })
       void queryClient.invalidateQueries({ queryKey: ['me'] })
-      toast.add({ title: t('workspace:toast.nameSaved'), type: 'success' })
+      toast.success(t('workspace:toast.nameSaved'))
     },
-    onError: () => toast.add({ title: t('common:operationFailed'), type: 'error' }),
+    onError: () => toast.error(t('common:operationFailed')),
   })
 
   return (
@@ -164,7 +164,7 @@ function MembersTab({ workspaceId, role }: { workspaceId: string; role: 'owner' 
     if (!inviteUrl) return
     void navigator.clipboard
       .writeText(inviteUrl)
-      .then(() => toast.add({ title: t('workspace:toast.inviteCopied'), type: 'success' }))
+      .then(() => toast.success(t('workspace:toast.inviteCopied')))
       .catch(() => {})
   }
 
@@ -234,7 +234,7 @@ function MembersTab({ workspaceId, role }: { workspaceId: string; role: 'owner' 
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-(--destructive) hover:text-(--destructive)"
+                      className="text-destructive hover:text-destructive"
                       onClick={() => {
                         void workspaceApi.removeMember(workspaceId, member.userId).then(refresh)
                       }}

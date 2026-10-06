@@ -17,6 +17,7 @@
   --accent: #e8e8e6;
   --accent-foreground: #37352f;
   --destructive: #eb5757;
+  --destructive-foreground: #ffffff;
   --border: #e9e9e7;
   --input: #d3d1cb;
   --ring: #2383e2;
@@ -48,6 +49,7 @@
   --input: #3a3a3a;
   --secondary: #262626;
   --secondary-foreground: #d4d4d4;
+  --destructive-foreground: #ffffff;
   /* primary / destructive / ring 亮暗一致 */
 }
 

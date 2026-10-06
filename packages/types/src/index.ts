@@ -76,3 +76,27 @@ export interface PageMetaDto {
 
 /** 标签色板 1–8，对应 06 §5.1 的 --tag-N-bg/fg（08 §3.5） */
 export const TAG_COLOR_COUNT = 8
+
+/** 行内评论锚点（P1-3）：文本引用锚定（quote + 前后文），对块拆分/合并的鲁棒性优于 nodeId */
+export interface CommentAnchor {
+  /** 选中的文本 */
+  quote: string
+  /** 锚点前 ~40 字上下文 */
+  prefix: string
+  /** 锚点后 ~40 字上下文 */
+  suffix: string
+}
+
+/** 页面评论（页面级 anchor=null；行内带锚点；parentId 构成回复串） */
+export interface CommentItem {
+  id: string
+  pageId: string
+  parentId: string | null
+  authorId: string
+  authorName: string
+  anchor: CommentAnchor | null
+  body: string
+  resolved: boolean
+  createdAt: string
+  updatedAt: string
+}

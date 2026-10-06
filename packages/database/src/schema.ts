@@ -4,6 +4,7 @@
  * pages.parent_id / pages.text 是 Y.Doc 的派生缓存（08 §5），服务不直接接受客户端写。
  */
 import { sql } from 'drizzle-orm'
+import type { AnyPgColumn } from 'drizzle-orm/pg-core'
 import {
   bigint,
   bigserial,
@@ -11,6 +12,7 @@ import {
   customType,
   index,
   integer,
+  jsonb,
   pgTable,
   primaryKey,
   smallint,
@@ -249,3 +251,42 @@ export type TagRow = typeof tags.$inferSelect
 /** 角色约束与快照 reason 约束（与 0000_init.sql 的 check 一致） */
 export const ROLES = ['owner', 'admin', 'member'] as const
 export const SNAPSHOT_REASONS = ['auto', 'manual', 'restore', 'copy'] as const
+
+/* ------------------------------- comments（P1-3 评论，T2.4） ------------------------------- */
+
+/** 行内评论锚点：文本引用（quote + 前后文），随内容编辑仍可定位 */
+export interface CommentAnchor {
+  quote: string
+  prefix: string
+  suffix: string
+}
+
+export const comments = pgTable(
+  'comments',
+  {
+    id: uuid('id').primaryKey(),
+    workspaceId: uuid('workspace_id')
+      .notNull()
+      .references(() => workspaces.id, { onDelete: 'cascade' }),
+    pageId: uuid('page_id')
+      .notNull()
+      .references(() => pages.id, { onDelete: 'cascade' }),
+    /** 回复串：null = 顶级评论（页面级或行内） */
+    parentId: uuid('parent_id').references((): AnyPgColumn => comments.id, { onDelete: 'cascade' }),
+    author: uuid('author')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** null = 页面级评论 */
+    anchor: jsonb('anchor').$type<CommentAnchor | null>(),
+    body: text('body').notNull(),
+    resolved: boolean('resolved').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('idx_comments_page').on(t.pageId, t.createdAt),
+    index('idx_comments_parent').on(t.parentId),
+  ],
+)
+
+export type CommentRow = typeof comments.$inferSelect

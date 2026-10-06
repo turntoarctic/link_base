@@ -435,3 +435,16 @@
   user-select: none;
   opacity: 1;
 }
+
+/* ------------------------------- 评论高亮（T2.4） ------------------------------- */
+
+.linkbase-comment-highlight {
+  background: color-mix(in srgb, var(--warning) 30%, transparent);
+  border-bottom: 2px solid var(--warning);
+  cursor: pointer;
+  transition: background-color 120ms ease-out;
+}
+
+.linkbase-comment-highlight:hover {
+  background: color-mix(in srgb, var(--warning) 45%, transparent);
+}

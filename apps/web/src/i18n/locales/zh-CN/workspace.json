@@ -108,5 +108,19 @@
       "restore": "恢复点",
       "copy": "复制"
     }
+  },
+  "comments": {
+    "title": "评论",
+    "unresolved": "{{count}} 条未解决",
+    "empty": "还没有评论",
+    "onQuote": "评论「{{quote}}…」",
+    "resolved": "已解决",
+    "reopen": "重开",
+    "resolve": "解决",
+    "reply": "回复",
+    "replyingTo": "回复 {{author}}：{{body}}…",
+    "inlineTarget": "评论选中内容：「{{quote}}…」",
+    "placeholder": "写下评论，⌘+Enter 发送",
+    "send": "发送"
   }
 }

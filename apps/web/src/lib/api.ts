@@ -11,6 +11,8 @@ import type {
   RegisterInput,
 } from './api-types.ts'
 import type {
+  CommentAnchor,
+  CommentItem,
   PageMetaDto,
   PageTreeNode,
   SearchResultItem,
@@ -125,6 +127,25 @@ export const pageApi = {
   },
   restoreVersion(wsId: string, pageId: string, version: number): Promise<void> {
     return api.json(`/workspaces/${wsId}/pages/${pageId}/versions/${version}/restore`, { method: 'POST' })
+  },
+  // 评论（P1-3 / T2.4）
+  comments(wsId: string, pageId: string): Promise<CommentItem[]> {
+    return api.json(`/workspaces/${wsId}/pages/${pageId}/comments`)
+  },
+  createComment(wsId: string, pageId: string, input: { body: string; anchor?: CommentAnchor }): Promise<CommentItem> {
+    return api.json(`/workspaces/${wsId}/pages/${pageId}/comments`, { method: 'POST', json: input })
+  },
+  replyComment(wsId: string, pageId: string, commentId: string, body: string): Promise<CommentItem> {
+    return api.json(`/workspaces/${wsId}/pages/${pageId}/comments/${commentId}/replies`, { method: 'POST', json: { body } })
+  },
+  resolveComment(wsId: string, pageId: string, commentId: string, resolved: boolean): Promise<void> {
+    return api.json(`/workspaces/${wsId}/pages/${pageId}/comments/${commentId}/resolve`, { method: 'POST', json: { resolved } })
+  },
+  editComment(wsId: string, pageId: string, commentId: string, body: string): Promise<void> {
+    return api.json(`/workspaces/${wsId}/pages/${pageId}/comments/${commentId}`, { method: 'PATCH', json: { body } })
+  },
+  deleteComment(wsId: string, pageId: string, commentId: string): Promise<void> {
+    return api.json(`/workspaces/${wsId}/pages/${pageId}/comments/${commentId}`, { method: 'DELETE' })
   },
   favorite(wsId: string, pageId: string): Promise<void> {
     return api.json(`/workspaces/${wsId}/pages/${pageId}/favorite`, { method: 'PUT' })

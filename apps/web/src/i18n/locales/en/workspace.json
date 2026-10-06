@@ -108,5 +108,19 @@
       "restore": "Restore",
       "copy": "Copy"
     }
+  },
+  "comments": {
+    "title": "Comments",
+    "unresolved": "{{count}} unresolved",
+    "empty": "No comments yet",
+    "onQuote": "On \"{{quote}}…\"",
+    "resolved": "Resolved",
+    "reopen": "Reopen",
+    "resolve": "Resolve",
+    "reply": "Reply",
+    "replyingTo": "Reply to {{author}}: {{body}}…",
+    "inlineTarget": "Commenting on \"{{quote}}…\"",
+    "placeholder": "Write a comment, ⌘+Enter to send",
+    "send": "Send"
   }
 }

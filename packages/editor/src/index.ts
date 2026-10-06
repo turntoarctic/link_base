@@ -25,6 +25,7 @@ import { SlashMenu, type SlashMenuOptions } from './extensions/slash-menu.ts'
 import { MarkdownPaste } from './extensions/markdown.ts'
 import { DragHandle } from './extensions/drag-handle.ts'
 import { TaskListInputRule } from './extensions/task-input-rule.ts'
+import { CommentsHighlight, refreshComments, type CommentAnchorSpec } from './extensions/comments.ts'
 
 export type { ImageUploadOptions }
 
@@ -45,6 +46,10 @@ export interface EditorKitOptions {
   awareness?: { awareness: unknown }
   /** 本端协作身份（T2.2）：name 显示在光标标签，color 由宿主按用户稳定分配 */
   collaborationUser?: { name: string; color: string }
+  /** 评论锚点数据源（T2.4，随评论变化由宿主 refreshComments 触发重算） */
+  getCommentAnchors?: () => CommentAnchorSpec[]
+  /** 点击正文中的评论高亮（宿主打开面板定位） */
+  onCommentAnchorClick?: (id: string) => void
 }
 
 const lowlight = createLowlight(common)
@@ -106,6 +111,10 @@ export function buildEditorKit(options: EditorKitOptions) {
     }),
     DragHandle,
     MarkdownPaste,
+    CommentsHighlight.configure({
+      getAnchors: options.getCommentAnchors ?? (() => []),
+      onAnchorClick: options.onCommentAnchorClick,
+    }),
   ]
 }
 
@@ -127,3 +136,4 @@ export { Callout as CalloutExtension } from './extensions/callout.ts'
 export { SlashMenu as SlashMenuExtension } from './extensions/slash-menu.ts'
 export { DragHandle as DragHandleExtension } from './extensions/drag-handle.ts'
 export { MarkdownPaste as MarkdownPasteExtension, markdownToPmJson, looksLikeMarkdown } from './extensions/markdown.ts'
+export { CommentsHighlight as CommentsHighlightExtension, refreshComments, type CommentAnchorSpec } from './extensions/comments.ts'

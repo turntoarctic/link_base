@@ -5,7 +5,8 @@ import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { buildEditorKit, CodeBlockLangPicker, EditorBubbleToolbar, EditorContent, useEditor, type MentionUser } from '@linkbase/editor'
+import { buildEditorKit, CodeBlockLangPicker, EditorBubbleToolbar, EditorContent, refreshComments, useEditor, type CommentAnchorSpec, type MentionUser } from '@linkbase/editor'
+import type { CommentAnchor } from '@linkbase/types'
 import type * as Y from 'yjs'
 import { blobApi, pageApi, workspaceApi } from '@/lib/api'
 import { toast } from '@/components/ui/sonner'
@@ -25,11 +26,24 @@ export function EditorView({
   wsId,
   pageId,
   ydoc,
+  commentAnchors,
+  onCommentAnchorClick,
+  onInlineComment,
 }: {
   wsId: string
   pageId: string
   ydoc: Y.Doc
+  /** 评论锚点数据源（宿主持有评论查询数据） */
+  commentAnchors: CommentAnchorSpec[]
+  onCommentAnchorClick?: (id: string) => void
+  /** bubble 工具条「评论」：从当前选区捕获锚点后交宿主打开面板 */
+  onInlineComment?: (anchor: CommentAnchor | null) => void
 }) {
+  // 经 ref 供扩展闭包读取，避免 useEditor 依赖随评论数据抖动
+  const anchorsRef = useRef<CommentAnchorSpec[]>(commentAnchors)
+  anchorsRef.current = commentAnchors
+  const onAnchorClickRef = useRef(onCommentAnchorClick)
+  onAnchorClickRef.current = onCommentAnchorClick
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { t } = useTranslation('editor')
@@ -69,6 +83,8 @@ export function EditorView({
       members: () => membersRef.current,
       awareness: awareness ? { awareness } : undefined,
       collaborationUser,
+      getCommentAnchors: () => anchorsRef.current,
+      onCommentAnchorClick: (id) => onAnchorClickRef.current?.(id),
       onSubpageOpen: (targetPageId) => navigate(`/${wsId}/page/${targetPageId}`),
       // 服务端直写 parent_id（树即时生效）；卡片由 slash action 在光标处插入（insertSubpage
       // 命令），内容经 Y.Doc push 落库。失败可见（toast），不静默
@@ -87,11 +103,34 @@ export function EditorView({
     }),
   }, [ydoc, wsId, pageId])
 
+  // 评论数据变化 → 高亮装饰重算
+  useEffect(() => {
+    if (editor) refreshComments(editor)
+  }, [editor, commentAnchors])
+
+  /** 从当前选区捕获文本引用锚点（quote + 前后文 40 字） */
+  const captureInlineComment = () => {
+    if (!editor) return
+    const { from, to, empty } = editor.state.selection
+    let anchor: CommentAnchor | null = null
+    if (!empty) {
+      const quote = editor.state.doc.textBetween(from, to, ' ')
+      if (quote.trim()) {
+        anchor = {
+          quote,
+          prefix: editor.state.doc.textBetween(Math.max(0, from - 40), from, ' '),
+          suffix: editor.state.doc.textBetween(to, Math.min(editor.state.doc.content.size, to + 40), ' '),
+        }
+      }
+    }
+    onInlineComment?.(anchor)
+  }
+
   if (!editor) return null
   return (
     <>
       <EditorContent editor={editor} />
-      <EditorBubbleToolbar editor={editor} />
+      <EditorBubbleToolbar editor={editor} onComment={captureInlineComment} />
       <CodeBlockLangPicker editor={editor} />
     </>
   )

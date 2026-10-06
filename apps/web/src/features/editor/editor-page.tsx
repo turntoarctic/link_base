@@ -6,9 +6,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, CloudOff, Copy, History, MoreHorizontal, Star, Trash2 } from 'lucide-react'
+import { ChevronRight, CloudOff, Copy, History, MessageSquare, MoreHorizontal, Star, Trash2 } from 'lucide-react'
 import { pageApi, tagApi } from '@/lib/api'
-import type { PageTreeNode } from '@linkbase/types'
+import type { CommentAnchor, PageTreeNode } from '@linkbase/types'
 import { updateSubpageTitle } from './doc-manager'
 import { useDocPushFailed } from './use-doc-sync'
 import { useAwarenessUsers } from './use-awareness-users'
@@ -18,6 +18,7 @@ import { usePageDoc } from './use-page-doc'
 import { EditorView } from './editor-view'
 import { PageTagsRow } from './page-tags-row'
 import { VersionsPanel } from './versions-panel'
+import { CommentsPanel } from './comments-panel'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +44,14 @@ export default function EditorPage() {
     queryFn: () => pageApi.get(workspaceId, pageId),
   })
   const tree = useQuery({ queryKey: ['pages', workspaceId], queryFn: () => pageApi.tree(workspaceId) })
+  // 评论数据始终拉取（高亮装饰需要锚点；量级为单页评论数，可忽略）
+  const comments = useQuery({
+    queryKey: ['comments', workspaceId, pageId],
+    queryFn: () => pageApi.comments(workspaceId, pageId),
+  })
+  const commentAnchors = (comments.data ?? [])
+    .filter((c) => c.anchor && !c.resolved)
+    .map((c) => ({ id: c.id, quote: c.anchor!.quote, prefix: c.anchor!.prefix, suffix: c.anchor!.suffix }))
   const pageTags = useQuery({
     queryKey: ['pageTags', workspaceId, pageId],
     queryFn: () => tagApi.pageTags(workspaceId, pageId),
@@ -71,6 +80,8 @@ export default function EditorPage() {
   }
 
   const [versionsOpen, setVersionsOpen] = useState(false)
+  const [commentsOpen, setCommentsOpen] = useState(false)
+  const [pendingAnchor, setPendingAnchor] = useState<CommentAnchor | null>(null)
   const [title, setTitle] = useState<string | undefined>(undefined)
   // 组件在 /page/:pageId 下切页不重挂载：切页必须重置标题，否则残留上个页面的
   // 标题（显示错误，且继续输入会把旧标题 PATCH 到新页面）
@@ -161,6 +172,22 @@ export default function EditorPage() {
           )}
         </div>
 
+        {/* 评论入口（未解决计数）+ 在线协作成员（T2.2，09 §6）+ ⋯ 页菜单 */}
+        <button
+          type="button"
+          aria-label={t('workspace:comments.title')}
+          title={t('workspace:comments.title')}
+          className="relative mr-1 rounded-md p-1.5 text-(--muted-foreground) transition-colors hover:bg-(--muted) hover:text-(--foreground)"
+          onClick={() => setCommentsOpen(true)}
+        >
+          <MessageSquare size={15} />
+          {comments.data && comments.data.some((c) => !c.resolved) && (
+            <span className="absolute -top-0.5 -right-0.5 flex size-3.5 items-center justify-center rounded-full bg-(--warning) text-[9px] font-bold text-white">
+              {comments.data.filter((c) => !c.resolved).length}
+            </span>
+          )}
+        </button>
+
         {/* 在线协作成员（T2.2，09 §6）+ ⋯ 页菜单 */}
         <div className="flex shrink-0 items-center -space-x-1 pr-1">
           {onlineUsers.map((u) => (
@@ -216,6 +243,14 @@ export default function EditorPage() {
       </div>
 
       <VersionsPanel wsId={workspaceId} pageId={pageId} open={versionsOpen} onOpenChange={setVersionsOpen} />
+      <CommentsPanel
+        wsId={workspaceId}
+        pageId={pageId}
+        open={commentsOpen}
+        onOpenChange={setCommentsOpen}
+        pendingAnchor={pendingAnchor}
+        onAnchorConsumed={() => setPendingAnchor(null)}
+      />
 
       {/* 标题（独立输入框，非编辑器节点，05 §5） */}
       <div className="mx-auto w-(--width-content) max-w-full pt-6">
@@ -259,7 +294,18 @@ export default function EditorPage() {
           </div>
         )}
         {status === 'ready' && ydoc && (
-          <EditorView key={pageId} wsId={workspaceId} pageId={pageId} ydoc={ydoc} />
+          <EditorView
+            key={pageId}
+            wsId={workspaceId}
+            pageId={pageId}
+            ydoc={ydoc}
+            commentAnchors={commentAnchors}
+            onCommentAnchorClick={() => setCommentsOpen(true)}
+            onInlineComment={(anchor) => {
+              setPendingAnchor(anchor)
+              setCommentsOpen(true)
+            }}
+          />
         )}
       </div>
     </div>

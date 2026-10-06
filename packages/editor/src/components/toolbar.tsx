@@ -21,7 +21,7 @@ import {
 
 const HIGHLIGHT_COLORS = ['#fef3c7', '#dbeafe', '#dcfce7', '#fee2e2', '#f3e8ff']
 
-export function EditorBubbleToolbar({ editor }: { editor: Editor }) {
+export function EditorBubbleToolbar({ editor, onComment }: { editor: Editor; onComment?: () => void }) {
   const { t } = useTranslation('editor')
   const [linkMode, setLinkMode] = useState(false)
   const [linkUrl, setLinkUrl] = useState('')
@@ -173,7 +173,12 @@ export function EditorBubbleToolbar({ editor }: { editor: Editor }) {
                   </button>
                 </>
               )}
-              <button type="button" className={btn(false)} title={t('toolbar.comment')} disabled>
+              <button
+                type="button"
+                className={btn(false)}
+                title={t('toolbar.comment')}
+                onClick={() => onComment?.()}
+              >
                 <MessageSquarePlus size={15} />
               </button>
             </>

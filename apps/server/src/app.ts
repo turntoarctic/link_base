@@ -19,6 +19,7 @@ import { docRouter } from './routes/doc.ts'
 import { blobsRouter } from './routes/blobs.ts'
 import { searchRouter } from './routes/search.ts'
 import { healthRouter } from './routes/health.ts'
+import { wsRouter } from './routes/ws.ts'
 
 export function createApp(deps: ServerDeps): Hono<AppEnv> {
   const app = new Hono<AppEnv>()
@@ -49,6 +50,7 @@ export function createApp(deps: ServerDeps): Hono<AppEnv> {
   app.route('/api/workspaces', docRouter(deps))
   app.route('/api', blobsRouter(deps))
   app.route('/api/workspaces', searchRouter(deps))
+  app.route('/api/ws', wsRouter(deps))
 
   app.onError(errorHandler)
   return app

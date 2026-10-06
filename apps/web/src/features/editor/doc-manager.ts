@@ -6,15 +6,17 @@
 import * as Y from 'yjs'
 import { IndexeddbPersistence } from 'y-indexeddb'
 import { NODE_SUBPAGE, SUBPAGE_ATTR, Y_FRAGMENT_NAME } from '@linkbase/editor/server'
-import { api } from '@/lib/fetch'
+import { api, getAccessToken } from '@/lib/fetch'
+import { startWsRelay, type WsRelay } from './ws-relay'
+import { remoteOrigin } from './sync-origin'
+
+export { remoteOrigin }
 
 const PAGE_KEY = (pageId: string) => `page:${pageId}`
 const CHANNEL_NAME = 'linkbase-doc'
 const PUSH_DEBOUNCE_MS = 500
 const MAX_OPEN_DOCS = 12
 
-/** 远程回放标记：update 回调里据此区分本地/远程（05 §3.2 只推本地产生的 update） */
-export const remoteOrigin = { source: 'linkbase-remote' } as const
 
 interface Entry {
   wsId: string
@@ -27,6 +29,8 @@ interface Entry {
   retryTimer: ReturnType<typeof setTimeout> | null
   retryAttempts: number
   pushFailed: boolean
+  /** WS 实时通道（09 §6）；REST 去抖推送保留为兜底 */
+  relay: WsRelay | null
 }
 
 const entries = new Map<string, Entry>()
@@ -89,6 +93,7 @@ export async function openPageDoc(wsId: string, pageId: string): Promise<OpenDoc
     retryTimer: null,
     retryAttempts: 0,
     pushFailed: false,
+    relay: null,
   }
 
   // 跨标签页（05 §3.3）：请求一份全量，随后互转增量
@@ -131,6 +136,10 @@ export async function openPageDoc(wsId: string, pageId: string): Promise<OpenDoc
 
   entries.set(pageId, entry)
   evictIfNeeded(wsId)
+  // WS 实时通道（09 §6）：REST 拉取先落地，实时增量从这里进入；未登录（公开预览态）不连
+  if (getAccessToken()) {
+    entry.relay = startWsRelay(wsId, pageId, ydoc, remoteOrigin)
+  }
   return { ydoc, fromServer }
 }
 
@@ -185,6 +194,7 @@ export async function closePageDoc(wsId: string, pageId: string): Promise<void> 
   entries.delete(pageId)
   if (entry.timer) clearTimeout(entry.timer)
   if (entry.retryTimer) clearTimeout(entry.retryTimer)
+  entry.relay?.destroy()
   await flushEntry(wsId, pageId, entry)
   setPushFailed(pageId, false)
   entry.channel.close()

@@ -204,9 +204,12 @@ const REFRESH_TTL = 7 * 24 * 3600
 const INVITE_TTL = 7 * 24 * 3600
 export const REFRESH_TTL_SEC = REFRESH_TTL
 export const INVITE_TTL_SEC = INVITE_TTL
+/** WS 升级票据（09 §2）：TTL 30s，取出即焚 */
+const WS_TICKET_TTL = 30
 
 export const refreshKey = (token: string) => `refresh:${token}`
 export const inviteKey = (token: string) => `invite:${token}`
+export const wsTicketKey = (ticket: string) => `ws-ticket:${ticket}`
 
 export function createSessions(kv: KV) {
   return {
@@ -255,6 +258,15 @@ export function createSessions(kv: KV) {
       const payload = await this.peekInvite(token)
       if (payload) await kv.del(inviteKey(token))
       return payload
+    },
+    async putWsTicket(ticket: string, userId: string): Promise<void> {
+      await kv.set(wsTicketKey(ticket), userId, WS_TICKET_TTL)
+    },
+    async takeWsTicket(ticket: string): Promise<string | null> {
+      const raw = await kv.get(wsTicketKey(ticket))
+      if (!raw) return null
+      await kv.del(wsTicketKey(ticket)) // 取出即焚（09 §2）
+      return raw
     },
   }
 }

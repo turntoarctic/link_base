@@ -26,6 +26,7 @@
     "clsx": "catalog:",
     "i18next": "catalog:",
     "i18next-browser-languagedetector": "catalog:",
+    "lib0": "catalog:",
     "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
@@ -36,9 +37,10 @@
     "tailwind-merge": "catalog:",
     "tw-animate-css": "catalog:",
     "y-indexeddb": "catalog:",
+    "y-protocols": "catalog:",
     "yjs": "catalog:",
-    "zustand": "catalog:",
-    "zod": "^4.6.5"
+    "zod": "^4.6.5",
+    "zustand": "catalog:"
   },
   "devDependencies": {
     "@testing-library/react": "catalog:",

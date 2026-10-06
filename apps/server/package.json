@@ -17,7 +17,9 @@
     "@linkbase/ydoc": "workspace:*",
     "drizzle-orm": "catalog:",
     "hono": "catalog:",
+    "lib0": "catalog:",
     "pino": "catalog:",
+    "y-protocols": "catalog:",
     "yjs": "catalog:",
     "zod": "catalog:"
   },

@@ -12,6 +12,7 @@ import { env } from './env.ts'
 import { logger } from './lib/logger.ts'
 import { startScheduler } from './jobs/scheduler.ts'
 import { mountStatic } from './static.ts'
+import { createWsHandlers } from './ws/handler.ts'
 
 async function main(): Promise<void> {
   logger.info('starting linkbase server')
@@ -28,7 +29,8 @@ async function main(): Promise<void> {
   const kv = createKV()
   // 启动即探测 Redis：不可用立刻降级内存 KV，避免首个请求承担连接重试延迟
   void kv.set('kv:boot-probe', '1', 5).catch(() => {})
-  const app = createApp({ db, kv, sessions: createSessions(kv), appOrigin: env.APP_ORIGIN ?? '' })
+  const deps = { db, kv, sessions: createSessions(kv), appOrigin: env.APP_ORIGIN ?? '' }
+  const app = createApp(deps)
 
   // 前端产物存在则托管（开发态由 Vite 5173 代理 /api）
   const here = dirname(fileURLToPath(import.meta.url))
@@ -41,8 +43,15 @@ async function main(): Promise<void> {
   }
   if (hasDist) mountStatic(app, distDir)
 
+  // WS（09）：/ws 升级走房间转发，其余进 Hono；T2.1 起注册
+  const ws = createWsHandlers(deps)
   const server = Bun.serve({
-    fetch: app.fetch,
+    fetch: (req, server) => {
+      const url = new URL(req.url)
+      if (url.pathname === '/ws') return ws.handleUpgrade(req, server)
+      return app.fetch(req, server)
+    },
+    websocket: ws.websocket,
     port: env.PORT,
     maxRequestBodySize: 64 * 1024 * 1024,
   })

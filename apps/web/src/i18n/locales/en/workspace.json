@@ -91,5 +91,22 @@
   },
   "auth": {
     "loginRequired": "Please log in first"
+  },
+  "versions": {
+    "title": "Version history",
+    "menu": "Version history",
+    "subtitle": "Snapshots are versions; restoring merges back without losing concurrent edits",
+    "saveNow": "Save current version",
+    "empty": "No versions yet — save one above",
+    "pickOne": "Pick a version on the left to preview",
+    "restore": "Restore this version",
+    "saved": "Saved version v{{version}}",
+    "restored": "Restored to v{{version}}",
+    "reason": {
+      "manual": "Manual",
+      "auto": "Auto",
+      "restore": "Restore",
+      "copy": "Copy"
+    }
   }
 }

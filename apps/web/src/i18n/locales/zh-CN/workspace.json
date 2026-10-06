@@ -91,5 +91,22 @@
   },
   "auth": {
     "loginRequired": "请先登录"
+  },
+  "versions": {
+    "title": "版本历史",
+    "menu": "版本历史",
+    "subtitle": "快照即版本；恢复以合并方式写回，不丢他人并发编辑",
+    "saveNow": "保存当前版本",
+    "empty": "还没有版本，点击上方按钮保存",
+    "pickOne": "左侧选择一个版本查看内容",
+    "restore": "恢复此版本",
+    "saved": "已保存版本 v{{version}}",
+    "restored": "已恢复到 v{{version}}",
+    "reason": {
+      "manual": "手动",
+      "auto": "自动",
+      "restore": "恢复点",
+      "copy": "复制"
+    }
   }
 }

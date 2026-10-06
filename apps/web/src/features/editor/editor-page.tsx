@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, CloudOff, Copy, MoreHorizontal, Star, Trash2 } from 'lucide-react'
+import { ChevronRight, CloudOff, Copy, History, MoreHorizontal, Star, Trash2 } from 'lucide-react'
 import { pageApi, tagApi } from '@/lib/api'
 import type { PageTreeNode } from '@linkbase/types'
 import { updateSubpageTitle } from './doc-manager'
@@ -17,6 +17,7 @@ import { cn } from '@/lib/cn'
 import { usePageDoc } from './use-page-doc'
 import { EditorView } from './editor-view'
 import { PageTagsRow } from './page-tags-row'
+import { VersionsPanel } from './versions-panel'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -69,6 +70,7 @@ export default function EditorPage() {
     }
   }
 
+  const [versionsOpen, setVersionsOpen] = useState(false)
   const [title, setTitle] = useState<string | undefined>(undefined)
   // 组件在 /page/:pageId 下切页不重挂载：切页必须重置标题，否则残留上个页面的
   // 标题（显示错误，且继续输入会把旧标题 PATCH 到新页面）
@@ -200,6 +202,11 @@ export default function EditorPage() {
               {t('workspace:page.copyLink')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => setVersionsOpen(true)}>
+              <History />
+              {t('workspace:versions.menu')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onSelect={() => moveToTrash.mutate()}>
               <Trash2 />
               {t('workspace:page.moveToTrash')}
@@ -207,6 +214,8 @@ export default function EditorPage() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <VersionsPanel wsId={workspaceId} pageId={pageId} open={versionsOpen} onOpenChange={setVersionsOpen} />
 
       {/* 标题（独立输入框，非编辑器节点，05 §5） */}
       <div className="mx-auto w-(--width-content) max-w-full pt-6">

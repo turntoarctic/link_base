@@ -16,6 +16,7 @@ import type {
   SearchResultItem,
   TagDto,
   TrashItem,
+  VersionItem,
 } from '@linkbase/types'
 import { api } from './fetch.ts'
 
@@ -111,6 +112,19 @@ export const pageApi = {
   },
   trashList(wsId: string): Promise<TrashItem[]> {
     return api.json(`/workspaces/${wsId}/trash`)
+  },
+  // 版本历史（08 §4.5，T2.3）
+  versions(wsId: string, pageId: string): Promise<VersionItem[]> {
+    return api.json(`/workspaces/${wsId}/pages/${pageId}/versions`)
+  },
+  saveVersion(wsId: string, pageId: string): Promise<{ version: number }> {
+    return api.json(`/workspaces/${wsId}/pages/${pageId}/versions`, { method: 'POST' })
+  },
+  versionText(wsId: string, pageId: string, version: number): Promise<{ text: string }> {
+    return api.json(`/workspaces/${wsId}/pages/${pageId}/versions/${version}`)
+  },
+  restoreVersion(wsId: string, pageId: string, version: number): Promise<void> {
+    return api.json(`/workspaces/${wsId}/pages/${pageId}/versions/${version}/restore`, { method: 'POST' })
   },
   favorite(wsId: string, pageId: string): Promise<void> {
     return api.json(`/workspaces/${wsId}/pages/${pageId}/favorite`, { method: 'PUT' })

@@ -113,6 +113,16 @@ export async function leaveRoom(
   room.doc.destroy()
 }
 
+/** 服务端结构操作（如版本恢复）向在房客户端推送 update：合入内存 doc + 广播。
+ * 持久化由调用方负责（本函数只做活房间同步）；无房间返回 false。 */
+export function applyServerUpdate(wsId: string, pageId: string, update: Uint8Array): boolean {
+  const room = rooms.get(roomKey(wsId, pageId))
+  if (!room) return false
+  Y.applyUpdate(room.doc, update)
+  broadcast(room, frame(2, update))
+  return true
+}
+
 /** 房间内消息：step1 回 step2；step2/update 合入 → 广播他人 → 去抖持久化；awareness 原样转发 */
 export function handleClientMessage(
   db: LinkbaseDb,

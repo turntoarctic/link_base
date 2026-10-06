@@ -31,6 +31,16 @@ export interface TrashItem {
   deletedAt: string | null
 }
 
+/** 版本历史条目（08 §4.5：快照即版本，新→旧） */
+export interface VersionItem {
+  version: number
+  /** auto | manual | restore | copy */
+  reason: string
+  createdAt: string
+  /** 正文前 120 字，列表预览 */
+  excerpt: string
+}
+
 /** GET /workspaces/:wsId/search 的结果（10 §7） */
 export interface SearchResultItem {
   id: string

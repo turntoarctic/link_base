@@ -79,7 +79,7 @@ export async function pushDoc(
 }
 
 /** 快照合并（08 §4.3）：合并 → 写新快照 → 删已并入增量 → 派生缓存刷新；幂等 */
-export async function mergePage(db: LinkbaseDb, pageId: string): Promise<boolean> {
+export async function mergePage(db: LinkbaseDb, pageId: string, reason = 'auto'): Promise<boolean> {
   const wsIdRows = await db
     .select({ workspaceId: pages.workspaceId })
     .from(pages)
@@ -110,12 +110,86 @@ export async function mergePage(db: LinkbaseDb, pageId: string): Promise<boolean
       pageId,
       version: (snaps[0]?.version ?? 0) + 1,
       blob: state,
-      reason: 'auto',
+      reason,
     })
     await tx.delete(pageUpdates).where(eq(pageUpdates.pageId, pageId))
     await deriveMetaInTx(tx, wsId, pageId, state)
     return true
   })
+}
+
+/** 快照版本号：当前最大 +1（每页自增不回收） */
+async function nextVersion(tx: TxLike, pageId: string): Promise<number> {
+  const rows = await tx
+    .select({ version: pageSnapshots.version })
+    .from(pageSnapshots)
+    .where(eq(pageSnapshots.pageId, pageId))
+    .orderBy(desc(pageSnapshots.version))
+    .limit(1)
+  return (rows[0]?.version ?? 0) + 1
+}
+
+/** 手动保存版本（08 §4.5 reason=manual）；无内容 404 */
+export async function saveVersion(db: LinkbaseDb, pageId: string): Promise<number> {
+  const state = await getPageState(db, pageId)
+  if (!state) throw errPageNotFound()
+  return db.transaction(async (tx) => {
+    const version = await nextVersion(tx, pageId)
+    await tx.insert(pageSnapshots).values({ pageId, version, blob: state, reason: 'manual' })
+    return version
+  })
+}
+
+/** 版本时间线（08 §4.5：快照即版本，新→旧；excerpt 供列表预览） */
+export async function listVersions(
+  db: LinkbaseDb,
+  pageId: string,
+): Promise<Array<{ version: number; reason: string; createdAt: string; excerpt: string }>> {
+  const rows = await db
+    .select()
+    .from(pageSnapshots)
+    .where(eq(pageSnapshots.pageId, pageId))
+    .orderBy(desc(pageSnapshots.version))
+    .limit(50)
+  return rows.map((r) => ({
+    version: r.version,
+    reason: r.reason,
+    createdAt: r.createdAt.toISOString(),
+    excerpt: extractPageMeta(r.blob).text.slice(0, 120),
+  }))
+}
+
+/** 单个版本正文（面板预览用） */
+export async function getVersionText(db: LinkbaseDb, pageId: string, version: number): Promise<string> {
+  const rows = await db
+    .select({ blob: pageSnapshots.blob })
+    .from(pageSnapshots)
+    .where(and(eq(pageSnapshots.pageId, pageId), eq(pageSnapshots.version, version)))
+    .limit(1)
+  if (!rows[0]) throw errPageNotFound()
+  return extractPageMeta(rows[0].blob).text
+}
+
+/** 恢复（08 §4.5）：目标快照作为新 update 合入（CRDT 合并，不丢并发编辑）+
+ * 广播 WS 在线客户端 + reason=restore 快照 */
+export async function restoreVersion(
+  db: LinkbaseDb,
+  wsId: string,
+  pageId: string,
+  version: number,
+  actorId: string,
+  broadcast?: (update: Uint8Array) => void,
+): Promise<void> {
+  const rows = await db
+    .select({ blob: pageSnapshots.blob })
+    .from(pageSnapshots)
+    .where(and(eq(pageSnapshots.pageId, pageId), eq(pageSnapshots.version, version)))
+    .limit(1)
+  if (!rows[0]) throw errPageNotFound()
+  const blob = rows[0].blob
+  await db.insert(pageUpdates).values({ pageId, blob, actor: actorId })
+  broadcast?.(blob)
+  await mergePage(db, pageId, 'restore')
 }
 
 /** 派生缓存管道（08 §5）：text + 子页 parent_id（一个子页只认文档序第一个父页） */

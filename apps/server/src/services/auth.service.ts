@@ -20,6 +20,23 @@ import type { Sessions } from '../db/redis.ts'
 
 const QUICK_START_TITLE = '欢迎使用 Linkbase'
 
+/** PG 唯一约束冲突（23505）；drizzle 会把原始错误包在 cause 链里 */
+function isUniqueViolation(error: unknown): boolean {
+  const chain: unknown[] = [error]
+  let current = error
+  while (current instanceof Error && current.cause) {
+    current = current.cause
+    chain.push(current)
+  }
+  return chain.some(
+    (e) =>
+      typeof e === 'object' &&
+      e !== null &&
+      'code' in e &&
+      (e as { code?: string }).code === '23505',
+  )
+}
+
 async function issueTokens(
   sessions: Sessions,
   userId: string,
@@ -49,22 +66,28 @@ export function createAuthService(db: LinkbaseDb, sessions: Sessions) {
       const passwordHash = await Bun.password.hash(input.password, { algorithm: 'argon2id' })
       const state = buildQuickStartState('zh-CN')
 
-      await db.transaction(async (tx) => {
-        await tx.insert(users).values({ id: userId, email, passwordHash, name: input.name })
-        await tx.insert(workspaces).values({ id: wsId, name: `${input.name} 的工作空间`, createdBy: userId })
-        await tx.insert(workspaceMembers).values({ workspaceId: wsId, userId, role: 'owner' })
-        await tx.insert(pages).values({
-          id: pageId,
-          workspaceId: wsId,
-          title: QUICK_START_TITLE,
-          createdBy: userId,
+      try {
+        await db.transaction(async (tx) => {
+          await tx.insert(users).values({ id: userId, email, passwordHash, name: input.name })
+          await tx.insert(workspaces).values({ id: wsId, name: `${input.name} 的工作空间`, createdBy: userId })
+          await tx.insert(workspaceMembers).values({ workspaceId: wsId, userId, role: 'owner' })
+          await tx.insert(pages).values({
+            id: pageId,
+            workspaceId: wsId,
+            title: QUICK_START_TITLE,
+            createdBy: userId,
+          })
+          await tx.insert(pageSnapshots).values({ pageId, version: 1, blob: state, reason: 'auto' })
+          await tx
+            .update(pages)
+            .set({ text: extractPageMeta(state).text })
+            .where(eq(pages.id, pageId))
         })
-        await tx.insert(pageSnapshots).values({ pageId, version: 1, blob: state, reason: 'auto' })
-        await tx
-          .update(pages)
-          .set({ text: extractPageMeta(state).text })
-          .where(eq(pages.id, pageId))
-      })
+      } catch (error) {
+        // 并发同邮箱注册绕过了预检查：唯一约束冲突 → 409（错误码语义唯一，10 §6）
+        if (isUniqueViolation(error)) throw errEmailTaken()
+        throw error
+      }
 
       const tokens = await issueTokens(sessions, userId, wsId)
       return {

@@ -4,6 +4,15 @@ import { ReactNodeViewRenderer } from '@tiptap/react'
 import { CalloutView } from '../components/callout-view.tsx'
 import { CALLOUT_ATTR, NODE_CALLOUT } from '../schema.ts'
 
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    callout: {
+      /** 插入 Callout 块 */
+      insertCallout: () => ReturnType
+    }
+  }
+}
+
 export const Callout = Node.create({
   name: NODE_CALLOUT,
 

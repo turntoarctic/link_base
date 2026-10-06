@@ -6,7 +6,6 @@
 import i18next, { type i18n as I18n } from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
-import { z } from 'zod'
 
 import commonEn from './locales/en/common.json'
 import authEn from './locales/en/auth.json'
@@ -22,8 +21,6 @@ import errorsZh from './locales/zh-CN/errors.json'
 export const LOCALES = ['zh-CN', 'en'] as const
 export type AppLocale = (typeof LOCALES)[number]
 export const LOCALE_STORAGE_KEY = 'linkbase.locale'
-
-export const localeSchema = z.enum(LOCALES)
 
 export const resources = {
   'zh-CN': {
@@ -42,13 +39,19 @@ export const resources = {
   },
 } as const
 
+/** 探测结果归一：'zh'/'zh-TW'→zh-CN，'en-US'→en，无法识别返回 null */
 export function normalizeLocale(input: string | null | undefined): AppLocale | null {
   if (!input) return null
   if ((LOCALES as readonly string[]).includes(input)) return input as AppLocale
-  // 'zh' / 'zh-TW' → zh-CN；'en-US' → en
   if (input.toLowerCase().startsWith('zh')) return 'zh-CN'
   if (input.toLowerCase().startsWith('en')) return 'en'
   return null
+}
+
+function syncHtmlLang(lng: string | undefined): void {
+  if (typeof document !== 'undefined') {
+    document.documentElement.lang = lng ?? 'zh-CN'
+  }
 }
 
 export async function initI18n(): Promise<I18n> {
@@ -69,12 +72,6 @@ export async function initI18n(): Promise<I18n> {
   syncHtmlLang(i18next.language)
   i18next.on('languageChanged', (lng) => syncHtmlLang(lng))
   return i18next
-}
-
-export function syncHtmlLang(lng: string | undefined): void {
-  if (typeof document !== 'undefined') {
-    document.documentElement.lang = lng ?? 'zh-CN'
-  }
 }
 
 /** 切换语言：本地持久化 + <html lang>；登录态由调用方再 PATCH users.locale */

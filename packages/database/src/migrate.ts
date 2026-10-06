@@ -37,8 +37,8 @@ export async function runMigrations(databaseUrl: string, dir?: string): Promise<
       applied_at timestamptz not null default now()
     )`)
 
-    const appliedRows = await sql`select name from ${sql.identifier(MIGRATIONS_TABLE)}`
-    const applied = new Set(appliedRows.map((r) => String(r.name)))
+    const appliedRows = (await sql`select name from _linkbase_migrations`) as Array<{ name: string }>
+    const applied = new Set(appliedRows.map((r) => r.name))
     const files = (await readdir(migrationDir)).filter((f) => f.endsWith('.sql')).sort()
     const appliedNow: string[] = []
 
@@ -47,7 +47,7 @@ export async function runMigrations(databaseUrl: string, dir?: string): Promise<
       const content = await readFile(join(migrationDir, file), 'utf8')
       // 文件内含 BEGIN/COMMIT；文件本身幂等（IF NOT EXISTS），崩溃重跑安全
       await sql.unsafe(content)
-      await sql`insert into ${sql.identifier(MIGRATIONS_TABLE)} (name) values (${file})`
+      await sql`insert into _linkbase_migrations (name) values (${file})`
       appliedNow.push(file)
     }
     return appliedNow

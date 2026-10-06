@@ -11,6 +11,10 @@ const envSchema = z.object({
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace'])
     .default('info'),
+  /** 限流阈值（07 §3 默认值；开发期可放宽） */
+  RATE_LIMIT_GLOBAL: z.coerce.number().int().positive().default(100),
+  RATE_LIMIT_LOGIN: z.coerce.number().int().positive().default(5),
+  RATE_LIMIT_REGISTER: z.coerce.number().int().positive().default(3),
 })
 
 const parsed = envSchema.safeParse(Bun.env)

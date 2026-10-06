@@ -15,8 +15,14 @@ type Child = Y.XmlElement | Y.XmlText
 
 const el = (name: string, attrs?: Record<string, unknown>, children: Child[] = []): Y.XmlElement => {
   const node = new Y.XmlElement(name)
-  if (attrs) for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value)
-  for (const child of children) node.insert(node.length, [child])
+  if (attrs) {
+    for (const [key, value] of Object.entries(attrs)) {
+      // yjs 运行时接受任意属性值（level/checked 为 number/boolean），类型按 string 声明
+      node.setAttribute(key, value as string)
+    }
+  }
+  // 显式下标写入：未挂载到文档的 Y 类型禁止任何读取（含 .length），否则 yjs 会告警
+  for (let i = 0; i < children.length; i++) node.insert(i, [children[i]!])
   return node
 }
 

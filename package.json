@@ -60,7 +60,8 @@
     "@radix-ui/react-label": "^2.1.16",
     "@radix-ui/react-slot": "^1.4.0",
     "nanoid": "^5.1.5",
-    "@playwright/test": "^1.55.0"
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^24.0.0"
   },
   "overrides": {
     "yjs": "13.6.33",
@@ -75,7 +76,7 @@
   "scripts": {
     "dev": "bun run dev:server & bun run dev:web",
     "dev:web": "cd apps/web && bun run dev",
-    "dev:server": "cd apps/server && bun run dev",
+    "dev:server": "bun --watch apps/server/src/index.ts",
     "build": "cd apps/web && bun run build",
     "typecheck": "bun run --filter '*' typecheck",
     "test": "bun test packages apps/server",

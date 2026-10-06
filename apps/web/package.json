@@ -37,7 +37,8 @@
     "tw-animate-css": "catalog:",
     "y-indexeddb": "catalog:",
     "yjs": "catalog:",
-    "zustand": "catalog:"
+    "zustand": "catalog:",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@testing-library/react": "catalog:",

@@ -1,6 +1,6 @@
 /** 语言切换（13 §6）：zh-CN / en 轻量切换，登录页与设置共用 */
 import { useTranslation } from 'react-i18next'
-import { LOCALES, localeSchema, type AppLocale } from '@/i18n'
+import { LOCALES, normalizeLocale, type AppLocale } from '@/i18n'
 
 export function LanguageSwitcher({
   onChange,
@@ -8,7 +8,7 @@ export function LanguageSwitcher({
   onChange?: (locale: AppLocale) => void
 }) {
   const { i18n } = useTranslation()
-  const current = localeSchema.catch('zh-CN').parse(i18n.language)
+  const current = normalizeLocale(i18n.language) ?? 'zh-CN'
 
   return (
     <div className="inline-flex overflow-hidden rounded-md border border-(--border) text-[12px]">

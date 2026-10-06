@@ -4,7 +4,7 @@
  */
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { runMigrations } from '@linkbase/database'
+import { runMigrations } from '@linkbase/database/migrate'
 import { createApp } from './app.ts'
 import { db } from './db/index.ts'
 import { createKV, createSessions } from './db/redis.ts'
@@ -26,6 +26,8 @@ async function main(): Promise<void> {
   }
 
   const kv = createKV()
+  // 启动即探测 Redis：不可用立刻降级内存 KV，避免首个请求承担连接重试延迟
+  void kv.set('kv:boot-probe', '1', 5).catch(() => {})
   const app = createApp({ db, kv, sessions: createSessions(kv), appOrigin: env.APP_ORIGIN ?? '' })
 
   // 前端产物存在则托管（开发态由 Vite 5173 代理 /api）

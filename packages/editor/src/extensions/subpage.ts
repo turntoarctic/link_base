@@ -7,6 +7,15 @@ import { ReactNodeViewRenderer } from '@tiptap/react'
 import { SubpageView } from '../components/subpage-view.tsx'
 import { NODE_SUBPAGE, SUBPAGE_ATTR } from '../schema.ts'
 
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    subpage: {
+      /** 插入子页面卡片节点 */
+      insertSubpage: (attrs: { pageId: string; title: string }) => ReturnType
+    }
+  }
+}
+
 export interface SubpageOptions {
   onOpen?: (pageId: string) => void
 }
@@ -45,7 +54,7 @@ export const Subpage = Node.create<SubpageOptions>({
   addCommands() {
     return {
       insertSubpage:
-        (attrs: { [SUBPAGE_ATTR.pageId]: string; [SUBPAGE_ATTR.title]: string }) =>
+        (attrs: { pageId: string; title: string }) =>
         ({ commands }) =>
           commands.insertContent({ type: NODE_SUBPAGE, attrs }),
     }

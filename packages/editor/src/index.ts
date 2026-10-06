@@ -42,44 +42,50 @@ export interface EditorKitOptions {
 
 const lowlight = createLowlight(common)
 
+/** 扩展装配清单（05 §2）：供 useEditor({ extensions }) 使用（React 路径必须传 options 而非实例） */
+export function buildEditorKit(options: EditorKitOptions) {
+  return [
+    StarterKit.configure({
+      // 协作模式撤销栈由 y-undo 提供
+      undoRedo: false,
+      // 代码块换用 lowlight 高亮版本
+      codeBlock: false,
+      link: {
+        openOnClick: false,
+        autolink: true,
+        HTMLAttributes: { rel: 'noopener noreferrer nofollow', target: '_blank' },
+      },
+    }),
+    CodeBlockLowlight.configure({ lowlight, defaultLanguage: 'plaintext' }),
+    Highlight.configure({ multicolor: true }),
+    TableKit.configure({ table: { resizable: false } }),
+    Placeholder.configure({
+      showOnlyWhenEditable: true,
+      // 动态取词，语言切换即时生效（13 §6 不刷新页面）
+      placeholder: () => i18next.t('editor:placeholder'),
+    }),
+    Collaboration.configure({ document: options.ydoc }),
+    ImageUpload.configure({ upload: options.uploadImage }),
+    Mention.configure({ users: options.members ?? (() => []) }),
+    Subpage.configure({ onOpen: options.onSubpageOpen }),
+    Callout,
+    SlashMenu.configure({
+      createSubpage: options.createSubpage,
+      pickImage: options.pickImage,
+    }),
+    DragHandle,
+    MarkdownPaste,
+  ]
+}
+
+/** headless 直建实例（服务端测试/脚本用）；React 组件一律走 buildEditorKit + useEditor */
 export function createEditor(options: EditorKitOptions): Editor {
-  return new Editor({
-    extensions: [
-      StarterKit.configure({
-        // 协作模式撤销栈由 y-undo 提供
-        undoRedo: false,
-        // 代码块换用 lowlight 高亮版本
-        codeBlock: false,
-        link: {
-          openOnClick: false,
-          autolink: true,
-          HTMLAttributes: { rel: 'noopener noreferrer nofollow', target: '_blank' },
-        },
-      }),
-      CodeBlockLowlight.configure({ lowlight, defaultLanguage: 'plaintext' }),
-      Highlight.configure({ multicolor: true }),
-      TableKit.configure({ table: { resizable: false } }),
-      Placeholder.configure({
-        showOnlyWhenEditable: true,
-        // 动态取词，语言切换即时生效（13 §6 不刷新页面）
-        placeholder: () => i18next.t('editor:placeholder'),
-      }),
-      Collaboration.configure({ document: options.ydoc }),
-      ImageUpload.configure({ upload: options.uploadImage }),
-      Mention.configure({ users: options.members ?? (() => []) }),
-      Subpage.configure({ onOpen: options.onSubpageOpen }),
-      Callout,
-      SlashMenu.configure({
-        createSubpage: options.createSubpage,
-        pickImage: options.pickImage,
-      }),
-      DragHandle,
-      MarkdownPaste,
-    ],
-  })
+  return new Editor({ extensions: buildEditorKit(options) })
 }
 
 export { EditorBubbleToolbar } from './components/toolbar.tsx'
+// web 一律经本包使用编辑器 React 绑定，禁止直接 import @tiptap/*（保证单实例，06 §1.1）
+export { useEditor, EditorContent } from '@tiptap/react'
 export { createSuggestionRenderer } from './components/suggestion.tsx'
 export { ImageUpload as ImageUploadExtension } from './extensions/image.ts'
 export { Mention as MentionExtension, type MentionUser } from './extensions/mention.ts'

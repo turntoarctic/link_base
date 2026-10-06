@@ -9,6 +9,15 @@ import { ReactNodeViewRenderer } from '@tiptap/react'
 import { ImageView } from '../components/image-view.tsx'
 import { NODE_IMAGE } from '../schema.ts'
 
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    image: {
+      /** 上传并插入图片（占位 → 上传 → 回填 URL） */
+      uploadImage: (file: File) => ReturnType
+    }
+  }
+}
+
 export interface ImageUploadOptions {
   /** 上传桥接：宿主应用提供（POST /workspaces/:wsId/blobs），返回可直接访问的 URL */
   upload: (file: File) => Promise<{ url: string }>

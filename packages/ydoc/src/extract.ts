@@ -4,8 +4,9 @@
  * 标题不在提取范围（独立列，客户端直写，05 §5）。
  */
 import * as Y from 'yjs'
-import { yDocToProseMirrorJSON } from 'y-prosemirror'
+import { yDocToProsemirrorJSON } from 'y-prosemirror'
 import { NODE_SUBPAGE, SUBPAGE_ATTR, Y_FRAGMENT_NAME } from '@linkbase/editor/server'
+import { loadYDoc } from './updates.ts'
 
 export interface PageMeta {
   /** 按文档序深度优先拼接的全部文本（08 §6 搜索用） */
@@ -42,8 +43,8 @@ function walk(node: PmNode, state: { text: string[]; seen: Set<string>; subpageI
 
 export function extractPageMeta(input: Y.Doc | Uint8Array): PageMeta {
   const doc = input instanceof Y.Doc ? input : loadYDoc(input)
-  // yDocToProseMirrorJSON 不需要 schema；返回 doc 形 JSON（兼容数组形态）
-  const json = yDocToProseMirrorJSON(doc, Y_FRAGMENT_NAME) as PmNode | PmNode[]
+  // yDocToProsemirrorJSON 不需要 schema；返回 doc 形 JSON（兼容数组形态）
+  const json = yDocToProsemirrorJSON(doc, Y_FRAGMENT_NAME) as PmNode | PmNode[]
   const root: PmNode = Array.isArray(json) ? { type: 'doc', content: json } : json
   const state = { text: [], seen: new Set<string>(), subpageIds: [] as string[] }
   walk(root, state)

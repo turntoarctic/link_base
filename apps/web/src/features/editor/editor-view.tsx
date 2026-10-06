@@ -1,10 +1,11 @@
-/** 编辑器视图（05）：createEditor 装配 + BubbleMenu；宿主桥（上传/导航/建子页）注入 */
+/** 编辑器视图（05）：createEditor 装配 + BubbleMenu；宿主桥（上传/导航/建子页）注入。
+ * 注意：tiptap React 绑定（useEditor/EditorContent）经 @linkbase/editor 再导出使用，
+ * web 不得直接 import @tiptap/*（跨上下文双实例 → schema 缺 doc，已实测踩坑）。 */
 import { useRef } from 'react'
 import { useNavigate } from 'react-router'
-import { useEditor, EditorContent } from '@tiptap/react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { createEditor, EditorBubbleToolbar, type MentionUser } from '@linkbase/editor'
-import * as Y from 'yjs'
+import { buildEditorKit, EditorBubbleToolbar, EditorContent, useEditor, type MentionUser } from '@linkbase/editor'
+import type * as Y from 'yjs'
 import { blobApi, pageApi, workspaceApi } from '@/lib/api'
 import { insertSubpageNode } from './doc-manager'
 
@@ -35,26 +36,24 @@ export function EditorView({
     }))
   }
 
-  const editor = useEditor(
-    () =>
-      createEditor({
-        ydoc,
-        uploadImage: async (file) => {
-          const blob = await blobApi.upload(wsId, file)
-          return { url: blobApi.url(blob.id) }
-        },
-        members: () => membersRef.current,
-        onSubpageOpen: (targetPageId) => navigate(`/${wsId}/page/${targetPageId}`),
-        createSubpage: async () => {
-          const page = await pageApi.create(wsId, {})
-          await insertSubpageNode(wsId, pageId, page.id, page.title)
-          void queryClient.invalidateQueries({ queryKey: ['pages', wsId] })
-          return { pageId: page.id, title: page.title }
-        },
-        pickImage: () => pickFile('image/*'),
-      }),
-    [ydoc, wsId, pageId],
-  )
+  const editor = useEditor({
+    extensions: buildEditorKit({
+      ydoc,
+      uploadImage: async (file) => {
+        const blob = await blobApi.upload(wsId, file)
+        return { url: blobApi.url(blob.id) }
+      },
+      members: () => membersRef.current,
+      onSubpageOpen: (targetPageId) => navigate(`/${wsId}/page/${targetPageId}`),
+      createSubpage: async () => {
+        const page = await pageApi.create(wsId, {})
+        await insertSubpageNode(wsId, pageId, page.id, page.title)
+        void queryClient.invalidateQueries({ queryKey: ['pages', wsId] })
+        return { pageId: page.id, title: page.title }
+      },
+      pickImage: () => pickFile('image/*'),
+    }),
+  }, [ydoc, wsId, pageId])
 
   if (!editor) return null
   return (

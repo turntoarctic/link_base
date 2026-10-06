@@ -1,6 +1,7 @@
 /**
  * KV 抽象（08 §3.5 Redis 键）：refresh / invite / ws-ticket / 限流计数。
- * 仅承载可重建数据（07 §6）；Redis 经 Bun 原生客户端，缺省降级进程内存（仅单实例开发，启动告警）。
+ * 仅承载可重建数据（07 §6）。Redis 经 Bun 原生客户端；
+ * REDIS_URL 未配置、或运行时连接失败（含首次使用时才发现）→ 降级进程内存 KV（仅单实例开发，告警）。
  */
 import { env } from '../env.ts'
 import { logger } from '../lib/logger.ts'
@@ -11,6 +12,7 @@ export interface KV {
   del(key: string): Promise<void>
   /** 自增并保证首增时设置 TTL；返回新值 */
   incr(key: string, ttlSec: number): Promise<number>
+  /** 探活（health 用）；不触发降级 */
   ping(): Promise<boolean>
   close(): Promise<void>
 }
@@ -25,7 +27,6 @@ interface RedisLike {
 }
 
 function createMemoryKV(): KV {
-  logger.warn('[kv] REDIS_URL 未设置或 Bun.redis 不可用，降级进程内存 KV（仅单实例开发）')
   const store = new Map<string, { value: string; expiresAt: number | null }>()
   return {
     async get(key) {
@@ -93,18 +94,93 @@ function wrapRedis(redis: RedisLike): KV {
   }
 }
 
+/**
+ * 带运行时降级的 KV：get/set/del/incr 任一次失败或超过 500ms 未返回（Bun redis
+ * 连接重试最长可拖数十秒，不能让请求等它）即永久切换到内存 KV 并告警一次——
+ * 会话/邀请/票据/限流全部可重建，重启后 Redis 恢复即回到 Redis。
+ * ping 只报状态，不触发降级（health 展示 redis:false）。
+ */
+const DEGRADE_TIMEOUT_MS = 500
+
+function createFailoverKV(redisKv: KV, memoryKv: KV): KV {
+  let degraded = false
+  const degrade = (op: string, error: unknown) => {
+    if (degraded) return
+    degraded = true
+    logger.warn({ error, op }, '[kv] Redis unavailable, degrading to in-memory KV (dev only; restart server to re-enable Redis)')
+  }
+  /** 与超时赛跑：Redis 慢/挂都快速落到内存分支 */
+  const withDeadline = <T>(promise: Promise<T>): Promise<T> =>
+    Promise.race([
+      promise,
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(`kv op exceeded ${DEGRADE_TIMEOUT_MS}ms`)), DEGRADE_TIMEOUT_MS),
+      ),
+    ])
+
+  return {
+    async get(key) {
+      if (degraded) return memoryKv.get(key)
+      try {
+        return await withDeadline(redisKv.get(key))
+      } catch (error) {
+        degrade('get', error)
+        return memoryKv.get(key)
+      }
+    },
+    async set(key, value, ttlSec) {
+      if (degraded) return memoryKv.set(key, value, ttlSec)
+      try {
+        await withDeadline(redisKv.set(key, value, ttlSec))
+      } catch (error) {
+        degrade('set', error)
+        await memoryKv.set(key, value, ttlSec)
+      }
+    },
+    async del(key) {
+      if (degraded) return memoryKv.del(key)
+      try {
+        await withDeadline(redisKv.del(key))
+      } catch (error) {
+        degrade('del', error)
+        await memoryKv.del(key)
+      }
+    },
+    async incr(key, ttlSec) {
+      if (degraded) return memoryKv.incr(key, ttlSec)
+      try {
+        return await withDeadline(redisKv.incr(key, ttlSec))
+      } catch (error) {
+        degrade('incr', error)
+        return memoryKv.incr(key, ttlSec)
+      }
+    },
+    async ping() {
+      return redisKv.ping()
+    },
+    async close() {
+      await redisKv.close()
+      await memoryKv.close()
+    },
+  }
+}
+
 export function createKV(url: string | undefined = env.REDIS_URL): KV {
+  const memoryKv = createMemoryKV()
   const bun = (globalThis as { Bun?: { redis?: RedisLike } }).Bun
   if (url && bun?.redis) {
     try {
       // Bun.redis 默认客户端读取 REDIS_URL 环境变量；显式指定时走 with 绑定
       const client = url === Bun.env.REDIS_URL ? bun.redis : bun.redis.with(url)
-      return wrapRedis(client as unknown as RedisLike)
+      return createFailoverKV(wrapRedis(client as unknown as RedisLike), memoryKv)
     } catch (error) {
-      logger.warn({ error }, '[kv] Bun.redis 初始化失败，降级内存 KV')
+      logger.warn({ error }, '[kv] Bun.redis 初始化失败，使用内存 KV')
     }
   }
-  return createMemoryKV()
+  if (!url) {
+    logger.warn('[kv] REDIS_URL 未设置，使用进程内存 KV（仅单实例开发；会话/邀请重启即失效）')
+  }
+  return memoryKv
 }
 
 /* ------------------------------- 业务键封装 ------------------------------- */

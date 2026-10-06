@@ -3,6 +3,7 @@
  * 页面引用（mention 指向页面）为 P1 能力（02 §1.3），届时扩展 items 来源即可。
  */
 import { Node, mergeAttributes } from '@tiptap/core'
+import { PluginKey } from '@tiptap/pm/state'
 import Suggestion, { type SuggestionKeyDownProps, type SuggestionProps } from '@tiptap/suggestion'
 import { MentionPopup } from '../components/mention-popup.tsx'
 import { createSuggestionRenderer } from '../components/suggestion.tsx'
@@ -61,6 +62,8 @@ export const Mention = Node.create<MentionOptions>({
   addProseMirrorPlugins() {
     return [
       Suggestion<MentionUser>({
+        // 独立 key：同一编辑器里 SlashMenu 也用 suggestion，同名 key 会被 ProseMirror 拒绝
+        pluginKey: new PluginKey('mentionSuggestion'),
         editor: this.editor,
         char: '@',
         items: ({ query }) => {

@@ -1,9 +1,8 @@
 /** db:seed CLI：创建演示用户 + 工作空间 + 快速开始页（依赖 packages/ydoc 的构建器） */
 import { eq } from 'drizzle-orm'
-import { SQL } from 'bun'
 import { buildQuickStartState, extractPageMeta } from '@linkbase/ydoc'
-import { drizzle } from './src/index.ts'
-import { pageSnapshots, pages, users, workspaceMembers, workspaces } from './src/schema.ts'
+import { createDb } from './index.ts'
+import { pageSnapshots, pages, users, workspaceMembers, workspaces } from './schema.ts'
 
 const url = process.env.DATABASE_URL
 if (!url) {
@@ -11,7 +10,7 @@ if (!url) {
   process.exit(1)
 }
 
-const db = drizzle(url)
+const db = createDb(url)
 
 const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, 'dev@linkbase.local')).limit(1)
 if (existing.length > 0) {

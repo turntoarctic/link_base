@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@playwright/test": "catalog:",
+    "@types/node": "catalog:",
     "typescript": "catalog:"
   }
 }

@@ -1,5 +1,6 @@
 /** slash 菜单扩展（05 §6）：@tiptap/suggestion 弹出菜单（shadcn 风格弹层） */
 import { Extension } from '@tiptap/core'
+import { PluginKey } from '@tiptap/pm/state'
 import Suggestion, { type SuggestionKeyDownProps, type SuggestionProps } from '@tiptap/suggestion'
 import { SlashPopup } from '../components/slash-popup.tsx'
 import { createSuggestionRenderer } from '../components/suggestion.tsx'
@@ -26,6 +27,8 @@ export const SlashMenu = Extension.create<SlashMenuOptions>({
     const allItems = buildSlashItems(options)
     return [
       Suggestion<SlashItem>({
+        // 独立 key：与 Mention 的 suggestion 插件区分（同名 key 会被 ProseMirror 拒绝）
+        pluginKey: new PluginKey('slashMenuSuggestion'),
         editor: this.editor,
         char: '/',
         allowSpaces: true,

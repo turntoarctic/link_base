@@ -47,6 +47,7 @@ describe('updates', () => {
     const doc3 = loadMerged(merged)
     const texts: string[] = []
     doc3.getXmlFragment(Y_FRAGMENT_NAME).forEach((child) => {
+      if (!(child instanceof Y.XmlElement)) return
       child.forEach((c) => {
         if (c instanceof Y.XmlText) texts.push(c.toString())
       })
@@ -74,6 +75,7 @@ describe('updates', () => {
     Y.applyUpdate(client, missing)
     const texts: string[] = []
     client.getXmlFragment(Y_FRAGMENT_NAME).forEach((child) => {
+      if (!(child instanceof Y.XmlElement)) return
       child.forEach((c) => {
         if (c instanceof Y.XmlText) texts.push(c.toString())
       })

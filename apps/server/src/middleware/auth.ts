@@ -26,7 +26,8 @@ export const requireAuth = createMiddleware<AppEnv>(async (c, next) => {
   if (!token) throw errUnauthorized()
   let payload: AccessPayload
   try {
-    payload = (await verify(token, env.JWT_SECRET)) as AccessPayload
+    // hono 4.13 的 verify 必须显式传 alg（缺失抛 JwtAlgorithmRequired，与 token 无关）
+    payload = (await verify(token, env.JWT_SECRET, 'HS256')) as AccessPayload
   } catch {
     throw errUnauthorized('token expired or invalid')
   }

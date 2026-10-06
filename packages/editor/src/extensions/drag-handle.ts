@@ -4,6 +4,7 @@
  */
 import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
+import type { Node as ProsemirrorNode } from '@tiptap/pm/model'
 import type { EditorView } from '@tiptap/pm/view'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
@@ -21,10 +22,10 @@ interface TopBlock {
   size: number
 }
 
-function topLevelBlocks(view: EditorView): TopBlock[] {
+function topLevelBlocks(doc: ProsemirrorNode): TopBlock[] {
   const blocks: TopBlock[] = []
   let pos = 1
-  view.state.doc.forEach((node, _offset, index) => {
+  doc.forEach((node, _offset, index) => {
     blocks.push({ index, pos, size: node.nodeSize })
     pos += node.nodeSize
   })
@@ -39,7 +40,7 @@ function blockIndexAt(blocks: TopBlock[], pos: number): number | null {
 }
 
 /** 目标 doc 中第 index 个顶层块的起始插入位置；index 越界 = 文档末尾 */
-function insertPosAtIndex(doc: EditorView['state']['doc'], index: number): number {
+function insertPosAtIndex(doc: ProsemirrorNode, index: number): number {
   let pos = 1
   const count = doc.childCount
   if (index >= count) return doc.content.size
@@ -74,14 +75,14 @@ export const DragHandle = Extension.create({
     }
 
     const moveBlock = (view: EditorView, fromIndex: number, dropIndex: number) => {
-      const blocks = topLevelBlocks(view.state)
-      const block = blocks[fromIndex]
+      const block = topLevelBlocks(view.state.doc)[fromIndex]
       if (!block) return
       if (dropIndex === fromIndex || dropIndex === fromIndex + 1) return
+      const moved = view.state.doc.child(fromIndex)
       const { tr } = view.state
       tr.delete(block.pos, block.pos + block.size)
       const toIndex = dropIndex > fromIndex ? dropIndex - 1 : dropIndex
-      tr.insert(insertPosAtIndex(tr.doc, toIndex), view.state.doc.child(fromIndex))
+      tr.insert(insertPosAtIndex(tr.doc, toIndex), moved)
       view.dispatch(tr)
     }
 
@@ -101,7 +102,7 @@ export const DragHandle = Extension.create({
             const s = pluginKey.getState(state)
             if (!s) return DecorationSet.empty
             const widgets: Decoration[] = []
-            const blocks = topLevelBlocks(state as unknown as EditorView['state'])
+            const blocks = topLevelBlocks(state.doc)
             if (s.dragIndex != null && s.dropIndex != null) {
               const pos = insertPosAtIndex(state.doc, s.dropIndex)
               const indicator = document.createElement('div')
@@ -127,7 +128,7 @@ export const DragHandle = Extension.create({
                 event.preventDefault()
                 const coords = view.posAtCoords({ left: event.clientX, top: event.clientY })
                 if (coords) {
-                  const blocks = topLevelBlocks(view)
+                  const blocks = topLevelBlocks(view.state.doc)
                   let index = blockIndexAt(blocks, coords.pos)
                   if (index != null) {
                     const rect = view.coordsAtPos(Math.min(coords.pos, view.state.doc.content.size - 1))
@@ -142,7 +143,7 @@ export const DragHandle = Extension.create({
               if (target?.closest?.('.linkbase-drag-handle')) return false
               const coords = view.posAtCoords({ left: event.clientX, top: event.clientY })
               if (!coords) return false
-              const blocks = topLevelBlocks(view)
+              const blocks = topLevelBlocks(view.state.doc)
               const index = blockIndexAt(blocks, coords.pos)
               if (index !== s.hoverIndex) setState(view, { hoverIndex: index })
               return false
@@ -173,7 +174,6 @@ export const DragHandle = Extension.create({
             const s = pluginKey.getState(view.state) as DragHandleState
             view.dom.classList.remove('linkbase-is-dragging')
             if (s.dragIndex != null && s.dropIndex != null) {
-              // 落点坐标取 mouseup 位置（moveBlock 用 plugin state 里的 dropIndex）
               moveBlock(view, s.dragIndex, s.dropIndex)
               event.preventDefault()
             }

@@ -3,6 +3,7 @@ import type { ChainedCommands, Editor, Range } from '@tiptap/core'
 import type { LucideIcon } from 'lucide-react'
 import {
   ChevronsDownUp,
+  Database,
   Code2,
   FilePlus2,
   FunctionSquare,
@@ -104,6 +105,13 @@ export function buildSlashItems(options: SlashMenuOptions): SlashItem[] {
       icon: GitBranch,
       keywords: ['mermaid', 'diagram', '流程图', '图'],
       action: ({ editor, range }) => chain(editor, range).insertContent({ type: 'mermaidBlock', content: [{ type: 'text', text: 'graph TD\n  A --> B' }] }).run(),
+    },
+    {
+      id: 'base',
+      group: 'advanced',
+      icon: Database,
+      keywords: ['base', 'database', 'table', 'board', '数据库', '表格', '看板'],
+      action: ({ editor, range }) => chain(editor, range).insertBaseBlock().run(),
     },
     {
       id: 'subpageList',

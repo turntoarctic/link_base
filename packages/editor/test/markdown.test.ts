@@ -25,6 +25,11 @@ describe('buildEditorKit', () => {
     expect(names).toContain('subpageList')
     expect(names).toContain('findReplace')
   })
+
+  test('装配包含 Base 数据库块（P1-8 / T2.8）', () => {
+    const names = buildEditorKit({ ydoc: new Y.Doc(), uploadImage: async () => ({ url: '' }) }).map((e) => e.name)
+    expect(names).toContain('baseBlock')
+  })
 })
 
 describe('markdownToPmJson', () => {

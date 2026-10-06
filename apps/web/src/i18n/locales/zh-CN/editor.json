@@ -26,10 +26,7 @@
       "mention": "提及（输入 @）",
       "attachment": "附件",
       "item": {
-        "details": "折叠块",
-        "math": "数学公式",
-        "mermaid": "Mermaid 图",
-        "subpageList": "子页列表"
+        "base": "数据库"
       }
     }
   },
@@ -101,5 +98,30 @@
   "table": {
     "mergeCells": "合并单元格",
     "splitCell": "拆分单元格"
+  },
+  "base": {
+    "loadFailed": "数据库加载失败",
+    "viewTable": "表格",
+    "viewBoard": "看板",
+    "needSelectColumn": "需要先添加一个「选择」类型的列",
+    "addRow": "新建行",
+    "addColumn": "添加列",
+    "deleteColumn": "删除列",
+    "deleteRow": "删除行",
+    "columnName": "列名",
+    "promote": "转为子页面",
+    "openSubpage": "打开子页面",
+    "deleteRowTitle": "删除行",
+    "untitled": "无标题",
+    "noGroup": "未分组",
+    "groupBy": "按「{column}」分组",
+    "type": {
+      "text": "文本",
+      "select": "选择",
+      "date": "日期",
+      "number": "数字",
+      "checkbox": "勾选"
+    },
+    "optionN": "选项 {n}"
   }
 }

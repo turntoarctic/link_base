@@ -26,10 +26,7 @@
       "mention": "Mention (type @)",
       "attachment": "Attachment",
       "item": {
-        "details": "Details",
-        "math": "Math formula",
-        "mermaid": "Mermaid diagram",
-        "subpageList": "Subpage list"
+        "base": "Database"
       }
     }
   },
@@ -101,5 +98,30 @@
   "table": {
     "mergeCells": "Merge cells",
     "splitCell": "Split cell"
+  },
+  "base": {
+    "loadFailed": "Failed to load database",
+    "viewTable": "Table",
+    "viewBoard": "Board",
+    "needSelectColumn": "Add a select column first",
+    "addRow": "New row",
+    "addColumn": "Add column",
+    "deleteColumn": "Delete column",
+    "deleteRow": "Delete row",
+    "columnName": "Column name",
+    "promote": "Promote to subpage",
+    "openSubpage": "Open subpage",
+    "deleteRowTitle": "Delete row",
+    "untitled": "Untitled",
+    "noGroup": "No group",
+    "groupBy": "Grouped by \"{column}\"",
+    "type": {
+      "text": "Text",
+      "select": "Select",
+      "date": "Date",
+      "number": "Number",
+      "checkbox": "Checkbox"
+    },
+    "optionN": "Option {n}"
   }
 }

@@ -5,13 +5,13 @@ import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { buildEditorKit, CodeBlockLangPicker, EditorBubbleToolbar, EditorContent, findReplaceKey, refreshComments, useEditor, type CommentAnchorSpec, type MentionUser } from '@linkbase/editor'
+import { buildEditorKit, CodeBlockLangPicker, configureBaseBridge, EditorBubbleToolbar, EditorContent, findReplaceKey, refreshComments, useEditor, type CommentAnchorSpec, type MentionUser } from '@linkbase/editor'
 import type { CommentAnchor } from '@linkbase/types'
 import type * as Y from 'yjs'
 import { blobApi, pageApi, workspaceApi } from '@/lib/api'
 import { toast } from '@/components/ui/sonner'
 import { useAuthStore } from '@/stores/auth'
-import { getPageAwareness, refreshPageDoc } from './doc-manager'
+import { getPageAwareness, insertSubpageNode, refreshPageDoc } from './doc-manager'
 import { FindReplaceBar, openFindReplace } from './find-replace-bar'
 import { useReducer, useState } from 'react'
 
@@ -64,6 +64,23 @@ export function EditorView({
       avatarUrl: m.avatarUrl,
     }))
   }
+
+  // Base 桥（T2.8）：行转子页面 = 当前页下建子页 + 卡片插入
+  useEffect(() => {
+    configureBaseBridge({
+      ydoc,
+      source: {
+        createSubpage: async (title: string) => {
+          const page = await pageApi.create(wsId, { parentId: pageId, title: title || undefined })
+          await insertSubpageNode(wsId, pageId, page.id, page.title || title)
+          void queryClient.invalidateQueries({ queryKey: ['pages', wsId] })
+          return { pageId: page.id }
+        },
+        onOpen: (targetPageId: string) => navigate(`/${wsId}/page/${targetPageId}`),
+      },
+    })
+    return () => configureBaseBridge(null)
+  }, [ydoc, wsId, pageId, navigate, queryClient])
 
   // 子页列表块数据源（T2.7）：树查询数据经由面板查询同源 API
   const subpageListSource = {

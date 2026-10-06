@@ -32,6 +32,7 @@ import { DragHandle } from './extensions/drag-handle.ts'
 import { TaskListInputRule } from './extensions/task-input-rule.ts'
 import { CommentsHighlight, refreshComments, type CommentAnchorSpec } from './extensions/comments.ts'
 import { Attachment, type AttachmentAttrs } from './extensions/attachment.ts'
+import { BaseBlock, configureBaseBridge, NODE_BASE, type BaseSource } from './extensions/base.ts'
 
 export type { ImageUploadOptions }
 
@@ -62,6 +63,8 @@ export interface EditorKitOptions {
   subpageListSource?: Parameters<typeof configureSubpageListSource>[0]
   /** 当前页面 id（子页列表块插入时取值） */
   currentPageId?: () => string | null
+  /** Base 行转子页面桥（T2.8，宿主注入） */
+  baseSource?: BaseSource
 }
 
 const lowlight = createLowlight(common)
@@ -136,6 +139,11 @@ export function buildEditorKit(options: EditorKitOptions) {
     MermaidBlock,
     SubpageList,
     FindReplace,
+    // Base 数据库块（P1-8）：桥在装配时接通（NodeView 经 getBaseBridge 读取）
+    BaseBlock.configure({
+      ydoc: options.ydoc,
+      source: options.baseSource ?? { createSubpage: async () => null, onOpen: () => {} },
+    }),
     CommentsHighlight.configure({
       getAnchors: options.getCommentAnchors ?? (() => []),
       onAnchorClick: options.onCommentAnchorClick,
@@ -169,3 +177,4 @@ export { MathBlock as MathBlockExtension } from './extensions/math-block.ts'
 export { MermaidBlock as MermaidBlockExtension } from './extensions/mermaid-block.ts'
 export { SubpageList as SubpageListExtension, configureSubpageListSource, type SubpageListSource } from './extensions/subpage-list.ts'
 export { FindReplace as FindReplaceExtension, findReplaceKey } from './extensions/find-replace.ts'
+export { BaseBlock as BaseBlockExtension, NODE_BASE, configureBaseBridge, type BaseSource } from './extensions/base.ts'

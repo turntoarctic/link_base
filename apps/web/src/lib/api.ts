@@ -50,7 +50,7 @@ export const authApi = {
     return api.json<MeResponse>('/auth/me')
   },
   patchMe(input: PatchUserInput): Promise<MeResponse['user']> {
-    return api.json('/users/me', { method: 'PATCH', body: JSON.stringify(input) })
+    return api.json('/users/me', { method: 'PATCH', json: input })
   },
 }
 
@@ -62,19 +62,19 @@ export const workspaceApi = {
     return api.json(`/workspaces/${wsId}`)
   },
   patch(wsId: string, input: { name?: string }): Promise<void> {
-    return api.json(`/workspaces/${wsId}`, { method: 'PATCH', body: JSON.stringify(input) })
+    return api.json(`/workspaces/${wsId}`, { method: 'PATCH', json: input })
   },
   members(wsId: string): Promise<MemberDto[]> {
     return api.json(`/workspaces/${wsId}/members`)
   },
   invite(wsId: string): Promise<{ inviteUrl: string; expiresAt: string }> {
-    return api.json(`/workspaces/${wsId}/invite`, { method: 'POST', body: '{}' })
+    return api.json(`/workspaces/${wsId}/invite`, { method: 'POST', json: {} })
   },
   transfer(wsId: string, toUserId: string): Promise<void> {
-    return api.json(`/workspaces/${wsId}/transfer`, { method: 'POST', body: JSON.stringify({ toUserId }) })
+    return api.json(`/workspaces/${wsId}/transfer`, { method: 'POST', json: { toUserId } })
   },
   setRole(wsId: string, userId: string, role: string): Promise<void> {
-    return api.json(`/workspaces/${wsId}/members/${userId}`, { method: 'PATCH', body: JSON.stringify({ role }) })
+    return api.json(`/workspaces/${wsId}/members/${userId}`, { method: 'PATCH', json: { role } })
   },
   removeMember(wsId: string, userId: string): Promise<void> {
     return api.json(`/workspaces/${wsId}/members/${userId}`, { method: 'DELETE' })
@@ -92,13 +92,13 @@ export const pageApi = {
     return api.json(`/workspaces/${wsId}/pages`)
   },
   create(wsId: string, input: CreatePageInput): Promise<PageMetaDto> {
-    return api.json(`/workspaces/${wsId}/pages`, { method: 'POST', body: JSON.stringify(input) })
+    return api.json(`/workspaces/${wsId}/pages`, { method: 'POST', json: input })
   },
   get(wsId: string, pageId: string): Promise<PageMetaDto> {
     return api.json(`/workspaces/${wsId}/pages/${pageId}`)
   },
   patch(wsId: string, pageId: string, input: PatchPageInput): Promise<void> {
-    return api.json(`/workspaces/${wsId}/pages/${pageId}`, { method: 'PATCH', body: JSON.stringify(input) })
+    return api.json(`/workspaces/${wsId}/pages/${pageId}`, { method: 'PATCH', json: input })
   },
   trash(wsId: string, pageId: string): Promise<void> {
     return api.json(`/workspaces/${wsId}/pages/${pageId}`, { method: 'DELETE' })
@@ -134,7 +134,7 @@ export const tagApi = {
     return api.json(`/workspaces/${wsId}/tags`)
   },
   create(wsId: string, input: CreateTagInput): Promise<TagDto> {
-    return api.json(`/workspaces/${wsId}/tags`, { method: 'POST', body: JSON.stringify(input) })
+    return api.json(`/workspaces/${wsId}/tags`, { method: 'POST', json: input })
   },
   remove(wsId: string, tagId: string): Promise<void> {
     return api.json(`/workspaces/${wsId}/tags/${tagId}`, { method: 'DELETE' })

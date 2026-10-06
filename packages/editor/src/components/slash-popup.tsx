@@ -12,16 +12,24 @@ export function SlashPopup({ props, registerKeyDown }: SuggestionPopupProps<Slas
   const listRef = useRef<HTMLDivElement>(null)
   const items = props.items
 
+  // 显示序扁平列表：分组渲染顺序（text→media→advanced）≠ items 数组顺序，
+  // 键盘/点击必须按显示序取项（历史上 items[active] 直接索引数组导致项错位）
+  const flat = useMemo(
+    () =>
+      GROUPS.map((group) => items.filter((i) => i.group === group)).flat(),
+    [items],
+  )
+
   useEffect(() => {
     setActive(0)
-  }, [items])
+  }, [flat])
 
   registerListKeyboardNav(registerKeyDown, {
-    count: () => items.length,
+    count: () => flat.length,
     getActive: () => active,
     setActive,
     onPick: (index) => {
-      const item = items[index]
+      const item = flat[index]
       if (item) props.command(item)
     },
   })
@@ -38,18 +46,15 @@ export function SlashPopup({ props, registerKeyDown }: SuggestionPopupProps<Slas
     [items],
   )
 
-  let flatIndex = -1
-
   return (
     <div className="linkbase-menu" role="listbox" aria-label={t('slash.title')}>
       <div className="linkbase-menu-list" ref={listRef}>
-        {grouped.length === 0 && <div className="linkbase-menu-empty">{t('slash.noResults')}</div>}
+        {flat.length === 0 && <div className="linkbase-menu-empty">{t('slash.noResults')}</div>}
         {grouped.map(({ group, items: groupItems }) => (
           <div key={group}>
             <div className="linkbase-menu-group-title">{t(`slash.group.${group}`)}</div>
             {groupItems.map((item) => {
-              flatIndex += 1
-              const index = flatIndex
+              const index = flat.indexOf(item)
               const Icon = item.icon
               return (
                 <button

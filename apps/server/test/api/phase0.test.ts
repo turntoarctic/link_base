@@ -8,18 +8,25 @@ import { createDb } from '@linkbase/database'
 import { Y_FRAGMENT_NAME } from '@linkbase/editor/server'
 import { extractPageMeta, stateVectorFromUpdate } from '@linkbase/ydoc'
 
+// bun-types 将 BodyInit 声明在 "bun" 模块内（server lib 无 DOM，无全局名）
+type BodyInit = import('bun').BodyInit
+
 process.env.JWT_SECRET ??= 'test-secret-0123456789abcdef'
 process.env.DATABASE_URL ??= ''
 process.env.APP_ORIGIN ??= 'http://localhost:5173'
+// 测试期放宽限流：env 在下方动态 import('app.ts') 时才求值，此处设置先生效
+process.env.RATE_LIMIT_GLOBAL ??= '100000'
+process.env.RATE_LIMIT_LOGIN ??= '100000'
+process.env.RATE_LIMIT_REGISTER ??= '100000'
 
 const HAS_DB = Boolean(process.env.DATABASE_URL)
 
 const unique = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
 async function setup() {
-  const { createKV, createSessions } = await import('../src/db/redis.ts')
+  const { createKV, createSessions } = await import('../../src/db/redis.ts')
   const { createDb } = await import('@linkbase/database')
-  const { createApp } = await import('../src/app.ts')
+  const { createApp } = await import('../../src/app.ts')
   const db = createDb(process.env.DATABASE_URL!)
   const kv = createKV('')
   const app = createApp({
@@ -289,8 +296,11 @@ describe.skipIf(!HAS_DB)('Phase 0 全链（DB 门控）', () => {
     await app.request(`/api/workspaces/${ws}/pages/${parent.id}/restore`, { method: 'POST', headers: h })
     const restored = (await (
       await app.request(`/api/workspaces/${ws}/pages`, { headers: h })
-    ).json()) as Array<{ id: string }>
-    expect(restored.some((n) => n.id === child.id)).toBe(true)
+    ).json()) as Array<{ id: string; children?: Array<{ id: string }> }>
+    // 树是嵌套结构：子页挂在 parent.children 下，需递归找
+    const findDeep = (nodes: Array<{ id: string; children?: Array<{ id: string }> }>, id: string): boolean =>
+      nodes.some((n) => n.id === id || (n.children ? findDeep(n.children, id) : false))
+    expect(findDeep(restored, child.id)).toBe(true)
 
     // 彻底删除后 doc 404（页不存在）
     await app.request(`/api/workspaces/${ws}/pages/${parent.id}?permanent=true`, {
@@ -365,7 +375,7 @@ describe.skipIf(!HAS_DB)('Phase 0 全链（DB 门控）', () => {
     })
 
     // 直接经服务层对齐派生缓存（定时任务逻辑同款）
-    const { mergePage } = await import('../src/services/docs.service.ts')
+    const { mergePage } = await import('../../src/services/docs.service.ts')
     await mergePage(testDb(), id)
 
     const search = await app.request(

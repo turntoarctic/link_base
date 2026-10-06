@@ -87,6 +87,7 @@ export function buildSlashItems(options: SlashMenuOptions): SlashItem[] {
       action: async ({ editor, range }) => {
         chain(editor, range).run()
         const page = (await options.createSubpage?.()) ?? null
+        // 卡片在光标处插入（内容由客户端写入 Y.Doc；parent_id 已由建行直写）
         if (page) editor.chain().focus().insertSubpage({ pageId: page.pageId, title: page.title }).run()
       },
     },

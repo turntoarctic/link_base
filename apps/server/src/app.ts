@@ -5,6 +5,7 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { secureHeaders } from 'hono/secure-headers'
+import type { AppEnv } from './lib/context.ts'
 import { env } from './env.ts'
 import type { ServerDeps } from './lib/deps.ts'
 import { errorHandler } from './middleware/error.ts'
@@ -19,8 +20,8 @@ import { blobsRouter } from './routes/blobs.ts'
 import { searchRouter } from './routes/search.ts'
 import { healthRouter } from './routes/health.ts'
 
-export function createApp(deps: ServerDeps): Hono {
-  const app = new Hono()
+export function createApp(deps: ServerDeps): Hono<AppEnv> {
+  const app = new Hono<AppEnv>()
 
   app.use('*', requestLogger)
   app.use('*', secureHeaders())

@@ -22,8 +22,9 @@ export async function searchPages(db: LinkbaseDb, wsId: string, query: string): 
     where workspace_id = ${wsId} and not is_trash
       and (
         search_tsv @@ plainto_tsquery('simple', ${q})
-        or title % ${q}
-        or left(text, 20000) % ${q}
+        -- trigram % 是相似度阈值匹配，短查询对长文本几乎必低于 0.3；子串兜底用 ILIKE（gin_trgm_ops 同样加速）
+        or title ilike '%' || ${q} || '%'
+        or left(text, 20000) ilike '%' || ${q} || '%'
       )
     order by
       ts_rank(search_tsv, plainto_tsquery('simple', ${q})) desc nulls last,

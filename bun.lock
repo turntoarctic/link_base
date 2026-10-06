@@ -108,10 +108,12 @@
       "name": "@linkbase/editor",
       "version": "0.0.1",
       "dependencies": {
+        "@floating-ui/dom": "catalog:",
         "@tiptap/core": "catalog:",
         "@tiptap/extension-code-block-lowlight": "catalog:",
         "@tiptap/extension-collaboration": "catalog:",
         "@tiptap/extension-highlight": "catalog:",
+        "@tiptap/extension-list": "catalog:",
         "@tiptap/extension-table": "catalog:",
         "@tiptap/extensions": "catalog:",
         "@tiptap/pm": "catalog:",
@@ -170,6 +172,7 @@
     "yjs": "13.6.33",
   },
   "catalog": {
+    "@floating-ui/dom": "^1.8.0",
     "@hono/zod-validator": "^0.9.1",
     "@hookform/resolvers": "^5.2.0",
     "@playwright/test": "^1.55.0",
@@ -186,6 +189,7 @@
     "@tiptap/extension-code-block-lowlight": "^3",
     "@tiptap/extension-collaboration": "^3",
     "@tiptap/extension-highlight": "^3",
+    "@tiptap/extension-list": "^3",
     "@tiptap/extension-table": "^3",
     "@tiptap/extensions": "^3",
     "@tiptap/pm": "^3",

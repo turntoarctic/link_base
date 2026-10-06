@@ -1,10 +1,12 @@
 /**
  * @tiptap/suggestion 的 React 弹层渲染器（05 §6）：
- * mount 到 body 的固定定位弹层，位置跟随 clientRect（贴底优先，越界翻转），
+ * mount 到 body 的固定定位弹层；位置用 @floating-ui/dom（offset/flip/shift，
+ * 与 shadcn/Radix 浮层同源），锚点 = suggestion clientRect 的虚拟元素；
  * 键盘导航由弹层组件经 registerKeyDown 反注册回 suggestion。
  */
 import type { ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
+import { computePosition, flip, offset, shift } from '@floating-ui/dom'
 import type { SuggestionKeyDownProps, SuggestionProps } from '@tiptap/suggestion'
 
 export interface SuggestionPopupProps<P> {
@@ -14,30 +16,46 @@ export interface SuggestionPopupProps<P> {
 
 const POPUP_CLASS = 'linkbase-suggestion-popup'
 
+/** 虚拟锚元素 + floating-ui 定位（贴底优先，越界 flip，视口边缘 shift） */
+export function positionSuggestionPopup(
+  popup: HTMLElement,
+  clientRect: DOMRect | null,
+): void {
+  if (!clientRect) return
+  const virtual = {
+    getBoundingClientRect: () => clientRect,
+    get contextElement() {
+      return popup
+    },
+  }
+  void computePosition(virtual, popup, {
+    strategy: 'fixed',
+    placement: 'bottom-start',
+    middleware: [offset(8), flip(), shift({ padding: 12 })],
+  }).then(({ x, y }) => {
+    popup.style.left = `${x}px`
+    popup.style.top = `${y}px`
+  })
+}
+
 export function createSuggestionRenderer<P>(
   Component: (props: SuggestionPopupProps<P>) => ReactNode,
 ) {
   let root: Root | null = null
   let popup: HTMLDivElement | null = null
+  let lastRect: DOMRect | null = null
   const keyDownRef: { current: (event: KeyboardEvent) => boolean } = { current: () => false }
 
-  const position = (props: SuggestionProps<P>) => {
-    if (!popup) return
-    const rect = props.clientRect?.()
-    if (!rect) return
-    const viewportHeight = window.innerHeight
-    const popupHeight = popup.offsetHeight || 320
-    const below = rect.bottom + 8
-    const fitsBelow = below + Math.min(popupHeight, 320) < viewportHeight
-    popup.style.left = `${Math.min(rect.left, window.innerWidth - popup.offsetWidth - 12)}px`
-    popup.style.top = `${fitsBelow ? below : Math.max(8, rect.top - 8)}px`
-    popup.style.transform = fitsBelow ? 'translateY(0)' : 'translateY(-100%)'
+  const reposition = () => {
+    if (popup) positionSuggestionPopup(popup, lastRect)
   }
 
   return {
     onStart(props: SuggestionProps<P>) {
       popup = document.createElement('div')
       popup.className = POPUP_CLASS
+      popup.style.position = 'fixed'
+      popup.style.visibility = 'hidden'
       document.body.appendChild(popup)
       root = createRoot(popup)
       root.render(
@@ -48,7 +66,12 @@ export function createSuggestionRenderer<P>(
           }}
         />,
       )
-      position(props)
+      lastRect = props.clientRect?.() ?? null
+      reposition()
+      popup.style.visibility = ''
+      // 编辑器在滚动容器内：滚动/缩放时跟随锚点（弹层关闭即摘除）
+      window.addEventListener('scroll', reposition, true)
+      window.addEventListener('resize', reposition)
     },
     onUpdate(props: SuggestionProps<P>) {
       root?.render(
@@ -59,13 +82,17 @@ export function createSuggestionRenderer<P>(
           }}
         />,
       )
-      position(props)
+      lastRect = props.clientRect?.() ?? null
+      reposition()
     },
     onExit() {
+      window.removeEventListener('scroll', reposition, true)
+      window.removeEventListener('resize', reposition)
       root?.unmount()
       popup?.remove()
       root = null
       popup = null
+      lastRect = null
       keyDownRef.current = () => false
     },
     onKeyDown({ event }: SuggestionKeyDownProps) {

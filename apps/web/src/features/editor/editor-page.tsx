@@ -8,6 +8,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight, Copy, MoreHorizontal, Star, Trash2 } from 'lucide-react'
 import { pageApi, tagApi } from '@/lib/api'
+import type { PageTreeNode } from '@linkbase/types'
+import { useUiStore } from '@/stores/ui'
+import { cn } from '@/lib/cn'
 import { usePageDoc } from './use-page-doc'
 import { EditorView } from './editor-view'
 import { PageTagsRow } from './page-tags-row'
@@ -25,6 +28,7 @@ export default function EditorPage() {
   const { workspaceId = '', pageId = '' } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed)
   const { t } = useTranslation(['workspace', 'common'])
 
   const { status, ydoc } = usePageDoc(workspaceId, pageId)
@@ -46,7 +50,9 @@ export default function EditorPage() {
   // 面包屑：树里找父链
   const breadcrumb: Array<{ id: string; title: string }> = []
   if (tree.data) {
-    const byId = new Map(tree.data.flatMap((n) => flattenTree(n)))
+    const byId = new Map(
+      tree.data.flatMap((n) => flattenTree(n)).map((n) => [n.id, n] as const),
+    )
     let cursor: string | null = meta.data?.parentId ?? null
     const seen = new Set<string>([pageId])
     while (cursor && !seen.has(cursor)) {
@@ -59,6 +65,11 @@ export default function EditorPage() {
   }
 
   const [title, setTitle] = useState<string | undefined>(undefined)
+  // 组件在 /page/:pageId 下切页不重挂载：切页必须重置标题，否则残留上个页面的
+  // 标题（显示错误，且继续输入会把旧标题 PATCH 到新页面）
+  useEffect(() => {
+    setTitle(undefined)
+  }, [pageId])
   useEffect(() => {
     if (meta.data && title === undefined) setTitle(meta.data.title)
   }, [meta.data, title])
@@ -107,8 +118,9 @@ export default function EditorPage() {
 
   return (
     <div className="min-h-full px-6 py-3">
-      {/* 顶部条：面包屑 + 页菜单（06 §5.4：无全局 header，右上仅 ⋯） */}
-      <div className="mx-auto flex h-8 max-w-(--width-content-wide) items-center justify-end gap-1 text-[12px] text-(--muted-foreground)">
+      {/* 顶部条：面包屑 + 页菜单（06 §5.4：无全局 header，右上仅 ⋯）；
+          侧边栏折叠时左侧有浮动展开按钮，面包屑避让 */}
+      <div className={cn('mx-auto flex h-8 max-w-(--width-content-wide) items-center justify-end gap-1 text-[12px] text-(--muted-foreground)', sidebarCollapsed && 'pl-9')}>
         <div className="flex min-w-0 flex-1 items-center gap-0.5">
           {breadcrumb.map((item) => (
             <span key={item.id} className="flex min-w-0 items-center gap-0.5">
@@ -210,14 +222,9 @@ export default function EditorPage() {
 
 type TreeFlattenNode = { id: string; title: string; parentId: string | null }
 
-function flattenTree(node: {
-  id: string
-  title: string
-  parentId: string | null
-  children: unknown[]
-}): TreeFlattenNode[] {
+function flattenTree(node: PageTreeNode): TreeFlattenNode[] {
   const out: TreeFlattenNode[] = [{ id: node.id, title: node.title, parentId: node.parentId }]
-  for (const child of node.children as unknown as Parameters<typeof flattenTree>[0][]) {
+  for (const child of node.children) {
     out.push(...flattenTree(child))
   }
   return out

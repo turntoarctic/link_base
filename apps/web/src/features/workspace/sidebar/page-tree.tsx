@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { ChevronRight, Copy, FileText, MoreHorizontal, Plus, Trash2 } from 'lucide-react'
 import { pageApi } from '@/lib/api'
 import type { PageTreeNode } from '@linkbase/types'
-import { moveSubpageNode } from '@/features/editor/doc-manager'
+import { insertSubpageNode, moveSubpageNode } from '@/features/editor/doc-manager'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,7 +60,11 @@ export function PageTree({ nodes }: { nodes: PageTreeNode[] }) {
 
   const createPage = useMutation({
     mutationFn: async (input: { parentId?: string | null }) => {
+      // 建行直写 parent_id（树即时生效）；卡片内容由客户端插入父页文档末尾后 push
       const page = await pageApi.create(workspaceId, input.parentId ? { parentId: input.parentId } : {})
+      if (input.parentId) {
+        await insertSubpageNode(workspaceId, input.parentId, page.id, page.title ?? '')
+      }
       return page
     },
     onSuccess: (page) => {

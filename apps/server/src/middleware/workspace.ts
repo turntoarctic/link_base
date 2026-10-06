@@ -7,7 +7,8 @@ import { errForbidden } from '../lib/errors.ts'
 import { db, workspaceMembers } from '../db/index.ts'
 
 export const requireMember = createMiddleware<AppEnv>(async (c, next) => {
-  const wsId = c.req.param('wsId')
+  // 挂载点均含 :wsId 字面量（routes/*），param 恒存在
+  const wsId = c.req.param('wsId')!
   const userId = c.get('user').id
   const rows = await db
     .select({ role: workspaceMembers.role })

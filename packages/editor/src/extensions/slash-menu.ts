@@ -7,7 +7,7 @@ import { createSuggestionRenderer } from '../components/suggestion.tsx'
 import { buildSlashItems, filterSlashItems, type SlashItem } from './slash-items.ts'
 
 export interface SlashMenuOptions {
-  /** 「子页面」入口：宿主建页（POST /pages）后返回新页信息 */
+  /** 「子页面」入口：宿主建行（POST {parentId} 直写 parent_id）并返回新页信息，卡片由 action 在光标处插入 */
   createSubpage?: () => Promise<{ pageId: string; title: string } | null>
   /** 「图片」入口：宿主打开系统文件选择框 */
   pickImage?: () => Promise<File | null>

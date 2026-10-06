@@ -22,5 +22,7 @@
   "loading": "Loading…",
   "empty": "Nothing here yet",
   "operationFailed": "Operation failed, please try again",
-  "workspace": "Workspace"
+  "workspace": "Workspace",
+  "pageError": "Something went wrong",
+  "reload": "Reload"
 }

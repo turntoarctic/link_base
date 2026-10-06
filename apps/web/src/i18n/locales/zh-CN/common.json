@@ -22,5 +22,7 @@
   "loading": "加载中…",
   "empty": "暂无内容",
   "operationFailed": "操作失败，请重试",
-  "workspace": "工作空间"
+  "workspace": "工作空间",
+  "pageError": "页面出错了",
+  "reload": "重新加载"
 }

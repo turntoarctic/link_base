@@ -74,76 +74,102 @@ export function Sidebar({
   })
 
   return (
-    <aside
-      className={cn(
-        'flex h-full shrink-0 flex-col overflow-hidden border-r border-(--sidebar-border) bg-(--sidebar) text-[13px] text-(--sidebar-foreground) transition-[width] duration-200 ease-out',
-        collapsed ? 'w-0' : 'w-(--width-sidebar)',
-      )}
-    >
-      {/* 空间切换（Notion 式顶栏） */}
-      <div className="flex items-center gap-1 px-2 pt-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md px-1.5 py-1.5 transition-colors hover:bg-sidebar-accent"
-            >
-              <span className="truncate font-medium">{workspaceName || 'Linkbase'}</span>
-              <ChevronRight size={13} className="ml-auto shrink-0 rotate-90 text-muted-foreground" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-[220px]">
-            <DropdownMenuLabel>{t('common:workspace')}</DropdownMenuLabel>
-            {workspaces.map((ws) => (
-              <DropdownMenuItem key={ws.id} onSelect={() => navigate(`/${ws.id}`)}>
-                <span className="w-3.5">
-                  {ws.id === workspaceId && <Check size={13} className="text-(--primary)" />}
-                </span>
-                <span className="truncate">{ws.name}</span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+    <>
+      {/* 折叠后侧边栏整体 w-0 隐藏（含自身开关），浮动按钮承担展开入口 */}
+      {collapsed && (
         <button
           type="button"
-          aria-label="toggle sidebar"
-          className="rounded-md p-1.5 text-(--muted-foreground) transition-colors hover:bg-(--sidebar-accent) hover:text-(--sidebar-foreground)"
+          aria-label={t('workspace:sidebar.expand')}
+          className="fixed top-2 left-2 z-50 rounded-md p-1.5 text-(--muted-foreground) transition-colors hover:bg-(--muted) hover:text-(--foreground)"
           onClick={toggleSidebar}
         >
           <MenuIcon size={15} />
         </button>
-      </div>
+      )}
+      <aside
+        className={cn(
+          'flex h-full shrink-0 flex-col overflow-hidden border-r border-(--sidebar-border) bg-(--sidebar) text-[13px] text-(--sidebar-foreground) transition-[width] duration-200 ease-out',
+          collapsed ? 'w-0' : 'w-(--width-sidebar)',
+        )}
+      >
+        {/* 空间切换（Notion 式顶栏） */}
+        <div className="flex items-center gap-1 px-2 pt-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md px-1.5 py-1.5 transition-colors hover:bg-sidebar-accent"
+              >
+                <span className="truncate font-medium">{workspaceName || 'Linkbase'}</span>
+                <ChevronRight size={13} className="ml-auto shrink-0 rotate-90 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[220px]">
+              <DropdownMenuLabel>{t('common:workspace')}</DropdownMenuLabel>
+              {workspaces.map((ws) => (
+                <DropdownMenuItem key={ws.id} onSelect={() => navigate(`/${ws.id}`)}>
+                  <span className="w-3.5">
+                    {ws.id === workspaceId && <Check size={13} className="text-(--primary)" />}
+                  </span>
+                  <span className="truncate">{ws.name}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <button
+            type="button"
+            aria-label={t('workspace:sidebar.collapse')}
+            className="rounded-md p-1.5 text-(--muted-foreground) transition-colors hover:bg-(--sidebar-accent) hover:text-(--sidebar-foreground)"
+            onClick={toggleSidebar}
+          >
+            <MenuIcon size={15} />
+          </button>
+        </div>
 
-      {/* ⌘K 搜索 */}
-      <div className="px-2 pt-1.5">
-        <button
-          type="button"
-          className="flex w-full items-center gap-2 rounded-md px-1.5 py-1.5 text-(--muted-foreground) transition-colors hover:bg-(--sidebar-accent)"
-          onClick={() => openCommandPalette()}
-        >
-          <Search size={14} />
-          <span className="flex-1 truncate text-left">{t('workspace:sidebar.searchPlaceholder')}</span>
-          <Kbd>⌘K</Kbd>
-        </button>
-      </div>
+        {/* ⌘K 搜索 */}
+        <div className="px-2 pt-1.5">
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-md px-1.5 py-1.5 text-(--muted-foreground) transition-colors hover:bg-(--sidebar-accent)"
+            onClick={() => openCommandPalette()}
+          >
+            <Search size={14} />
+            <span className="flex-1 truncate text-left">{t('workspace:sidebar.searchPlaceholder')}</span>
+            <Kbd>⌘K</Kbd>
+          </button>
+        </div>
 
-      <div className="mt-1.5 min-h-0 flex-1 overflow-y-auto px-2 pb-2">
-        {/* 收藏 */}
-        <Section title={t('workspace:sidebar.favorites')} icon={<Star size={12} />}>
-          {favorites.data?.length === 0 && (
-            <div className="px-1.5 py-1 text-[12px] text-(--text-tertiary)">
-              {t('workspace:sidebar.favoritesEmpty')}
-            </div>
-          )}
-          {favorites.data?.map((page) => (
-            <TreeLink key={page.id} workspaceId={workspaceId} pageId={page.id} title={page.title} icon={page.icon} />
-          ))}
-        </Section>
+        <div className="mt-1.5 min-h-0 flex-1 overflow-y-auto px-2 pb-2">
+          {/* 收藏 */}
+          <Section title={t('workspace:sidebar.favorites')} icon={<Star size={12} />}>
+            {favorites.data?.length === 0 && (
+              <div className="px-1.5 py-1 text-[12px] text-(--text-tertiary)">
+                {t('workspace:sidebar.favoritesEmpty')}
+              </div>
+            )}
+            {favorites.data?.map((page) => (
+              <TreeLink key={page.id} workspaceId={workspaceId} pageId={page.id} title={page.title} icon={page.icon} />
+            ))}
+          </Section>
 
-        {/* 页面树 */}
-        <Section title={t('workspace:sidebar.pages')} icon={<FileText size={12} />}>
-          <PageTree nodes={tree.data ?? []} />
-        </Section>
+          {/* 页面树；标题行 hover 渐显「新建页面」（同树行操作图标交互） */}
+          <Section
+            title={t('workspace:sidebar.pages')}
+            icon={<FileText size={12} />}
+            action={
+              <button
+                type="button"
+                aria-label={t('workspace:sidebar.newPage')}
+                title={t('workspace:sidebar.newPage')}
+                className="rounded p-0.5 text-(--muted-foreground) transition-colors hover:bg-(--accent) hover:text-(--sidebar-foreground)"
+                onClick={() => createPage.mutate()}
+              >
+                <Plus size={12} />
+              </button>
+            }
+          >
+            <PageTree nodes={tree.data ?? []} />
+          </Section>
 
         {/* 标签聚合 */}
         <button
@@ -186,17 +212,9 @@ export function Sidebar({
         </Link>
       </div>
 
-      {/* 底部：新页面 + 用户菜单 */}
+      {/* 底部：用户菜单 */}
       <div className="px-2 pt-1.5 pb-2">
         <Separator className="mb-1.5" />
-        <button
-          type="button"
-          className="flex w-full items-center gap-1.5 rounded-md px-1.5 py-1.5 transition-colors hover:bg-(--sidebar-accent)"
-          onClick={() => createPage.mutate()}
-        >
-          <Plus size={14} className="text-(--muted-foreground)" />
-          {t('workspace:sidebar.newPage')}
-        </button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -256,24 +274,29 @@ export function Sidebar({
       </div>
 
       <CommandPalette workspaceId={workspaceId} />
-    </aside>
+      </aside>
+    </>
   )
 }
 
 function Section({
   title,
   icon,
+  action,
   children,
 }: {
   title: string
   icon?: React.ReactNode
+  /** 标题行右侧操作位：hover 行时渐显（同页面树行图标交互） */
+  action?: React.ReactNode
   children: React.ReactNode
 }) {
   return (
-    <div className="mt-1.5">
+    <div className="group/section mt-1.5">
       <div className="flex items-center gap-1 px-1.5 py-1 text-[11px] font-medium text-(--muted-foreground)">
         {icon}
         {title}
+        {action && <span className="ml-auto opacity-0 transition-opacity duration-150 group-hover/section:opacity-100">{action}</span>}
       </div>
       {children}
     </div>

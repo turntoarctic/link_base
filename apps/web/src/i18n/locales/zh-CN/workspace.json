@@ -10,7 +10,9 @@
     "newPage": "＋ 新页面",
     "addChild": "在此节点下新建子页",
     "nodeMenu": "页面操作",
-    "renameTitle": "重命名页面"
+    "renameTitle": "重命名页面",
+    "collapse": "折叠侧边栏",
+    "expand": "展开侧边栏"
   },
   "tree": {
     "moveToTrash": "移到回收站",
@@ -54,7 +56,8 @@
     "create": "新建标签",
     "namePlaceholder": "标签名",
     "color": "颜色",
-    "deleteConfirm": "删除标签「{{name}}」？页面上的该标签会一并移除。"
+    "deleteConfirm": "删除标签「{{name}}」？页面上的该标签会一并移除。",
+    "newTag": "新建标签"
   },
   "search": {
     "placeholder": "搜索页面标题与正文…",

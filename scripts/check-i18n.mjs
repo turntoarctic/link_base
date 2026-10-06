@@ -70,7 +70,8 @@ async function* walkTs(dir) {
     if (entry.isDirectory()) {
       if (entry.name === 'locales' || entry.name === 'node_modules') continue
       yield* walkTs(full)
-    } else if (entry.name.endsWith('.tsx')) {
+    } else if (entry.name.endsWith('.tsx') && !entry.name.endsWith('.test.tsx')) {
+      // *.test.tsx 排除：测试的描述与断言文案不是 UI 文案（本就应为被翻译文案本身）
       yield full
     }
   }

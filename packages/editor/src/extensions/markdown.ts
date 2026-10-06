@@ -89,9 +89,25 @@ function blockTokens(tokens: Token[]): PMJson[] {
         })
         break
       }
-      case 'paragraph':
-        out.push({ type: 'paragraph', content: inlineTokens((token as Tokens.Paragraph).tokens) })
+      case 'paragraph': {
+        // image 是块级 atom 节点，不能留在 paragraph content 里：拆成兄弟块
+        const inline = inlineTokens((token as Tokens.Paragraph).tokens)
+        let buffer: PMJson[] = []
+        const flush = () => {
+          if (buffer.length > 0) out.push({ type: 'paragraph', content: buffer })
+          buffer = []
+        }
+        for (const node of inline) {
+          if (node.type === 'image') {
+            flush()
+            out.push(node)
+          } else {
+            buffer.push(node)
+          }
+        }
+        flush()
         break
+      }
       case 'code': {
         const code = token as Tokens.Code
         out.push({
@@ -111,15 +127,20 @@ function blockTokens(tokens: Token[]): PMJson[] {
         const list = token as Tokens.List
         const items: PMJson[] = list.items.map((item) => {
           if (item.task) {
+            // taskItem content 为 block+（nested 模式含列表）：整段平铺，空条目补空段落
+            const blocks = blockTokens(item.tokens)
             return {
               type: 'taskItem',
               attrs: { checked: item.checked ?? false },
-              content: blockTokens(item.tokens).map((b) =>
-                b.type === 'paragraph' ? b : { type: 'paragraph', content: [b] },
-              ),
+              content: blocks.length > 0 ? blocks : [{ type: 'paragraph', content: [] }],
             }
           }
-          return { type: 'listItem', content: blockTokens(item.tokens) }
+          // listItem content 为 paragraph block*：marked 对空条目可能产出零块，补空段落
+          const blocks = blockTokens(item.tokens)
+          return {
+            type: 'listItem',
+            content: blocks.length > 0 ? blocks : [{ type: 'paragraph', content: [] }],
+          }
         })
         out.push({
           type: list.ordered ? 'orderedList' : 'bulletList',

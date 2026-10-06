@@ -12,10 +12,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@floating-ui/dom": "catalog:",
     "@tiptap/core": "catalog:",
-    "@tiptap/extension-collaboration": "catalog:",
     "@tiptap/extension-code-block-lowlight": "catalog:",
+    "@tiptap/extension-collaboration": "catalog:",
     "@tiptap/extension-highlight": "catalog:",
+    "@tiptap/extension-list": "catalog:",
     "@tiptap/extension-table": "catalog:",
     "@tiptap/extensions": "catalog:",
     "@tiptap/pm": "catalog:",

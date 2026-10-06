@@ -148,6 +148,21 @@ export async function closePageDoc(wsId: string, pageId: string): Promise<void> 
   entry.ydoc.destroy()
 }
 
+/**
+ * 服务端结构操作（建子页等）后重拉差分：打开中的 Y.Doc 对齐服务端权威写入
+ * （POST {parentId} 由服务端 appendSubpageNode 写入，08 §4.4/§5）。
+ * 未打开的页下次 openPageDoc 自然拉到，无需处理。
+ */
+export async function refreshPageDoc(wsId: string, pageId: string): Promise<void> {
+  const entry = entries.get(pageId)
+  if (!entry) return
+  const sv = Y.encodeStateVector(entry.ydoc)
+  const remote = await api.bytes(
+    `/workspaces/${wsId}/pages/${pageId}/doc?state=${encodeURIComponent(bytesToBase64(sv))}`,
+  )
+  if (remote) Y.applyUpdate(entry.ydoc, remote, remoteOrigin)
+}
+
 /** beforeunload 兜底 flush（fetch keepalive） */
 if (typeof window !== 'undefined') {
   window.addEventListener('pagehide', () => {

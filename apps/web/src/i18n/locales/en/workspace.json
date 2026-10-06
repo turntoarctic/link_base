@@ -10,7 +10,9 @@
     "newPage": "＋ New page",
     "addChild": "New subpage under this node",
     "nodeMenu": "Page actions",
-    "renameTitle": "Rename page"
+    "renameTitle": "Rename page",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar"
   },
   "tree": {
     "moveToTrash": "Move to trash",
@@ -54,7 +56,8 @@
     "create": "New tag",
     "namePlaceholder": "Tag name",
     "color": "Color",
-    "deleteConfirm": "Delete tag “{{name}}”? It will be removed from all pages."
+    "deleteConfirm": "Delete tag “{{name}}”? It will be removed from all pages.",
+    "newTag": "New tag"
   },
   "search": {
     "placeholder": "Search page titles and content…",

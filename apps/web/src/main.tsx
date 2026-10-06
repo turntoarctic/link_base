@@ -9,9 +9,8 @@ import { initTheme } from './stores/ui'
 import { TooltipProvider } from './components/ui/tooltip'
 import { Toaster } from './components/ui/sonner'
 
-const queryClient = new QueryClient({
-  gcTime: 5 * 60 * 1000,
-})
+// gcTime 默认即 5 分钟，无需显式配置
+const queryClient = new QueryClient()
 
 initI18n().then((i18n) => {
   initTheme()

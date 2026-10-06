@@ -3,10 +3,11 @@
  * 不用 hono/bun serveStatic（root 相对 cwd 的坑），直接 Bun.file + 安全 join。
  */
 import { join, normalize, resolve, sep } from 'node:path'
-import type { Context, Env, Hono } from 'hono'
+import type { Context, Hono } from 'hono'
+import type { AppEnv } from './lib/context.ts'
 import { logger } from './lib/logger.ts'
 
-export function mountStatic(app: Hono<Env>, distDir: string): void {
+export function mountStatic(app: Hono<AppEnv>, distDir: string): void {
   const distAbs = resolve(distDir)
 
   const safeFile = async (ctx: Context, urlPath: string): Promise<Response | null> => {

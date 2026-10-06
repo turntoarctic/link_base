@@ -52,7 +52,9 @@
       "deleteColumn": "Delete column",
       "headerRow": "Header row",
       "deleteTable": "Delete table"
-    }
+    },
+    "linkOpen": "Open link",
+    "linkRemove": "Remove link"
   },
   "mention": {
     "title": "Mention member",
@@ -64,6 +66,10 @@
     "retry": "Retry"
   },
   "subpage": {
-    "untitled": "Untitled subpage"
+    "untitled": "Untitled subpage",
+    "createFailed": "Failed to create subpage, please retry"
+  },
+  "codeBlock": {
+    "language": "Code language"
   }
 }

@@ -82,7 +82,8 @@ function wrapRedis(redis: RedisLike): KV {
     },
     async ping() {
       try {
-        await redis.send('PING')
+        // Bun redis.send 的 args 必须是数组（缺省会抛 "Arguments must be an array"）
+        await redis.send('PING', [])
         return true
       } catch {
         return false
@@ -167,7 +168,9 @@ function createFailoverKV(redisKv: KV, memoryKv: KV): KV {
 
 export function createKV(url: string | undefined = env.REDIS_URL): KV {
   const memoryKv = createMemoryKV()
-  const bun = (globalThis as { Bun?: { redis?: RedisLike } }).Bun
+  const bun = (globalThis as unknown as {
+    Bun?: { redis?: (RedisLike & { with(url: string): unknown }) | undefined }
+  }).Bun
   if (url && bun?.redis) {
     try {
       // Bun.redis 默认客户端读取 REDIS_URL 环境变量；显式指定时走 with 绑定

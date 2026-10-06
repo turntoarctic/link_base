@@ -5,6 +5,7 @@ import { tags } from '../db/index.ts'
 import { errNotFound, errTagExists } from '../lib/errors.ts'
 import { uuidv7 } from '../lib/ids.ts'
 import type { LinkbaseDb } from '../lib/deps.ts'
+import { isUniqueViolation } from '../lib/pg-errors.ts'
 
 export function createTagsService(db: LinkbaseDb) {
   return {
@@ -22,7 +23,7 @@ export function createTagsService(db: LinkbaseDb) {
       try {
         await db.insert(tags).values({ id, workspaceId: wsId, name: input.name, color: input.color })
       } catch (error) {
-        if (String(error).includes('tags_ws_name_key') || String(error).includes('unique')) {
+        if (isUniqueViolation(error)) {
           throw errTagExists()
         }
         throw error
@@ -31,11 +32,13 @@ export function createTagsService(db: LinkbaseDb) {
     },
 
     async patch(wsId: string, tagId: string, input: { name?: string; color?: number }): Promise<void> {
-      const result = await db
+      // drizzle 0.45：不带 returning 的 update 结果类型为 never，用 returning 判命中
+      const rows = await db
         .update(tags)
         .set(input)
         .where(and(eq(tags.id, tagId), eq(tags.workspaceId, wsId)))
-      if (result.rowCount === 0) throw errNotFound('tag not found')
+        .returning({ id: tags.id })
+      if (rows.length === 0) throw errNotFound('tag not found')
     },
 
     /** 删除标签（page_tags 级联清） */

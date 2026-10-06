@@ -22,7 +22,7 @@ describe('登录页双语（P0-13）', () => {
         </MemoryRouter>
       </I18nextProvider>,
     )
-    expect(screen.getByText('登录 Linkbase')).toBeTruthy()
+    expect(screen.getByText('面向研发团队的协作知识库')).toBeTruthy()
     expect(screen.getByText('登录', { selector: 'button[type="submit"]' })).toBeTruthy()
     expect(document.documentElement.lang).toBe('zh-CN')
   })
@@ -37,7 +37,7 @@ describe('登录页双语（P0-13）', () => {
         </MemoryRouter>
       </I18nextProvider>,
     )
-    expect(screen.getByText('Log in to Linkbase')).toBeTruthy()
+    expect(screen.getByText('The collaborative knowledge base for engineering teams')).toBeTruthy()
     expect(screen.getByText('Log in', { selector: 'button[type="submit"]' })).toBeTruthy()
     expect(document.documentElement.lang).toBe('en')
   })

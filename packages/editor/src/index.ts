@@ -12,6 +12,7 @@ import { Placeholder } from '@tiptap/extensions'
 import { Highlight } from '@tiptap/extension-highlight'
 import { TableKit } from '@tiptap/extension-table'
 import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight'
+import { TaskList, TaskItem } from '@tiptap/extension-list'
 import { common, createLowlight } from 'lowlight'
 import i18next from 'i18next'
 import type * as Y from 'yjs'
@@ -22,6 +23,7 @@ import { Callout } from './extensions/callout.ts'
 import { SlashMenu, type SlashMenuOptions } from './extensions/slash-menu.ts'
 import { MarkdownPaste } from './extensions/markdown.ts'
 import { DragHandle } from './extensions/drag-handle.ts'
+import { TaskListInputRule } from './extensions/task-input-rule.ts'
 
 export type { ImageUploadOptions }
 
@@ -57,6 +59,10 @@ export function buildEditorKit(options: EditorKitOptions) {
       },
     }),
     CodeBlockLowlight.configure({ lowlight, defaultLanguage: 'plaintext' }),
+    // 待办列表（05 §2.1 P0）：starter-kit 只含 bullet/ordered，task 需显式装配
+    TaskList,
+    TaskItem.configure({ nested: true }),
+    TaskListInputRule,
     Highlight.configure({ multicolor: true }),
     TableKit.configure({ table: { resizable: false } }),
     Placeholder.configure({
@@ -84,9 +90,11 @@ export function createEditor(options: EditorKitOptions): Editor {
 }
 
 export { EditorBubbleToolbar } from './components/toolbar.tsx'
+export { CodeBlockLangPicker } from './components/code-lang.tsx'
 // web 一律经本包使用编辑器 React 绑定，禁止直接 import @tiptap/*（保证单实例，06 §1.1）
 export { useEditor, EditorContent } from '@tiptap/react'
 export { createSuggestionRenderer } from './components/suggestion.tsx'
+export { positionSuggestionPopup } from './components/suggestion.tsx'
 export { ImageUpload as ImageUploadExtension } from './extensions/image.ts'
 export { Mention as MentionExtension, type MentionUser } from './extensions/mention.ts'
 export { Subpage as SubpageExtension } from './extensions/subpage.ts'

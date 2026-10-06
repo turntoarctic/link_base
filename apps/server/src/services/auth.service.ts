@@ -13,29 +13,13 @@ import type { UserRole } from '@linkbase/types'
 import { buildQuickStartState, extractPageMeta } from '@linkbase/ydoc'
 import { pageSnapshots, pages, users, workspaceMembers, workspaces } from '../db/index.ts'
 import { errEmailTaken, errTokenInvalid, errUnauthorized } from '../lib/errors.ts'
+import { isUniqueViolation } from '../lib/pg-errors.ts'
 import { randomToken, uuidv7 } from '../lib/ids.ts'
 import { signAccessToken } from '../middleware/auth.ts'
 import type { LinkbaseDb } from '../lib/deps.ts'
 import type { Sessions } from '../db/redis.ts'
 
 const QUICK_START_TITLE = '欢迎使用 Linkbase'
-
-/** PG 唯一约束冲突（23505）；drizzle 会把原始错误包在 cause 链里 */
-function isUniqueViolation(error: unknown): boolean {
-  const chain: unknown[] = [error]
-  let current = error
-  while (current instanceof Error && current.cause) {
-    current = current.cause
-    chain.push(current)
-  }
-  return chain.some(
-    (e) =>
-      typeof e === 'object' &&
-      e !== null &&
-      'code' in e &&
-      (e as { code?: string }).code === '23505',
-  )
-}
 
 async function issueTokens(
   sessions: Sessions,

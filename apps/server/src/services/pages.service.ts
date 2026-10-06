@@ -5,8 +5,8 @@
 import { and, asc, desc, eq, inArray } from 'drizzle-orm'
 import type { CreatePageInput, PatchPageInput } from '@linkbase/contracts'
 import type { PageMetaDto, PageTreeNode, TrashItem } from '@linkbase/types'
-import { appendSubpageNode, extractPageMeta } from '@linkbase/ydoc'
-import { favorites, pageTags, pageUpdates, pageVisits, pages, tags } from '../db/index.ts'
+import { extractPageMeta } from '@linkbase/ydoc'
+import { favorites, pageTags, pageVisits, pages, tags } from '../db/index.ts'
 import { errNotFound } from '../lib/errors.ts'
 import { uuidv7 } from '../lib/ids.ts'
 import { logger } from '../lib/logger.ts'
@@ -117,8 +117,10 @@ export function createPagesService(db: LinkbaseDb) {
       }
 
       if (input.parentId) {
+        // parent_id 直写（树即时生效）；父页文档内容（subpage 卡片）由客户端编辑器
+        // 在光标处插入后 push（服务端 append 会写到文档末尾且与打开中的客户端文档打架）
         const parentRows = await db
-          .select()
+          .select({ id: pages.id })
           .from(pages)
           .where(
             and(
@@ -130,12 +132,9 @@ export function createPagesService(db: LinkbaseDb) {
           .limit(1)
         const parent = parentRows[0]
         if (!parent) throw errNotFound('parent page not found')
-        const parentState = await getPageState(db, parent.id)
-        const { update } = appendSubpageNode(parentState, pageId, input.title ?? '')
         await db.transaction(async (tx) => {
-          await tx.insert(pageUpdates).values({ pageId: parent.id, blob: update, actor: userId })
-          await tx.update(pages).set({ updatedAt: new Date() }).where(eq(pages.id, parent.id))
           await tx.update(pages).set({ parentId: parent.id }).where(eq(pages.id, pageId))
+          await tx.update(pages).set({ updatedAt: new Date() }).where(eq(pages.id, parent.id))
         })
       }
 
@@ -164,11 +163,13 @@ export function createPagesService(db: LinkbaseDb) {
 
     /** PATCH：title/icon 客户端直写（05 §5；parent_id/text 不接受客户端写） */
     async patch(wsId: string, pageId: string, input: PatchPageInput): Promise<void> {
-      const result = await db
+      // drizzle 0.45：不带 returning 的 update 结果类型为 never，用 returning 判命中
+      const rows = await db
         .update(pages)
         .set({ ...input, updatedAt: new Date() })
         .where(and(eq(pages.id, pageId), eq(pages.workspaceId, wsId)))
-      if (result.rowCount === 0) throw errNotFound('page not found')
+        .returning({ id: pages.id })
+      if (rows.length === 0) throw errNotFound('page not found')
     },
 
     /** 子树（含自身），按派生 parent 图 BFS */

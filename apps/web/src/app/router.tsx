@@ -9,6 +9,7 @@
 import { Component, lazy, Suspense, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
+import i18next from 'i18next'
 import { authApi } from '@/lib/api'
 import { getAccessToken } from '@/lib/fetch'
 import { RouteLoading } from '@/app/route-loading'
@@ -34,7 +35,8 @@ class RouteErrorBoundary extends Component<{ children: ReactNode }, { error: Err
     if (this.state.error) {
       return (
         <div className="flex min-h-screen flex-col items-center justify-center gap-3 px-4 py-10 text-center">
-          <div className="text-[15px] font-medium">页面出错了</div>
+          {/* 错误兜底早于 React 树，直用 i18next 单例取文案 */}
+          <div className="text-[15px] font-medium">{i18next.t('common:pageError')}</div>
           <div className="max-w-[480px] font-mono text-[12px] break-all text-muted-foreground">
             {this.state.error.message}
           </div>
@@ -47,7 +49,7 @@ class RouteErrorBoundary extends Component<{ children: ReactNode }, { error: Err
             className="h-8 rounded-md bg-(--primary) px-3 text-[13px] text-white"
             onClick={() => location.reload()}
           >
-            重新加载
+            {i18next.t('common:reload')}
           </button>
         </div>
       )

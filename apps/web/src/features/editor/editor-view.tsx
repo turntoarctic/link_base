@@ -4,10 +4,11 @@
 import { useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { buildEditorKit, EditorBubbleToolbar, EditorContent, useEditor, type MentionUser } from '@linkbase/editor'
+import { useTranslation } from 'react-i18next'
+import { buildEditorKit, CodeBlockLangPicker, EditorBubbleToolbar, EditorContent, useEditor, type MentionUser } from '@linkbase/editor'
 import type * as Y from 'yjs'
 import { blobApi, pageApi, workspaceApi } from '@/lib/api'
-import { insertSubpageNode } from './doc-manager'
+import { toast } from '@/components/ui/sonner'
 
 export function EditorView({
   wsId,
@@ -20,6 +21,7 @@ export function EditorView({
 }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { t } = useTranslation('editor')
 
   // @ 提及候选：成员列表异步加载，经 ref 供 suggestion 读取
   const membersRef = useRef<MentionUser[]>([])
@@ -45,11 +47,18 @@ export function EditorView({
       },
       members: () => membersRef.current,
       onSubpageOpen: (targetPageId) => navigate(`/${wsId}/page/${targetPageId}`),
+      // 服务端直写 parent_id（树即时生效）；卡片由 slash action 在光标处插入（insertSubpage
+      // 命令），内容经 Y.Doc push 落库。失败可见（toast），不静默
       createSubpage: async () => {
-        const page = await pageApi.create(wsId, {})
-        await insertSubpageNode(wsId, pageId, page.id, page.title)
-        void queryClient.invalidateQueries({ queryKey: ['pages', wsId] })
-        return { pageId: page.id, title: page.title }
+        try {
+          const page = await pageApi.create(wsId, { parentId: pageId })
+          void queryClient.invalidateQueries({ queryKey: ['pages', wsId] })
+          return { pageId: page.id, title: page.title }
+        } catch (error) {
+          console.error('[subpage] create failed', error)
+          toast.error(t('editor:subpage.createFailed'))
+          return null
+        }
       },
       pickImage: () => pickFile('image/*'),
     }),
@@ -60,6 +69,7 @@ export function EditorView({
     <>
       <EditorContent editor={editor} />
       <EditorBubbleToolbar editor={editor} />
+      <CodeBlockLangPicker editor={editor} />
     </>
   )
 }

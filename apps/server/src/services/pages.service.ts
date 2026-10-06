@@ -260,6 +260,7 @@ export function createPagesService(db: LinkbaseDb) {
           id: row.id,
           title: row.title,
           icon: row.icon,
+          parentId: row.parentId,
           path,
           deletedAt: row.deletedAt?.toISOString() ?? null,
         }

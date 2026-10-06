@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { RotateCcw, Trash2 } from 'lucide-react'
 import { pageApi } from '@/lib/api'
+import { insertSubpageNode, removeSubpageNode } from '@/features/editor/doc-manager'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -28,8 +29,15 @@ export default function TrashPage() {
     queryFn: () => pageApi.trashList(workspaceId),
   })
 
+  // 恢复/彻底删同步父页文档里的子页卡片（内容单写者 = 客户端；parent_id 列由服务端维护）
   const restore = useMutation({
-    mutationFn: (pageId: string) => pageApi.restore(workspaceId, pageId),
+    mutationFn: async (pageId: string) => {
+      await pageApi.restore(workspaceId, pageId)
+      const item = (trash.data ?? []).find((t) => t.id === pageId)
+      if (item?.parentId) {
+        await insertSubpageNode(workspaceId, item.parentId, item.id, item.title)
+      }
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['trash', workspaceId] })
       void queryClient.invalidateQueries({ queryKey: ['pages', workspaceId] })
@@ -39,7 +47,13 @@ export default function TrashPage() {
   })
 
   const permanent = useMutation({
-    mutationFn: (pageId: string) => pageApi.permanentDelete(workspaceId, pageId),
+    mutationFn: async (pageId: string) => {
+      const item = (trash.data ?? []).find((t) => t.id === pageId)
+      await pageApi.permanentDelete(workspaceId, pageId)
+      if (item?.parentId) {
+        await removeSubpageNode(workspaceId, item.parentId, item.id).catch(() => {})
+      }
+    },
     onSuccess: () => {
       setConfirmId(null)
       void queryClient.invalidateQueries({ queryKey: ['trash', workspaceId] })

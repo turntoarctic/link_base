@@ -87,6 +87,7 @@
     "check-i18n": "bun run scripts/check-i18n.mjs",
     "db:migrate": "bun run packages/database/src/migrate-cli.ts",
     "db:seed": "bun run packages/database/src/seed-cli.ts",
+    "db:seed:bench": "bun run packages/database/src/seed-bench.ts",
     "db:generate": "cd packages/database && bun run db:generate",
     "e2e": "cd apps/e2e && bun run e2e"
   },

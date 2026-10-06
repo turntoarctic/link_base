@@ -25,6 +25,8 @@ export interface TrashItem {
   id: string
   title: string
   icon: string | null
+  /** 直接父页 id（null = 顶层）；恢复/彻底删时客户端同步父页文档里的子页卡片 */
+  parentId: string | null
   path: string[]
   deletedAt: string | null
 }

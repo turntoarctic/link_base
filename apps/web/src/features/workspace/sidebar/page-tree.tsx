@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { ChevronRight, Copy, FileText, MoreHorizontal, Plus, Trash2 } from 'lucide-react'
 import { pageApi } from '@/lib/api'
 import type { PageTreeNode } from '@linkbase/types'
-import { insertSubpageNode, moveSubpageNode } from '@/features/editor/doc-manager'
+import { insertSubpageNode, moveSubpageNode, removeSubpageNode } from '@/features/editor/doc-manager'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -74,7 +74,12 @@ export function PageTree({ nodes }: { nodes: PageTreeNode[] }) {
   })
 
   const trash = useMutation({
-    mutationFn: (pageId: string) => pageApi.trash(workspaceId, pageId),
+    mutationFn: async (pageId: string) => {
+      await pageApi.trash(workspaceId, pageId)
+      // 同步父页文档：挪入回收站的子页卡片即时消失（内容单写者 = 客户端）
+      const parentId = parentOf.get(pageId) ?? null
+      if (parentId) await removeSubpageNode(workspaceId, parentId, pageId)
+    },
     onSuccess: () => {
       invalidate()
       void queryClient.invalidateQueries({ queryKey: ['trash', workspaceId] })

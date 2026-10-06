@@ -60,6 +60,7 @@
         "clsx": "catalog:",
         "i18next": "catalog:",
         "i18next-browser-languagedetector": "catalog:",
+        "katex": "catalog:",
         "lib0": "catalog:",
         "lucide-react": "catalog:",
         "react": "catalog:",

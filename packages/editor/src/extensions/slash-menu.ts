@@ -13,6 +13,8 @@ export interface SlashMenuOptions {
   pickImage?: () => Promise<File | null>
   /** 「附件」入口：宿主选择任意文件并上传到 blobs */
   pickAttachment?: () => Promise<{ blobId: string; name: string; size: number; mime: string } | null>
+  /** 当前页面 id（子页列表块插入时用） */
+  currentPageId?: () => string | null
 }
 
 const renderer = createSuggestionRenderer<SlashItem>(SlashPopup)

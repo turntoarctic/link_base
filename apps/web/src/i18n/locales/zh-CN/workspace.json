@@ -135,5 +135,8 @@
   },
   "export": {
     "md": "导出 Markdown"
+  },
+  "findReplace": {
+    "menu": "查找替换"
   }
 }

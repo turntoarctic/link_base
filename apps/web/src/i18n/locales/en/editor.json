@@ -24,7 +24,13 @@
       "image": "Image",
       "subpage": "Subpage",
       "mention": "Mention (type @)",
-      "attachment": "Attachment"
+      "attachment": "Attachment",
+      "item": {
+        "details": "Details",
+        "math": "Math formula",
+        "mermaid": "Mermaid diagram",
+        "subpageList": "Subpage list"
+      }
     }
   },
   "toolbar": {
@@ -77,5 +83,23 @@
     "download": "Download {name}",
     "untitled": "Untitled file",
     "uploadFailed": "Attachment upload failed, please retry"
+  },
+  "subpageList": {
+    "title": "Subpages",
+    "empty": "No subpages",
+    "untitled": "Untitled"
+  },
+  "findReplace": {
+    "search": "Find",
+    "replace": "Replace with",
+    "prev": "Previous",
+    "next": "Next",
+    "replaceCurrent": "Replace current",
+    "replaceAll": "Replace all",
+    "noMatch": "No match"
+  },
+  "table": {
+    "mergeCells": "Merge cells",
+    "splitCell": "Split cell"
   }
 }

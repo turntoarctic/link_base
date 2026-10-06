@@ -73,6 +73,22 @@ export function EditorBubbleToolbar({ editor, onComment }: { editor: Editor; onC
           <button type="button" className={btn(editor.isActive('tableHeader'))} onClick={() => editor.chain().focus().toggleHeaderRow().run()}>
             {t('toolbar.table.headerRow')}
           </button>
+          <button
+            type="button"
+            className={btn(false)}
+            disabled={!editor.can().mergeCells()}
+            onClick={() => editor.chain().focus().mergeCells().run()}
+          >
+            {t('toolbar.table.mergeCells')}
+          </button>
+          <button
+            type="button"
+            className={btn(false)}
+            disabled={!editor.can().splitCell()}
+            onClick={() => editor.chain().focus().splitCell().run()}
+          >
+            {t('toolbar.table.splitCell')}
+          </button>
           <button type="button" className={btn(false)} onClick={() => editor.chain().focus().deleteTable().run()}>
             {t('toolbar.table.deleteTable')}
           </button>

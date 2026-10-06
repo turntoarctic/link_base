@@ -5,13 +5,15 @@ import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { buildEditorKit, CodeBlockLangPicker, EditorBubbleToolbar, EditorContent, refreshComments, useEditor, type CommentAnchorSpec, type MentionUser } from '@linkbase/editor'
+import { buildEditorKit, CodeBlockLangPicker, EditorBubbleToolbar, EditorContent, findReplaceKey, refreshComments, useEditor, type CommentAnchorSpec, type MentionUser } from '@linkbase/editor'
 import type { CommentAnchor } from '@linkbase/types'
 import type * as Y from 'yjs'
 import { blobApi, pageApi, workspaceApi } from '@/lib/api'
 import { toast } from '@/components/ui/sonner'
 import { useAuthStore } from '@/stores/auth'
 import { getPageAwareness, refreshPageDoc } from './doc-manager'
+import { FindReplaceBar, openFindReplace } from './find-replace-bar'
+import { useReducer, useState } from 'react'
 
 /** 协作光标/头像配色：按用户 id 稳定取色（06 §5.5 头像色系） */
 const CARET_PALETTE = ['#e5484d', '#e5762d', '#b08de0', '#2f9e77', '#3b82d0', '#c232ac']
@@ -63,6 +65,21 @@ export function EditorView({
     }))
   }
 
+  // 子页列表块数据源（T2.7）：树查询数据经由面板查询同源 API
+  const subpageListSource = {
+    fetchChildren: async (pid: string) => {
+      const tree = await pageApi.tree(wsId)
+      const stack = [...tree]
+      while (stack.length > 0) {
+        const n = stack.shift()!
+        if (n.id === pid) return n.children.map((c) => ({ id: c.id, title: c.title }))
+        stack.push(...n.children)
+      }
+      return []
+    },
+    onOpen: (targetPageId: string) => navigate(`/${wsId}/page/${targetPageId}`),
+  }
+
   // 协作身份（T2.2）：颜色按用户 id 稳定分配；awareness 由 ws-relay 持有（未连 WS 为 null）
   const user = useAuthStore((s) => s.user)
   const awareness = getPageAwareness(pageId)
@@ -83,6 +100,8 @@ export function EditorView({
       members: () => membersRef.current,
       awareness: awareness ? { awareness } : undefined,
       collaborationUser,
+      subpageListSource,
+      currentPageId: () => pageId,
       getCommentAnchors: () => anchorsRef.current,
       onCommentAnchorClick: (id) => onAnchorClickRef.current?.(id),
       onSubpageOpen: (targetPageId) => navigate(`/${wsId}/page/${targetPageId}`),
@@ -139,10 +158,44 @@ export function EditorView({
     onInlineComment?.(anchor)
   }
 
+  // ⌘F（编辑器聚焦时）与 ⋯ 菜单（事件）双入口打开查找替换
+  const [, force] = useReducer((x: number) => x + 1, 0)
+  const [findOpen, setFindOpen] = useState(false)
+  useEffect(() => {
+    const open = () => setFindOpen(true)
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f') {
+        const target = e.target as HTMLElement | null
+        if (target?.closest?.('.ProseMirror')) {
+          e.preventDefault()
+          setFindOpen(true)
+        }
+      }
+    }
+    window.addEventListener('linkbase-find-replace', open)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('linkbase-find-replace', open)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [])
+  useEffect(() => {
+    if (!editor) return
+    const onUpdate = () => force()
+    editor.on('transaction', onUpdate)
+    return () => {
+      editor.off('transaction', onUpdate)
+    }
+  }, [editor])
+  useEffect(() => {
+    if (!findOpen && editor) editor.commands.setSearch({ searchTerm: '' })
+  }, [findOpen, editor])
+
   if (!editor) return null
   return (
     <>
       <EditorContent editor={editor} />
+      {findOpen && <FindReplaceBar editor={editor} onClose={() => setFindOpen(false)} />}
       <EditorBubbleToolbar editor={editor} onComment={captureInlineComment} />
       <CodeBlockLangPicker editor={editor} />
     </>

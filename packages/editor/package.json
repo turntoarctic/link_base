@@ -26,9 +26,11 @@
     "@tiptap/starter-kit": "catalog:",
     "@tiptap/suggestion": "catalog:",
     "i18next": "catalog:",
+    "katex": "catalog:",
     "lowlight": "catalog:",
     "lucide-react": "catalog:",
     "marked": "catalog:",
+    "mermaid": "catalog:",
     "react-i18next": "catalog:",
     "y-prosemirror": "catalog:",
     "yjs": "catalog:"

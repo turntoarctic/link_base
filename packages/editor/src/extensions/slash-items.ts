@@ -2,8 +2,12 @@
 import type { ChainedCommands, Editor, Range } from '@tiptap/core'
 import type { LucideIcon } from 'lucide-react'
 import {
+  ChevronsDownUp,
   Code2,
   FilePlus2,
+  FunctionSquare,
+  GitBranch,
+  ListTree,
   Paperclip,
   Heading1,
   Heading2,
@@ -79,6 +83,35 @@ export function buildSlashItems(options: SlashMenuOptions): SlashItem[] {
         const file = (await options.pickImage?.()) ?? null
         if (file) editor.commands.uploadImage(file)
       },
+    },
+    {
+      id: 'details',
+      group: 'advanced',
+      icon: ChevronsDownUp,
+      keywords: ['details', 'fold', 'collapse', '折叠', '折叠块'],
+      action: ({ editor, range }) => chain(editor, range).insertDetails({ summary: '' }).run(),
+    },
+    {
+      id: 'math',
+      group: 'advanced',
+      icon: FunctionSquare,
+      keywords: ['math', 'katex', 'latex', '公式'],
+      action: ({ editor, range }) => chain(editor, range).insertContent({ type: 'mathBlock', content: [{ type: 'text', text: 'E = mc^2' }] }).run(),
+    },
+    {
+      id: 'mermaid',
+      group: 'advanced',
+      icon: GitBranch,
+      keywords: ['mermaid', 'diagram', '流程图', '图'],
+      action: ({ editor, range }) => chain(editor, range).insertContent({ type: 'mermaidBlock', content: [{ type: 'text', text: 'graph TD\n  A --> B' }] }).run(),
+    },
+    {
+      id: 'subpageList',
+      group: 'media',
+      icon: ListTree,
+      keywords: ['subpage list', 'children', '子页列表', '子页面列表'],
+      action: ({ editor, range }) =>
+        chain(editor, range).insertSubpageList({ pageId: options.currentPageId?.() ?? null }).run(),
     },
     {
       id: 'attachment',

@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, CloudOff, Copy, Download, FileUp, History, MessageSquare, MoreHorizontal, Star, Trash2 } from 'lucide-react'
+import { ChevronRight, CloudOff, Copy, Download, FileUp, History, MessageSquare, MoreHorizontal, Search, Star, Trash2 } from 'lucide-react'
 import { pageApi, tagApi } from '@/lib/api'
 import type { CommentAnchor, PageTreeNode } from '@linkbase/types'
 import { updateSubpageTitle } from './doc-manager'
@@ -20,6 +20,7 @@ import { PageTagsRow } from './page-tags-row'
 import { VersionsPanel } from './versions-panel'
 import { CommentsPanel } from './comments-panel'
 import { ImportMarkdownDialog } from './import-markdown-dialog'
+import { openFindReplace } from './find-replace-bar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -234,6 +235,10 @@ export default function EditorPage() {
             <DropdownMenuItem onSelect={() => setVersionsOpen(true)}>
               <History />
               {t('workspace:versions.menu')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => openFindReplace()}>
+              <Search size={14} className="mr-0" />
+              {t('workspace:findReplace.menu')}
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() => {

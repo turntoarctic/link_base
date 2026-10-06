@@ -12,6 +12,11 @@ import { CollaborationCaret } from '@tiptap/extension-collaboration-caret'
 import { Placeholder } from '@tiptap/extensions'
 import { Highlight } from '@tiptap/extension-highlight'
 import { TableKit } from '@tiptap/extension-table'
+import { Details, DetailsSummary, insertDetails } from './extensions/details.ts'
+import { MathBlock } from './extensions/math-block.ts'
+import { MermaidBlock } from './extensions/mermaid-block.ts'
+import { SubpageList, configureSubpageListSource } from './extensions/subpage-list.ts'
+import { FindReplace } from './extensions/find-replace.ts'
 import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight'
 import { TaskList, TaskItem } from '@tiptap/extension-list'
 import { common, createLowlight } from 'lowlight'
@@ -53,12 +58,17 @@ export interface EditorKitOptions {
   getCommentAnchors?: () => CommentAnchorSpec[]
   /** 点击正文中的评论高亮（宿主打开面板定位） */
   onCommentAnchorClick?: (id: string) => void
+  /** 子页列表块数据源（T2.7，宿主桥接 API） */
+  subpageListSource?: Parameters<typeof configureSubpageListSource>[0]
+  /** 当前页面 id（子页列表块插入时取值） */
+  currentPageId?: () => string | null
 }
 
 const lowlight = createLowlight(common)
 
 /** 扩展装配清单（05 §2）：供 useEditor({ extensions }) 使用（React 路径必须传 options 而非实例） */
 export function buildEditorKit(options: EditorKitOptions) {
+  if (options.subpageListSource) configureSubpageListSource(options.subpageListSource)
   return [
     StarterKit.configure({
       // 协作模式撤销栈由 y-undo 提供
@@ -77,7 +87,8 @@ export function buildEditorKit(options: EditorKitOptions) {
     TaskItem.configure({ nested: true }),
     TaskListInputRule,
     Highlight.configure({ multicolor: true }),
-    TableKit.configure({ table: { resizable: false } }),
+    // 表格进阶（P1-7）：列宽拖拽 + 合并/拆分单元格（工具条按钮）
+    TableKit.configure({ table: { resizable: true } }),
     Placeholder.configure({
       showOnlyWhenEditable: true,
       // 动态取词，语言切换即时生效（13 §6 不刷新页面）
@@ -112,10 +123,19 @@ export function buildEditorKit(options: EditorKitOptions) {
       createSubpage: options.createSubpage,
       pickImage: options.pickImage,
       pickAttachment: options.pickAttachment,
+      currentPageId: options.currentPageId,
     }),
     Attachment,
     DragHandle,
     MarkdownPaste,
+    // 折叠块/公式/图/子页列表（P1-7）
+    Details,
+    DetailsSummary,
+    insertDetails,
+    MathBlock,
+    MermaidBlock,
+    SubpageList,
+    FindReplace,
     CommentsHighlight.configure({
       getAnchors: options.getCommentAnchors ?? (() => []),
       onAnchorClick: options.onCommentAnchorClick,
@@ -132,6 +152,7 @@ export { EditorBubbleToolbar } from './components/toolbar.tsx'
 export { CodeBlockLangPicker } from './components/code-lang.tsx'
 // web 一律经本包使用编辑器 React 绑定，禁止直接 import @tiptap/*（保证单实例，06 §1.1）
 export { useEditor, EditorContent } from '@tiptap/react'
+export type { Editor } from '@tiptap/core'
 export { createSuggestionRenderer } from './components/suggestion.tsx'
 export { positionSuggestionPopup } from './components/suggestion.tsx'
 export { ImageUpload as ImageUploadExtension } from './extensions/image.ts'
@@ -143,3 +164,8 @@ export { DragHandle as DragHandleExtension } from './extensions/drag-handle.ts'
 export { MarkdownPaste as MarkdownPasteExtension, markdownToPmJson, looksLikeMarkdown } from './extensions/markdown.ts'
 export { CommentsHighlight as CommentsHighlightExtension, refreshComments, type CommentAnchorSpec } from './extensions/comments.ts'
 export { Attachment as AttachmentExtension, type AttachmentAttrs } from './extensions/attachment.ts'
+export { Details as DetailsExtension, DetailsSummary as DetailsSummaryExtension, insertDetails as InsertDetailsExtension } from './extensions/details.ts'
+export { MathBlock as MathBlockExtension } from './extensions/math-block.ts'
+export { MermaidBlock as MermaidBlockExtension } from './extensions/mermaid-block.ts'
+export { SubpageList as SubpageListExtension, configureSubpageListSource, type SubpageListSource } from './extensions/subpage-list.ts'
+export { FindReplace as FindReplaceExtension, findReplaceKey } from './extensions/find-replace.ts'

@@ -514,3 +514,224 @@
   flex-shrink: 0;
   color: var(--muted-foreground);
 }
+
+/* ------------------------------- 折叠块（P1-7） ------------------------------- */
+
+.ProseMirror details.linkbase-details,
+.ProseMirror details {
+  margin: 0.5em 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--secondary);
+}
+
+.ProseMirror details summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 2px 0;
+}
+
+.ProseMirror details > * + * {
+  margin-top: 0.5em;
+}
+
+/* ------------------------------- 公式 / Mermaid（P1-7） ------------------------------- */
+
+.linkbase-math-block,
+.linkbase-mermaid-block {
+  margin: 0.5em 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.linkbase-math-preview {
+  padding: 14px 16px;
+  overflow-x: auto;
+  background: var(--secondary);
+}
+
+.linkbase-math-preview .katex-display {
+  margin: 0;
+}
+
+.linkbase-math-source,
+.linkbase-mermaid-source {
+  display: block;
+  border-top: 1px solid var(--border);
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+  outline: none;
+}
+
+.linkbase-math-error,
+.linkbase-mermaid-error {
+  color: var(--destructive);
+  font-size: 12.5px;
+}
+
+.linkbase-mermaid-preview {
+  display: flex;
+  justify-content: center;
+  padding: 14px 16px;
+  background: var(--secondary);
+  overflow-x: auto;
+}
+
+/* ------------------------------- 查找替换（P1-7） ------------------------------- */
+
+.linkbase-search-match {
+  background: color-mix(in srgb, var(--warning) 30%, transparent);
+}
+
+.linkbase-search-match-active {
+  background: color-mix(in srgb, var(--warning) 65%, transparent);
+}
+
+.linkbase-find-bar {
+  position: absolute;
+  top: 40px;
+  right: 16px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--popover);
+  box-shadow: 0 4px 12px rgb(15 15 15 / 10%);
+}
+
+.linkbase-find-input {
+  width: 150px;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--input);
+  border-radius: 6px;
+  background: var(--background);
+  color: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.linkbase-find-input:focus-visible {
+  border-color: var(--ring);
+}
+
+.linkbase-find-count {
+  min-width: 44px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+
+.linkbase-find-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  min-width: 24px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background-color 120ms ease-out;
+}
+
+.linkbase-find-btn:hover:not(:disabled) {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.linkbase-find-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ------------------------------- 表格列宽手柄（P1-7） ------------------------------- */
+
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  bottom: -1px;
+  width: 4px;
+  background: var(--primary);
+  pointer-events: none;
+}
+
+.ProseMirror.resize-cursor {
+  cursor: col-resize;
+}
+
+.ProseMirror table {
+  table-layout: fixed;
+}
+
+/* ------------------------------- 子页列表块（P1-7） ------------------------------- */
+
+.linkbase-subpage-list {
+  width: 100%;
+  margin: 0.5em 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--secondary);
+}
+
+.linkbase-subpage-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.linkbase-subpage-list-refresh {
+  display: inline-flex;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  padding: 2px;
+  transition: background-color 120ms ease-out;
+}
+
+.linkbase-subpage-list-refresh:hover {
+  background: var(--muted);
+}
+
+.linkbase-subpage-list-empty {
+  padding: 4px 2px;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+
+.linkbase-subpage-list-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 120ms ease-out;
+}
+
+.linkbase-subpage-list-item:hover {
+  background: var(--muted);
+}

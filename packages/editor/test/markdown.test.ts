@@ -15,6 +15,16 @@ describe('buildEditorKit', () => {
     const names = buildEditorKit({ ydoc: new Y.Doc(), uploadImage: async () => ({ url: '' }) }).map((e) => e.name)
     expect(names).toContain('attachment')
   })
+
+  test('装配包含 T2.7 扩展（折叠/公式/图/子页列表/查找替换）', () => {
+    const names = buildEditorKit({ ydoc: new Y.Doc(), uploadImage: async () => ({ url: '' }) }).map((e) => e.name)
+    expect(names).toContain('details')
+    expect(names).toContain('detailsSummary')
+    expect(names).toContain('mathBlock')
+    expect(names).toContain('mermaidBlock')
+    expect(names).toContain('subpageList')
+    expect(names).toContain('findReplace')
+  })
 })
 
 describe('markdownToPmJson', () => {

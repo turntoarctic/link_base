@@ -159,5 +159,8 @@
     "hint": "Anyone with the link can view read-only; disabling invalidates the link instantly (re-enabling keeps the same link).",
     "readOnly": "Read-only share",
     "notFound": "Share not found or disabled"
+  },
+  "backlinks": {
+    "title": "{count} backlinks"
   }
 }

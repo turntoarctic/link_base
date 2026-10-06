@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, CloudOff, Copy, Download, FileUp, History, MessageSquare, MoreHorizontal, Search, Star, Trash2 } from 'lucide-react'
+import { ChevronRight, CloudOff, Copy, Download, FileUp, History, Link2, MessageSquare, MoreHorizontal, Search, Star, Trash2 } from 'lucide-react'
 import { pageApi, tagApi } from '@/lib/api'
 import type { CommentAnchor, PageTreeNode } from '@linkbase/types'
 import { updateSubpageTitle } from './doc-manager'
@@ -51,6 +51,12 @@ export default function EditorPage() {
   const comments = useQuery({
     queryKey: ['comments', workspaceId, pageId],
     queryFn: () => pageApi.comments(workspaceId, pageId),
+  })
+  // 反向链接（Phase 3）：derive 异步同步，30s 轮询兜底
+  const backlinks = useQuery({
+    queryKey: ['backlinks', workspaceId, pageId],
+    queryFn: () => pageApi.backlinks(workspaceId, pageId),
+    refetchInterval: 30_000,
   })
   const commentAnchors = (comments.data ?? [])
     .filter((c) => c.anchor && !c.resolved)
@@ -330,6 +336,28 @@ export default function EditorPage() {
             {t('workspace:errors.loadFailed')}
           </div>
         )}
+        {/* 反向链接（Phase 3）：底部清单 */}
+        {status === 'ready' && (backlinks.data?.length ?? 0) > 0 && (
+          <div className="linkbase-backlinks mt-10 border-t border-(--border) pt-4" contentEditable={false}>
+            <div className="mb-2 flex items-center gap-1.5 text-[12px] font-medium text-(--muted-foreground)">
+              <Link2 size={12} />
+              {t('workspace:backlinks.title', { count: backlinks.data!.length })}
+            </div>
+            <div className="flex flex-col">
+              {backlinks.data!.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  className="w-fit rounded px-1 py-0.5 text-left text-[13px] text-(--primary) transition-colors hover:bg-(--muted)"
+                  onClick={() => navigate(`/${workspaceId}/page/${b.id}`)}
+                >
+                  {b.title || t('common:untitled')}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {status === 'ready' && ydoc && (
           <EditorView
             key={pageId}

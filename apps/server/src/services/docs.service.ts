@@ -18,7 +18,7 @@ import {
 } from '@linkbase/ydoc'
 import { Y_FRAGMENT_NAME } from '@linkbase/editor/server'
 import { base64ToBytes } from '@linkbase/ydoc'
-import { pageSnapshots, pageUpdates, pages, workspaceMembers } from '../db/index.ts'
+import { pageRefs, pageSnapshots, pageUpdates, pages, workspaceMembers } from '../db/index.ts'
 import { notifyMentionsInTx } from './notifications.service.ts'
 import { errPageNotFound, errPayloadTooLarge } from '../lib/errors.ts'
 import { logger } from '../lib/logger.ts'
@@ -203,6 +203,42 @@ export async function restoreVersion(
   await mergePage(db, pageId, 'restore')
 }
 
+/** 页面引用表同步（Phase 3）：删旧插新；目标须存在且同空间；自引忽略 */
+async function syncPageRefsInTx(tx: TxLike, wsId: string, pageId: string, refs: string[]): Promise<void> {
+  await tx.delete(pageRefs).where(eq(pageRefs.sourcePageId, pageId))
+  const targets = [...new Set(refs)].filter((t) => t !== pageId)
+  if (targets.length === 0) return
+  const existing = await tx
+    .select({ id: pages.id })
+    .from(pages)
+    .where(and(inArray(pages.id, targets), eq(pages.workspaceId, wsId)))
+  if (existing.length === 0) return
+  await tx
+    .insert(pageRefs)
+    .values(existing.map((e) => ({ sourcePageId: pageId, targetPageId: e.id })))
+    .onConflictDoNothing()
+}
+
+/** 反向链接（Phase 3）：链接到 targetPage 的同空间非回收站页面 */
+export async function listBacklinks(
+  db: LinkbaseDb,
+  wsId: string,
+  pageId: string,
+): Promise<Array<{ id: string; title: string }>> {
+  return db
+    .select({ id: pages.id, title: pages.title })
+    .from(pageRefs)
+    .innerJoin(pages, eq(pages.id, pageRefs.sourcePageId))
+    .where(
+      and(
+        eq(pageRefs.targetPageId, pageId),
+        eq(pages.workspaceId, wsId),
+        eq(pages.isTrash, false),
+      ),
+    )
+    .orderBy(asc(pages.title))
+}
+
 /** 派生缓存管道（08 §5）：text + 子页 parent_id（一个子页只认文档序第一个父页） */
 export async function derivePageMeta(db: LinkbaseDb, pageId: string): Promise<void> {
   const rows = await db
@@ -238,6 +274,8 @@ async function deriveMetaInTx(
       excerpt: meta.text.slice(0, 200),
     }).catch((error) => logger.error({ error, pageId }, 'mention notify failed'))
   }
+  // 页面引用表同步（Phase 3 反向链接）：重建 source = pageId 的引用；过滤自引/不存在/跨空间目标
+  await syncPageRefsInTx(tx, wsId, pageId, meta.pageRefs)
   if (meta.subpageIds.length > 0) {
     await tx
       .update(pages)
@@ -314,6 +352,8 @@ export async function importPageMarkdown(
     await tx.insert(pages).values({ id: pageId, workspaceId: wsId, title, createdBy: actorId })
     await tx.insert(pageSnapshots).values({ pageId, version: 1, blob: state, reason: 'copy' })
     await tx.update(pages).set({ text: meta.text }).where(eq(pages.id, pageId))
+    // 导入内容可能含站内链接：同步引用表（反链可用）
+    await syncPageRefsInTx(tx, wsId, pageId, meta.pageRefs)
   })
   return { id: pageId, title }
 }

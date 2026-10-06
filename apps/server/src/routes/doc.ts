@@ -14,6 +14,7 @@ import {
   exportPageMarkdown,
   getVersionText,
   importPageMarkdown,
+  listBacklinks,
   listVersions,
   pullDoc,
   pushDoc,
@@ -73,6 +74,12 @@ export function docRouter(deps: ServerDeps): Hono<AppEnv> {
         return c.body(null, 204)
       },
     )
+    // 反向链接（Phase 3）
+    .use('/:wsId/pages/:pageId/backlinks', requireAuth, requireMember)
+    .get('/:wsId/pages/:pageId/backlinks', async (c) => {
+      const backlinks = await listBacklinks(deps.db, c.get('ws').id, c.req.param('pageId'))
+      return c.json(backlinks, 200)
+    })
     // 版本历史（T2.3）：中间件挂在同一 :pageId 形状上
     .use('/:wsId/pages/:pageId/versions', requireAuth, requireMember)
     .use('/:wsId/pages/:pageId/versions/:version', requireAuth, requireMember)

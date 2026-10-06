@@ -132,6 +132,10 @@ export const pageApi = {
   restoreVersion(wsId: string, pageId: string, version: number): Promise<void> {
     return api.json(`/workspaces/${wsId}/pages/${pageId}/versions/${version}/restore`, { method: 'POST' })
   },
+  // 反向链接（Phase 3）
+  backlinks(wsId: string, pageId: string): Promise<Array<{ id: string; title: string }>> {
+    return api.json(`/workspaces/${wsId}/pages/${pageId}/backlinks`)
+  },
   // 公开分享（Phase 3）
   shareState(wsId: string, pageId: string): Promise<{ enabled: boolean; slug: string | null }> {
     return api.json(`/workspaces/${wsId}/pages/${pageId}/share`)

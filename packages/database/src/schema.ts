@@ -323,3 +323,18 @@ export const notifications = pgTable(
 )
 
 export type NotificationRow = typeof notifications.$inferSelect
+
+/* ------------------------------- page_refs（Phase 3 反向链接） ------------------------------- */
+
+export const pageRefs = pgTable(
+  'page_refs',
+  {
+    sourcePageId: uuid('source_page_id')
+      .notNull()
+      .references(() => pages.id, { onDelete: 'cascade' }),
+    targetPageId: uuid('target_page_id')
+      .notNull()
+      .references(() => pages.id, { onDelete: 'cascade' }),
+  },
+  (t) => [primaryKey({ columns: [t.sourcePageId, t.targetPageId] }), index('idx_page_refs_target').on(t.targetPageId)],
+)

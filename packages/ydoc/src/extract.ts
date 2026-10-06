@@ -15,22 +15,49 @@ export interface PageMeta {
   subpageIds: string[]
   /** mention 节点的 userId 序（去重，P1-9 通知触发） */
   mentionIds: string[]
+  /** 链接指向的页面 id 序（去重，Phase 3 反向链接；/page/{uuid} 形态的内链） */
+  pageRefs: string[]
+}
+
+interface PmMark {
+  type?: string
+  attrs?: Record<string, unknown>
 }
 
 interface PmNode {
   type?: string
   text?: string
   attrs?: Record<string, unknown>
+  marks?: PmMark[]
   content?: PmNode[]
 }
 
 function walk(
   node: PmNode,
-  state: { text: string[]; seen: Set<string>; subpageIds: string[]; mentionSeen: Set<string>; mentionIds: string[] },
+  state: {
+    text: string[]
+    seen: Set<string>
+    subpageIds: string[]
+    mentionSeen: Set<string>
+    mentionIds: string[]
+    refSeen: Set<string>
+    pageRefs: string[]
+  },
 ): void {
   const type = node.type
   if (type === 'text' && typeof node.text === 'string') {
     state.text.push(node.text)
+    // link mark 指向站内页面（/page/{uuid}）→ 页面引用（Phase 3 反向链接）
+    for (const mark of node.marks ?? []) {
+      if (mark.type !== 'link') continue
+      const href = String((mark.attrs as Record<string, unknown> | undefined)?.href ?? '')
+      const m = /\/page\/([0-9a-f-]{36})/i.exec(href)
+      const target = m?.[1]?.toLowerCase()
+      if (target && !state.refSeen.has(target)) {
+        state.refSeen.add(target)
+        state.pageRefs.push(target)
+      }
+    }
     return
   }
   if (type === NODE_SUBPAGE) {
@@ -65,8 +92,15 @@ export function extractPageMeta(input: Y.Doc | Uint8Array): PageMeta {
     subpageIds: [] as string[],
     mentionSeen: new Set<string>(),
     mentionIds: [] as string[],
+    refSeen: new Set<string>(),
+    pageRefs: [] as string[],
   }
   walk(root, state)
   // 文本节点间补空格近似阅读序；段落间距由遍历顺序保证
-  return { text: state.text.join(' '), subpageIds: state.subpageIds, mentionIds: state.mentionIds }
+  return {
+    text: state.text.join(' '),
+    subpageIds: state.subpageIds,
+    mentionIds: state.mentionIds,
+    pageRefs: state.pageRefs,
+  }
 }

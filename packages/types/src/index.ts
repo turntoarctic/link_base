@@ -100,3 +100,16 @@ export interface CommentItem {
   createdAt: string
   updatedAt: string
 }
+
+/** 站内通知条目（P1-9 / T2.9，新→旧） */
+export interface NotificationItem {
+  id: string
+  /** mention | comment | reply */
+  type: string
+  actorName: string
+  pageId: string
+  pageTitle: string
+  excerpt: string
+  read: boolean
+  createdAt: string
+}

@@ -22,6 +22,7 @@ export function pagesRouter(deps: ServerDeps): Hono<AppEnv> {
   return new Hono<AppEnv>()
     .use('/:wsId/*', requireAuth, requireMember)
     .get('/:wsId/pages', async (c) => c.json(await pages.tree(c.get('ws').id), 200))
+    .get('/:wsId/templates', async (c) => c.json(await pages.listTemplates(c.get('ws').id), 200))
     .post(
       '/:wsId/pages',
       bodyLimit({

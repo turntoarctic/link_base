@@ -138,5 +138,16 @@
   },
   "findReplace": {
     "menu": "查找替换"
+  },
+  "templates": {
+    "blank": "空白页面"
+  },
+  "notifications": {
+    "title": "通知",
+    "empty": "暂无通知",
+    "markAllRead": "全部已读",
+    "typeMention": "{{actor}} 在页面中提及了你",
+    "typeComment": "{{actor}} 评论了页面",
+    "typeReply": "{{actor}} 回复了你的评论"
   }
 }

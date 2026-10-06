@@ -19,6 +19,7 @@ import {
 import { Y_FRAGMENT_NAME } from '@linkbase/editor/server'
 import { base64ToBytes } from '@linkbase/ydoc'
 import { pageSnapshots, pageUpdates, pages, workspaceMembers } from '../db/index.ts'
+import { notifyMentionsInTx } from './notifications.service.ts'
 import { errPageNotFound, errPayloadTooLarge } from '../lib/errors.ts'
 import { logger } from '../lib/logger.ts'
 import type { LinkbaseDb } from '../lib/deps.ts'
@@ -78,13 +79,18 @@ export async function pushDoc(
   if ((counts[0]?.count ?? 0) >= MERGE_THRESHOLD_UPDATES) {
     // 写路径外异步合并，不阻塞响应
     queueMicrotask(() => {
-      void mergePage(db, pageId).catch((error) => logger.error({ error, pageId }, 'merge failed'))
+      void mergePage(db, pageId, 'auto', actorId).catch((error) => logger.error({ error, pageId }, 'merge failed'))
     })
   }
 }
 
 /** 快照合并（08 §4.3）：合并 → 写新快照 → 删已并入增量 → 派生缓存刷新；幂等 */
-export async function mergePage(db: LinkbaseDb, pageId: string, reason = 'auto'): Promise<boolean> {
+export async function mergePage(
+  db: LinkbaseDb,
+  pageId: string,
+  reason = 'auto',
+  actorId?: string,
+): Promise<boolean> {
   const wsIdRows = await db
     .select({ workspaceId: pages.workspaceId })
     .from(pages)
@@ -118,7 +124,7 @@ export async function mergePage(db: LinkbaseDb, pageId: string, reason = 'auto')
       reason,
     })
     await tx.delete(pageUpdates).where(eq(pageUpdates.pageId, pageId))
-    await deriveMetaInTx(tx, wsId, pageId, state)
+    await deriveMetaInTx(tx, wsId, pageId, state, actorId)
     return true
   })
 }
@@ -213,9 +219,25 @@ export async function derivePageMeta(db: LinkbaseDb, pageId: string): Promise<vo
 
 type TxLike = Parameters<Parameters<LinkbaseDb['transaction']>[0]>[0]
 
-async function deriveMetaInTx(tx: TxLike, wsId: string, pageId: string, state: Uint8Array): Promise<void> {
+async function deriveMetaInTx(
+  tx: TxLike,
+  wsId: string,
+  pageId: string,
+  state: Uint8Array,
+  actorId?: string,
+): Promise<void> {
   const meta = extractPageMeta(state)
   await tx.update(pages).set({ text: meta.text }).where(eq(pages.id, pageId))
+  // 提及通知（P1-9）：派生时顺带触发；调度路径无 actor 则跳过
+  if (actorId && meta.mentionIds.length > 0) {
+    await notifyMentionsInTx(tx, {
+      wsId,
+      pageId,
+      actorId,
+      userIds: meta.mentionIds,
+      excerpt: meta.text.slice(0, 200),
+    }).catch((error) => logger.error({ error, pageId }, 'mention notify failed'))
+  }
   if (meta.subpageIds.length > 0) {
     await tx
       .update(pages)

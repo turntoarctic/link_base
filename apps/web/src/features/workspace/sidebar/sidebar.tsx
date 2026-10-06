@@ -36,6 +36,7 @@ import { Avatar, Kbd, Separator } from '@/components/ui/primitives'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { CommandPalette, openCommandPalette } from '@/features/search/command-palette'
 import { PageTree } from './page-tree'
+import { NotificationBell } from '@/features/notifications/notification-bell'
 import { cn } from '@/lib/cn'
 
 export function Sidebar({
@@ -65,8 +66,16 @@ export function Sidebar({
   })
   const tags = useQuery({ queryKey: ['tags', workspaceId], queryFn: () => tagApi.list(workspaceId) })
 
+  const templates = useQuery({
+    queryKey: ['templates', workspaceId],
+    queryFn: () => pageApi.templates(workspaceId),
+    staleTime: 300_000,
+  })
+  const templatesData = templates.data
+
   const createPage = useMutation({
-    mutationFn: () => pageApi.create(workspaceId, {}),
+    mutationFn: (input: { templateId?: string | null } | undefined) =>
+      pageApi.create(workspaceId, input?.templateId ? { templateId: input.templateId } : {}),
     onSuccess: (page) => {
       void queryClient.invalidateQueries({ queryKey: ['pages', workspaceId] })
       navigate(`/${workspaceId}/page/${page.id}`)
@@ -137,6 +146,7 @@ export function Sidebar({
             <span className="flex-1 truncate text-left">{t('workspace:sidebar.searchPlaceholder')}</span>
             <Kbd>⌘K</Kbd>
           </button>
+          <NotificationBell />
         </div>
 
         <div className="mt-1.5 min-h-0 flex-1 overflow-y-auto px-2 pb-2">
@@ -157,15 +167,28 @@ export function Sidebar({
             title={t('workspace:sidebar.pages')}
             icon={<FileText size={12} />}
             action={
-              <button
-                type="button"
-                aria-label={t('workspace:sidebar.newPage')}
-                title={t('workspace:sidebar.newPage')}
-                className="rounded p-0.5 text-(--muted-foreground) transition-colors hover:bg-(--accent) hover:text-(--sidebar-foreground)"
-                onClick={() => createPage.mutate()}
-              >
-                <Plus size={12} />
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label={t('workspace:sidebar.newPage')}
+                    title={t('workspace:sidebar.newPage')}
+                    className="rounded p-0.5 text-(--muted-foreground) transition-colors hover:bg-(--accent) hover:text-(--sidebar-foreground)"
+                  >
+                    <Plus size={12} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[150px]">
+                  <DropdownMenuItem onSelect={() => createPage.mutate({ templateId: null })}>
+                    {t('workspace:templates.blank')}
+                  </DropdownMenuItem>
+                  {(templatesData ?? []).map((tpl) => (
+                    <DropdownMenuItem key={tpl.id} onSelect={() => createPage.mutate({ templateId: tpl.id })}>
+                      {tpl.title}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             }
           >
             <PageTree nodes={tree.data ?? []} />

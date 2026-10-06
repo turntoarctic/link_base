@@ -138,5 +138,16 @@
   },
   "findReplace": {
     "menu": "Find & replace"
+  },
+  "templates": {
+    "blank": "Blank page"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "markAllRead": "Mark all read",
+    "typeMention": "{{actor}} mentioned you in a page",
+    "typeComment": "{{actor}} commented on a page",
+    "typeReply": "{{actor}} replied to your comment"
   }
 }

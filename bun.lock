@@ -106,6 +106,7 @@
         "@linkbase/types": "workspace:*",
         "@linkbase/ydoc": "workspace:*",
         "drizzle-orm": "catalog:",
+        "yjs": "catalog:",
       },
       "devDependencies": {
         "drizzle-kit": "catalog:",

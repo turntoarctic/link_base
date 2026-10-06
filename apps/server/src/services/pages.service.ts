@@ -234,6 +234,16 @@ export function createPagesService(db: LinkbaseDb) {
       await db.delete(pages).where(and(eq(pages.workspaceId, wsId), inArray(pages.id, ids)))
     },
 
+    /** 模板列表（T2.10）：本空间 is_template 页（id/title） */
+    async listTemplates(wsId: string): Promise<Array<{ id: string; title: string }>> {
+      const rows = await db
+        .select({ id: pages.id, title: pages.title })
+        .from(pages)
+        .where(and(eq(pages.workspaceId, wsId), eq(pages.isTemplate, true), eq(pages.isTrash, false)))
+        .orderBy(asc(pages.createdAt))
+      return rows
+    },
+
     async trashList(wsId: string): Promise<TrashItem[]> {
       const rows = await db
         .select()

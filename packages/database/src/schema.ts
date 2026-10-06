@@ -290,3 +290,33 @@ export const comments = pgTable(
 )
 
 export type CommentRow = typeof comments.$inferSelect
+
+/* ------------------------------- notifications（P1-9 站内通知，T2.9） ------------------------------- */
+
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: uuid('id').primaryKey(),
+    workspaceId: uuid('workspace_id')
+      .notNull()
+      .references(() => workspaces.id, { onDelete: 'cascade' }),
+    recipient: uuid('recipient')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    actor: uuid('actor')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** mention | comment | reply */
+    type: text('type').notNull(),
+    pageId: uuid('page_id')
+      .notNull()
+      .references(() => pages.id, { onDelete: 'cascade' }),
+    commentId: uuid('comment_id').references((): AnyPgColumn => comments.id, { onDelete: 'cascade' }),
+    excerpt: text('excerpt').notNull().default(''),
+    read: boolean('read').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('idx_notifications_recipient').on(t.recipient, t.read, t.createdAt)],
+)
+
+export type NotificationRow = typeof notifications.$inferSelect

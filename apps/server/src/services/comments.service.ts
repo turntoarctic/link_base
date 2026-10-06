@@ -5,7 +5,8 @@
  */
 import { and, asc, eq } from 'drizzle-orm'
 import type { CommentAnchor, CommentItem } from '@linkbase/types'
-import { comments, users } from '../db/index.ts'
+import { comments, pages, users } from '../db/index.ts'
+import { notifyComment } from './notifications.service.ts'
 import { uuidv7 } from '../lib/ids.ts'
 import type { LinkbaseDb } from '../lib/deps.ts'
 
@@ -59,6 +60,25 @@ export async function createComment(
       body: input.body,
     })
     .returning()
+  // 通知触发（P1-9）：评论 → 页面创建者；回复 → 根评论作者（均排除自己）
+  const rootAuthor = input.parentId
+    ? (
+        (await db
+          .select({ author: comments.author })
+          .from(comments)
+          .where(eq(comments.id, input.parentId))
+          .limit(1))[0]?.author ?? null
+      )
+    : null
+  await notifyComment(db, {
+    wsId: input.wsId,
+    pageId: input.pageId,
+    actorId: input.authorId,
+    type: input.parentId ? 'reply' : 'comment',
+    commentId: id,
+    rootCommentAuthor: rootAuthor,
+    excerpt: input.body,
+  })
   const authorName = await resolveAuthorName(db, input.authorId)
   return toItem(rows[0]!, authorName)
 }

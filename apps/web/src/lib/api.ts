@@ -13,6 +13,7 @@ import type {
 import type {
   CommentAnchor,
   CommentItem,
+  NotificationItem,
   PageMetaDto,
   PageTreeNode,
   SearchResultItem,
@@ -115,6 +116,9 @@ export const pageApi = {
   trashList(wsId: string): Promise<TrashItem[]> {
     return api.json(`/workspaces/${wsId}/trash`)
   },
+  templates(wsId: string): Promise<Array<{ id: string; title: string }>> {
+    return api.json(`/workspaces/${wsId}/templates`)
+  },
   // 版本历史（08 §4.5，T2.3）
   versions(wsId: string, pageId: string): Promise<VersionItem[]> {
     return api.json(`/workspaces/${wsId}/pages/${pageId}/versions`)
@@ -204,5 +208,17 @@ export const blobApi = {
   },
   url(id: string): string {
     return `/api/blobs/${id}`
+  },
+}
+
+export const notificationApi = {
+  list(): Promise<NotificationItem[]> {
+    return api.json('/notifications')
+  },
+  markRead(id: string): Promise<void> {
+    return api.json(`/notifications/${id}/read`, { method: 'POST' })
+  },
+  markAllRead(): Promise<void> {
+    return api.json('/notifications/read-all', { method: 'POST' })
   },
 }

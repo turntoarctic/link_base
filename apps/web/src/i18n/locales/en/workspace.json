@@ -122,5 +122,18 @@
     "inlineTarget": "Commenting on \"{{quote}}…\"",
     "placeholder": "Write a comment, ⌘+Enter to send",
     "send": "Send"
+  },
+  "import": {
+    "menu": "Import Markdown",
+    "title": "Import Markdown",
+    "subtitle": "Parsed server-side; headings, lists, tasks, code blocks and tables supported",
+    "titlePlaceholder": "Page title (defaults to first heading)",
+    "pickFile": "Choose .md file",
+    "pastePlaceholder": "Paste Markdown here…",
+    "create": "Create page",
+    "done": "Imported \"{{title}}\""
+  },
+  "export": {
+    "md": "Export Markdown"
   }
 }

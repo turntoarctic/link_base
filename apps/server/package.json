@@ -19,6 +19,10 @@
     "hono": "catalog:",
     "lib0": "catalog:",
     "pino": "catalog:",
+    "prosemirror-model": "^1.25.12",
+    "prosemirror-state": "^1.4.4",
+    "prosemirror-view": "^1.38.1",
+    "y-prosemirror": "catalog:",
     "y-protocols": "catalog:",
     "yjs": "catalog:",
     "zod": "catalog:"

@@ -2,14 +2,18 @@
  * 版本历史（08 §4.5，T2.3）：手动保存 / 时间线 / 版本正文 / 恢复（写 reason=restore 快照）。 */
 import { Hono } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
+import { z } from 'zod'
 import type { AppEnv } from '../lib/context.ts'
 import { errNotFound, errPayloadTooLarge } from '../lib/errors.ts'
 import { requireAuth } from '../middleware/auth.ts'
 import { requireMember } from '../middleware/workspace.ts'
+import { validate } from '../lib/validate.ts'
 import type { ServerDeps } from '../lib/deps.ts'
 import {
   MAX_UPDATE_BYTES,
+  exportPageMarkdown,
   getVersionText,
+  importPageMarkdown,
   listVersions,
   pullDoc,
   pushDoc,
@@ -18,8 +22,34 @@ import {
 } from '../services/docs.service.ts'
 import { applyServerUpdate } from '../ws/rooms.ts'
 
+const importSchema = z.object({
+  title: z.string().max(200).optional(),
+  markdown: z.string().min(1).max(200_000),
+})
+
 export function docRouter(deps: ServerDeps): Hono<AppEnv> {
   return new Hono<AppEnv>()
+    // Markdown 导入导出（05 §7 / T2.5）：先于 :pageId 参数路由注册
+    .use('/:wsId/pages/import', requireAuth, requireMember)
+    .post(
+      '/:wsId/pages/import',
+      validate('json', importSchema),
+      async (c) => {
+        const { title, markdown } = c.req.valid('json')
+        const page = await importPageMarkdown(deps.db, c.get('ws').id, c.get('user').id, { title, markdown })
+        return c.json(page, 201)
+      },
+    )
+    .use('/:wsId/pages/:pageId/export', requireAuth, requireMember)
+    .get('/:wsId/pages/:pageId/export', async (c) => {
+      const pageId = c.req.param('pageId')
+      const { title, markdown } = await exportPageMarkdown(deps.db, pageId)
+      const filename = encodeURIComponent(`${title || 'page'}.md`)
+      return c.body(markdown, 200, {
+        'content-type': 'text/markdown; charset=utf-8',
+        'content-disposition': `attachment; filename="page-${pageId.slice(0, 8)}.md"; filename*=UTF-8''${filename}`,
+      })
+    })
     .use('/:wsId/pages/:pageId/doc', requireAuth, requireMember)
     .get('/:wsId/pages/:pageId/doc', async (c) => {
       const stateParam = c.req.query('state')

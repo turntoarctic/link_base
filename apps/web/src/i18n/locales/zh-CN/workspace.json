@@ -122,5 +122,18 @@
     "inlineTarget": "评论选中内容：「{{quote}}…」",
     "placeholder": "写下评论，⌘+Enter 发送",
     "send": "发送"
+  },
+  "import": {
+    "menu": "导入 Markdown",
+    "title": "导入 Markdown",
+    "subtitle": "服务端解析为页面；支持标题、列表、任务、代码块、表格等",
+    "titlePlaceholder": "页面标题（留空则取首行标题）",
+    "pickFile": "选择 .md 文件",
+    "pastePlaceholder": "在此粘贴 Markdown 内容…",
+    "create": "创建页面",
+    "done": "已导入「{{title}}」"
+  },
+  "export": {
+    "md": "导出 Markdown"
   }
 }

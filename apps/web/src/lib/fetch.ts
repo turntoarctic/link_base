@@ -132,6 +132,13 @@ export const api = {
     return (await res.json()) as T
   },
 
+  /** 文本响应（Markdown 导出等） */
+  async text(path: string): Promise<string> {
+    const res = await request(path)
+    if (!res.ok) await parseError(res)
+    return res.text()
+  },
+
   /** 二进制响应；404 时返回 null（doc 空页语义，05 §3.1） */
   async bytes(path: string): Promise<Uint8Array | null> {
     const res = await request(path)

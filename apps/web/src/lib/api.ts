@@ -128,6 +128,13 @@ export const pageApi = {
   restoreVersion(wsId: string, pageId: string, version: number): Promise<void> {
     return api.json(`/workspaces/${wsId}/pages/${pageId}/versions/${version}/restore`, { method: 'POST' })
   },
+  // Markdown 导入导出（05 §7 / T2.5）
+  exportMarkdown(wsId: string, pageId: string): Promise<string> {
+    return api.text(`/workspaces/${wsId}/pages/${pageId}/export`)
+  },
+  importMarkdown(wsId: string, input: { title?: string; markdown: string }): Promise<{ id: string; title: string }> {
+    return api.json(`/workspaces/${wsId}/pages/import`, { method: 'POST', json: input })
+  },
   // 评论（P1-3 / T2.4）
   comments(wsId: string, pageId: string): Promise<CommentItem[]> {
     return api.json(`/workspaces/${wsId}/pages/${pageId}/comments`)

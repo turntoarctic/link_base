@@ -5,15 +5,20 @@
  * 派生缓存（text/parent_id）在合并后与建子页时对齐（08 §5）。
  */
 import { and, asc, desc, eq, inArray, lt, sql } from 'drizzle-orm'
+import * as Y from 'yjs'
 import {
   buildPageState,
   diffUpdate,
   extractPageMeta,
+  loadYDoc,
+  markdownToYDoc,
   mergeUpdates,
   stateVectorFromUpdate,
+  yToMarkdown,
 } from '@linkbase/ydoc'
+import { Y_FRAGMENT_NAME } from '@linkbase/editor/server'
 import { base64ToBytes } from '@linkbase/ydoc'
-import { pageSnapshots, pageUpdates, pages } from '../db/index.ts'
+import { pageSnapshots, pageUpdates, pages, workspaceMembers } from '../db/index.ts'
 import { errPageNotFound, errPayloadTooLarge } from '../lib/errors.ts'
 import { logger } from '../lib/logger.ts'
 import type { LinkbaseDb } from '../lib/deps.ts'
@@ -259,3 +264,39 @@ export async function copyPageState(
 
 /** 增量合并为单条 update（供测试/管理用途） */
 export { mergeUpdates }
+
+/* ------------------------------- Markdown 导入导出（05 §7 / §9，T2.5） ------------------------------- */
+
+/** 导出：合并态 → PM JSON → Markdown（GFM） */
+export async function exportPageMarkdown(db: LinkbaseDb, pageId: string): Promise<{ title: string; markdown: string }> {
+  const rows = await db.select({ title: pages.title }).from(pages).where(eq(pages.id, pageId)).limit(1)
+  if (!rows[0]) throw errPageNotFound()
+  const state = await getPageState(db, pageId)
+  if (!state) return { title: rows[0].title, markdown: '' }
+  return { title: rows[0].title, markdown: yToMarkdown(loadYDoc(state).getXmlFragment(Y_FRAGMENT_NAME)) }
+}
+
+/** 导入建页：md → Y.Doc → 快照（reason=copy，08 §3.4 的 reason 集合内）+ 派生缓存 */
+export async function importPageMarkdown(
+  db: LinkbaseDb,
+  wsId: string,
+  actorId: string,
+  input: { title?: string; markdown: string },
+): Promise<{ id: string; title: string }> {
+  const ydoc = markdownToYDoc(input.markdown)
+  const meta = extractPageMeta(ydoc)
+  const state = Y.encodeStateAsUpdate(ydoc)
+  const pageId = crypto.randomUUID()
+  const title = (input.title ?? '').trim() || firstHeadingTitle(input.markdown) || '导入的页面'
+  await db.transaction(async (tx) => {
+    await tx.insert(pages).values({ id: pageId, workspaceId: wsId, title, createdBy: actorId })
+    await tx.insert(pageSnapshots).values({ pageId, version: 1, blob: state, reason: 'copy' })
+    await tx.update(pages).set({ text: meta.text }).where(eq(pages.id, pageId))
+  })
+  return { id: pageId, title }
+}
+
+function firstHeadingTitle(markdown: string): string {
+  const m = /^#{1,6}\s+(.+)$/m.exec(markdown)
+  return m?.[1]?.trim().slice(0, 200) ?? ''
+}

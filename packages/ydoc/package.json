@@ -11,6 +11,10 @@
   },
   "dependencies": {
     "@linkbase/editor": "workspace:*",
+    "marked": "catalog:",
+    "prosemirror-model": "^1.25.12",
+    "prosemirror-state": "^1.4.4",
+    "prosemirror-view": "^1.38.1",
     "y-prosemirror": "catalog:",
     "yjs": "catalog:"
   },

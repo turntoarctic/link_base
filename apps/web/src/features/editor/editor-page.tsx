@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, CloudOff, Copy, History, MessageSquare, MoreHorizontal, Star, Trash2 } from 'lucide-react'
+import { ChevronRight, CloudOff, Copy, Download, FileUp, History, MessageSquare, MoreHorizontal, Star, Trash2 } from 'lucide-react'
 import { pageApi, tagApi } from '@/lib/api'
 import type { CommentAnchor, PageTreeNode } from '@linkbase/types'
 import { updateSubpageTitle } from './doc-manager'
@@ -19,6 +19,7 @@ import { EditorView } from './editor-view'
 import { PageTagsRow } from './page-tags-row'
 import { VersionsPanel } from './versions-panel'
 import { CommentsPanel } from './comments-panel'
+import { ImportMarkdownDialog } from './import-markdown-dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -81,6 +82,7 @@ export default function EditorPage() {
 
   const [versionsOpen, setVersionsOpen] = useState(false)
   const [commentsOpen, setCommentsOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
   const [pendingAnchor, setPendingAnchor] = useState<CommentAnchor | null>(null)
   const [title, setTitle] = useState<string | undefined>(undefined)
   // 组件在 /page/:pageId 下切页不重挂载：切页必须重置标题，否则残留上个页面的
@@ -233,6 +235,29 @@ export default function EditorPage() {
               <History />
               {t('workspace:versions.menu')}
             </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => {
+                void pageApi
+                  .exportMarkdown(workspaceId, pageId)
+                  .then((markdown) => {
+                    const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' })
+                    const a = document.createElement('a')
+                    a.href = URL.createObjectURL(blob)
+                    a.download = `${(meta.data?.title || 'page').replace(/[\\/:*?"<>|]/g, '_')}.md`
+                    a.click()
+                    URL.revokeObjectURL(a.href)
+                  })
+                  .catch(() => toast.error(t('common:operationFailed')))
+              }}
+            >
+              <Download />
+              {t('workspace:export.md')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setImportOpen(true)}>
+              <FileUp />
+              {t('workspace:import.menu')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onSelect={() => moveToTrash.mutate()}>
               <Trash2 />
@@ -251,6 +276,7 @@ export default function EditorPage() {
         pendingAnchor={pendingAnchor}
         onAnchorConsumed={() => setPendingAnchor(null)}
       />
+      <ImportMarkdownDialog wsId={workspaceId} open={importOpen} onOpenChange={setImportOpen} />
 
       {/* 标题（独立输入框，非编辑器节点，05 §5） */}
       <div className="mx-auto w-(--width-content) max-w-full pt-6">

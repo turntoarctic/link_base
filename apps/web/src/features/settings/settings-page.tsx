@@ -1,6 +1,6 @@
 /** 设置页（06 §2）：通用（名称/语言/主题）、成员（邀请/角色/转让）、标签 —— Card 分区 */
 import { useEffect, useState } from 'react'
-import { useParams, useSearchParams } from 'react-router'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link2, Settings as SettingsIcon, Tag, UsersRound, X } from 'lucide-react'
@@ -8,10 +8,11 @@ import { authApi, tagApi, workspaceApi } from '@/lib/api'
 import { changeLocale, type AppLocale } from '@/i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input, Select } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Avatar } from '@/components/ui/primitives'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '@/components/ui/dialog'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { toast } from '@/components/ui/sonner'
@@ -208,7 +209,11 @@ function MembersTab({ workspaceId, role }: { workspaceId: string; role: 'owner' 
           <div className="flex flex-col divide-y divide-(--border)">
             {(members.data ?? []).map((member) => (
               <div key={member.userId} className="flex items-center gap-3 py-3">
-                <Avatar fallback={member.name} />
+                <Avatar className="size-7">
+                  <AvatarFallback className="bg-primary text-[11px] font-medium text-white">
+                    {member.name.slice(0, 1).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[14px]">{member.name}</div>
                   <div className="truncate text-[12px] text-(--muted-foreground)">{member.email}</div>
@@ -335,9 +340,9 @@ function TagsTab({ workspaceId }: { workspaceId: string }) {
 
         <div className="flex flex-wrap gap-1.5">
           {(tags.data ?? []).map((tag) => (
-            <span
+            <Badge
               key={tag.id}
-              className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[13px] font-medium"
+              className="gap-1 px-2.5 py-1 text-[13px]"
               style={{ background: `var(--tag-${tag.color}-bg)`, color: `var(--tag-${tag.color}-fg)` }}
             >
               {tag.name}
@@ -353,7 +358,7 @@ function TagsTab({ workspaceId }: { workspaceId: string }) {
               >
                 <X size={11} />
               </button>
-            </span>
+            </Badge>
           ))}
           {tags.data?.length === 0 && (
             <span className="text-[13px] text-(--muted-foreground)">{t('tags.empty')}</span>

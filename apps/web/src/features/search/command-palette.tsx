@@ -3,12 +3,12 @@
  * 输入即搜（标题+正文），↑↓ 选择，⏎ 打开，⏎ 新建名为关键词的页面（无结果置顶）。
  */
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { CornerDownLeft, FileText, Plus, Search } from 'lucide-react'
 import { pageApi, searchApi } from '@/lib/api'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Kbd } from '@/components/ui/primitives'
 
 let opener: (() => void) | null = null
@@ -91,20 +91,13 @@ export function CommandPalette({ workspaceId }: { workspaceId: string }) {
     })
   }
 
-  if (!open) return null
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[300] flex items-start justify-center bg-black/30 pt-[14vh]"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) setOpen(false)
-      }}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        className="w-[640px] max-w-[calc(100vw-32px)] overflow-hidden rounded-lg border border-(--border) bg-(--popover) text-(--popover-foreground) shadow-(--shadow-modal)"
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent
+        showCloseButton={false}
+        className="linkbase-region-blue top-[14vh] w-[640px] max-w-[calc(100vw-32px)] sm:max-w-[calc(100vw-32px)] translate-y-0 gap-0 overflow-hidden rounded-lg bg-(--popover) p-0 text-(--popover-foreground) shadow-(--shadow-modal)"
       >
+        <DialogTitle className="sr-only">{t('search.placeholder')}</DialogTitle>
         <div className="flex items-center gap-2.5 border-b border-(--border) px-4">
           <Search size={15} className="shrink-0 text-(--muted-foreground)" />
           <input
@@ -131,7 +124,7 @@ export function CommandPalette({ workspaceId }: { workspaceId: string }) {
               }
             }}
           />
-          <Kbd>esc</Kbd>
+          <Kbd className="rounded-sm">esc</Kbd>
         </div>
 
         <div className="max-h-[320px] overflow-y-auto p-1.5">
@@ -149,14 +142,14 @@ export function CommandPalette({ workspaceId }: { workspaceId: string }) {
               type="button"
               className={
                 'flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[14px] transition-colors ' +
-                (index === active ? 'bg-(--muted)' : '')
+                (index === active ? 'bg-(--region-accent)/10 text-(--region-accent)' : '')
               }
               onMouseEnter={() => setActive(index)}
               onClick={() => choose(index)}
             >
               {item.kind === 'page' ? (
                 <>
-                  <FileText size={15} className="shrink-0 text-(--muted-foreground)" />
+                  <FileText size={15} className={index === active ? 'shrink-0 text-(--region-accent)' : 'shrink-0 text-(--muted-foreground)'} />
                   <span className="min-w-0 flex-1 truncate">
                     {item.title || t('common:untitled', { ns: 'common' })}
                   </span>
@@ -168,8 +161,8 @@ export function CommandPalette({ workspaceId }: { workspaceId: string }) {
                 </>
               ) : (
                 <>
-                  <Plus size={15} className="shrink-0 text-(--primary)" />
-                  <span className="text-(--primary)">{t('search.newPage', { title: item.title })}</span>
+                  <Plus size={15} className="shrink-0 text-(--region-accent)" />
+                  <span className="font-medium text-(--region-accent)">{t('search.newPage', { title: item.title })}</span>
                 </>
               )}
             </button>
@@ -178,18 +171,17 @@ export function CommandPalette({ workspaceId }: { workspaceId: string }) {
 
         <div className="flex items-center gap-4 border-t border-(--border) px-4 py-2 text-[11px] text-(--text-tertiary)">
           <span className="flex items-center gap-1">
-            <Kbd>↑</Kbd>
-            <Kbd>↓</Kbd>
+            <Kbd className="rounded-sm">↑</Kbd>
+            <Kbd className="rounded-sm">↓</Kbd>
           </span>
           <span className="flex items-center gap-1">
-            <Kbd>
+            <Kbd className="rounded-sm">
               <CornerDownLeft size={10} />
             </Kbd>
             {t('search.hint')}
           </span>
         </div>
-      </div>
-    </div>,
-    document.body,
+      </DialogContent>
+    </Dialog>
   )
 }

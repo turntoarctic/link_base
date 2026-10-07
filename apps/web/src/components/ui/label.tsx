@@ -1,20 +1,21 @@
-/** shadcn/ui new-york Label（@radix-ui/react-label 封装） */
-import { forwardRef, type ComponentProps } from 'react'
-import * as LabelPrimitive from '@radix-ui/react-label'
-import { cn } from '@/lib/cn'
+import * as React from "react"
+import { cn } from "cn"
+import { Label as LabelPrimitive } from "radix-ui"
 
-export const Label = forwardRef<HTMLLabelElement, ComponentProps<typeof LabelPrimitive.Root>>(
-  function Label({ className, ...props }, ref) {
-    return (
-      <LabelPrimitive.Root
-        ref={ref}
-        data-slot="label"
-        className={cn(
-          'flex items-center gap-2 text-[13px] leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
-          className,
-        )}
-        {...props}
-      />
-    )
-  },
-)
+function Label({
+  className,
+  ...props
+}: React.ComponentProps<typeof LabelPrimitive.Root>) {
+  return (
+    <LabelPrimitive.Root
+      data-slot="label"
+      className={cn(
+        "flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export { Label }

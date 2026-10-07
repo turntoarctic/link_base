@@ -4,7 +4,7 @@ import { useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import * as Y from 'yjs'
 import { buildEditorKit, EditorContent, useEditor } from '@linkbase/editor'
-import { Skeleton } from '@/components/ui/primitives'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function SharePage() {
   const { slug = '' } = useParams()

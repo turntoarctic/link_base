@@ -1,12 +1,22 @@
 {
-  "placeholder": "Type / for commands",
+  "placeholder": {
+    "docEmpty": "Type / for commands",
+    "heading1": "Heading 1",
+    "heading2": "Heading 2",
+    "heading3": "Heading 3",
+    "task": "To-do",
+    "quote": "Type your quote",
+    "callout": "Write something",
+    "toggle": "Toggle title"
+  },
   "slash": {
     "title": "Command menu",
-    "noResults": "No matching commands",
+    "noResults": "No matching commands — try another keyword",
     "group": {
       "text": "Basic blocks",
       "media": "Media & pages",
-      "advanced": "Advanced"
+      "advanced": "Advanced",
+      "recent": "Recent"
     },
     "item": {
       "paragraph": "Text",
@@ -25,9 +35,11 @@
       "subpage": "Subpage",
       "mention": "Mention (type @)",
       "attachment": "Attachment",
-      "item": {
-        "base": "Database"
-      }
+      "details": "Toggle block",
+      "math": "Math equation",
+      "mermaid": "Mermaid diagram",
+      "subpageList": "Subpage list",
+      "base": "Database"
     }
   },
   "toolbar": {
@@ -58,11 +70,18 @@
       "deleteTable": "Delete table"
     },
     "linkOpen": "Open link",
-    "linkRemove": "Remove link"
+    "linkRemove": "Remove link",
+    "turnInto": "Turn into",
+    "underline": "Underline",
+    "color": {
+      "text": "Text color",
+      "background": "Background color",
+      "default": "Default"
+    }
   },
   "mention": {
     "title": "Mention member",
-    "noResults": "No matching members"
+    "noResults": "No matching members — try another name"
   },
   "image": {
     "uploading": "Uploading…",
@@ -83,7 +102,7 @@
   },
   "subpageList": {
     "title": "Subpages",
-    "empty": "No subpages",
+    "empty": "No subpages yet — create one to get started",
     "untitled": "Untitled"
   },
   "findReplace": {
@@ -100,10 +119,10 @@
     "splitCell": "Split cell"
   },
   "base": {
-    "loadFailed": "Failed to load database",
+    "loadFailed": "Couldn't load the database — try refreshing",
     "viewTable": "Table",
     "viewBoard": "Board",
-    "needSelectColumn": "Add a select column first",
+    "needSelectColumn": "Boards need a select column — add one to get started",
     "addRow": "New row",
     "addColumn": "Add column",
     "deleteColumn": "Delete column",
@@ -126,5 +145,13 @@
     "filterPlaceholder": "Filter rows…",
     "sortDefault": "Default order",
     "sortBy": "By {column}"
+  },
+  "blockMenu": {
+    "title": "Block actions",
+    "turnInto": "Turn into",
+    "duplicate": "Duplicate",
+    "delete": "Delete",
+    "moveUp": "Move up",
+    "moveDown": "Move down"
   }
 }

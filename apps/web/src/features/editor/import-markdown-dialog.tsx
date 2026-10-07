@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { FileUp } from 'lucide-react'
 import { pageApi } from '@/lib/api'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Dialog,
   DialogContent,
@@ -55,7 +56,7 @@ export function ImportMarkdownDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[520px] max-w-[640px] flex-col gap-0 p-0">
+      <DialogContent className="flex h-[520px] max-w-[640px] flex-col gap-0 rounded-lg p-0">
         <DialogHeader className="border-b border-(--border) px-5 py-4">
           <DialogTitle className="flex items-center gap-2 text-[15px]">
             <FileUp size={15} />
@@ -66,11 +67,11 @@ export function ImportMarkdownDialog({
 
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-5">
           <div className="flex items-center gap-2">
-            <input
+            <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t('import.titlePlaceholder')}
-              className="h-8 flex-1 rounded-md border border-(--input) bg-(--background) px-2.5 text-[13px] outline-none focus-visible:border-(--ring)"
+              className="flex-1"
             />
             <Button variant="secondary" size="sm" onClick={() => fileRef.current?.click()}>
               {t('import.pickFile')}

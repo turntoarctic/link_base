@@ -159,10 +159,41 @@ export function buildSlashItems(options: SlashMenuOptions): SlashItem[] {
   ]
 }
 
+/** 单项得分：词首前缀 100 > 关键词前缀 80 > 词首 60 > 包含 40 > 子序列 20；不匹配 0 */
+export function scoreSlashItem(item: SlashItem, q: string): number {
+  if (!q) return 1
+  if (item.id.startsWith(q)) return 100
+  for (const k of item.keywords) {
+    const kl = k.toLowerCase()
+    if (kl.startsWith(q)) return 80
+  }
+  if (item.id.includes(q) || item.keywords.some((k) => k.toLowerCase().includes(q))) return 40
+  // 词首匹配（如「子页面」命中「页」）
+  for (const k of item.keywords) {
+    const kl = k.toLowerCase()
+    if (kl.split(' ').some((w) => w.startsWith(q))) return 60
+  }
+  // 子序列匹配（如 h1 → heading1）
+  if (isSubsequence(q, item.id) || item.keywords.some((k) => isSubsequence(q, k.toLowerCase()))) return 20
+  return 0
+}
+
+function isSubsequence(needle: string, hay: string): boolean {
+  let i = 0
+  for (const ch of hay) {
+    if (ch === needle[i]) i += 1
+    if (i === needle.length) return true
+  }
+  return needle.length === 0
+}
+
+/** 模糊过滤 + 按得分降序（同分保持原序稳定）；分组归属不变，弹层按分组展示 */
 export function filterSlashItems(items: SlashItem[], query: string): SlashItem[] {
   const q = query.trim().toLowerCase()
   if (!q) return items
-  return items.filter(
-    (item) => item.id.includes(q) || item.keywords.some((k) => k.toLowerCase().includes(q)),
-  )
+  return items
+    .map((item) => ({ item, score: scoreSlashItem(item, q) }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map(({ item }) => item)
 }

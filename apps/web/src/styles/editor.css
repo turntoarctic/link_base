@@ -1,4 +1,5 @@
-/* 编辑器内容样式（06 §6）：.ProseMirror 只引用语义 token，主题切换零成本 */
+/* 编辑器内容样式（06 §6）：.ProseMirror 只引用语义 token，主题切换零成本。
+   设计语言 Playful Color（docs/UI.md）：紫为默认强调，淡紫 --accent 做底色，大圆角 + 软阴影。 */
 .ProseMirror {
   color: var(--foreground);
   caret-color: var(--primary);
@@ -23,17 +24,25 @@
 
 .ProseMirror h1 {
   font-size: 30px;
-  margin-top: 0.9em;
+  margin-top: 1.6em;
+  margin-bottom: 0.2em;
 }
 
 .ProseMirror h2 {
   font-size: 24px;
-  margin-top: 0.8em;
+  margin-top: 1.4em;
+  margin-bottom: 0.15em;
 }
 
 .ProseMirror h3 {
   font-size: 20px;
-  margin-top: 0.7em;
+  margin-top: 1.2em;
+  margin-bottom: 0.1em;
+}
+
+/* 文档首块（标题/段落）不留顶部空隙 */
+.ProseMirror > :first-child {
+  margin-top: 0;
 }
 
 .ProseMirror ul,
@@ -69,15 +78,17 @@
 }
 
 .ProseMirror blockquote {
-  border-left: 3px solid var(--foreground);
-  padding-left: 12px;
-  margin-left: 2px;
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-sm) var(--radius-md) var(--radius-md) var(--radius-sm);
+  background: var(--accent);
+  padding: 10px 16px 10px 14px;
+  margin-left: 0;
   color: var(--foreground);
 }
 
 .ProseMirror code {
-  background: var(--muted);
-  border-radius: 4px;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
   padding: 0.15em 0.35em;
   font-family: var(--font-mono);
   font-size: 0.875em;
@@ -146,12 +157,14 @@
   pointer-events: none;
 }
 
-.ProseMirror .callout {
-  background: var(--muted);
+.ProseMirror .callout,
+.ProseMirror .linkbase-callout {
+  background: var(--accent);
   border-radius: var(--radius-lg);
 }
 
-.ProseMirror p.is-editor-empty:first-child::before {
+/* 分类型占位符（Notion 化 T5）：Placeholder 扩展给空块加 .is-empty + data-placeholder */
+.ProseMirror .is-empty::before {
   content: attr(data-placeholder);
   color: var(--text-tertiary);
   float: left;
@@ -159,13 +172,60 @@
   pointer-events: none;
 }
 
+/* 空文档首段与标题的占位下沉（与正文行高基线对齐） */
+.ProseMirror h1.is-empty::before,
+.ProseMirror h2.is-empty::before,
+.ProseMirror h3.is-empty::before {
+  font-weight: 600;
+}
+
+/* gapcursor（tiptap 核心 CSS 未引入，块间点击落点指示） */
+.ProseMirror-gapcursor {
+  display: none;
+  pointer-events: none;
+  position: absolute;
+}
+
+.ProseMirror-gapcursor:after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: -2px;
+  width: 20px;
+  border-top: 1px solid var(--foreground);
+  animation: linkbase-gap-blink 1.1s steps(2, start) infinite;
+}
+
+.ProseMirror.ProseMirror-focused .ProseMirror-gapcursor {
+  display: block;
+}
+
+@keyframes linkbase-gap-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
 .ProseMirror img {
   max-width: 100%;
   border-radius: var(--radius-md);
+  transition: box-shadow 120ms ease-out;
+}
+
+.ProseMirror img:hover {
+  box-shadow: var(--shadow-card-hover);
 }
 
 .ProseMirror .linkbase-subpage-card {
   font-size: 14px;
+  transition:
+    background-color 120ms ease-out,
+    border-color 120ms ease-out,
+    box-shadow 120ms ease-out;
+}
+
+.ProseMirror .linkbase-subpage-card:hover {
+  box-shadow: var(--shadow-card-hover);
 }
 
 /* 编辑器正文列宽（06 §5.4：720px / 宽块 984px） */

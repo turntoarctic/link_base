@@ -9,6 +9,7 @@ import { Check, MessageSquare, Send, Trash2, X } from 'lucide-react'
 import { pageApi } from '@/lib/api'
 import { toast } from '@/components/ui/sonner'
 import type { CommentAnchor, CommentItem } from '@linkbase/types'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -90,15 +91,15 @@ export function CommentsPanel({ wsId, pageId, open, onOpenChange, pendingAnchor,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[560px] max-w-[520px] flex-col gap-0 p-0">
+      <DialogContent className="flex h-[560px] max-w-[520px] flex-col gap-0 rounded-lg p-0">
         <DialogHeader className="border-b border-(--border) px-5 py-4">
           <DialogTitle className="flex items-center gap-2 text-[15px]">
             <MessageSquare size={15} />
             {t('comments.title')}
             {unresolvedCount > 0 && (
-              <span className="rounded-full bg-(--warning)/15 px-2 py-0.5 text-[11px] text-(--warning)">
+              <Badge className="bg-(--warning)/15 px-2 py-0.5 text-[11px] text-(--warning)">
                 {t('comments.unresolved', { count: unresolvedCount })}
-              </span>
+              </Badge>
             )}
           </DialogTitle>
         </DialogHeader>

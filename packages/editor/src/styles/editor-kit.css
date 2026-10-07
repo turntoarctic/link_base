@@ -1,6 +1,6 @@
 /**
  * @linkbase/editor 自有 UI 样式（弹层/工具条/NodeView/拖拽手柄）。
- * 与 web 侧 shadcn/ui 视觉语言对齐：只引用语义 token，暗色模式零成本生效（06 §6）。
+ * Playful Color 设计语言（docs/UI.md）：只引用语义 token（--radius-* / --shadow-*），暗色模式零成本生效。
  */
 
 /* ------------------------------- suggestion 弹层 ------------------------------- */
@@ -13,8 +13,8 @@
   background: var(--popover);
   color: var(--popover-foreground);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: 0 0 0 1px var(--border), 0 4px 12px rgb(15 15 15 / 8%);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-pop);
   animation: linkbase-pop-in 150ms ease-out;
 }
 
@@ -43,7 +43,7 @@
   width: 100%;
   padding: 5px 8px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   color: inherit;
   font-size: 14px;
@@ -88,6 +88,21 @@
   color: var(--muted-foreground);
 }
 
+/* 块菜单：危险项（删除）与「转为」当前项勾标 */
+.linkbase-menu-item-danger {
+  color: var(--destructive);
+}
+
+.linkbase-menu-item-danger:hover {
+  background: color-mix(in srgb, var(--destructive) 10%, transparent);
+}
+
+.linkbase-menu-item-check {
+  display: inline-flex;
+  margin-left: auto;
+  color: var(--primary);
+}
+
 @keyframes linkbase-pop-in {
   from {
     opacity: 0;
@@ -109,9 +124,80 @@
   background: var(--popover);
   color: var(--popover-foreground);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: 0 0 0 1px var(--border), 0 4px 12px rgb(15 15 15 / 8%);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-pop);
   animation: linkbase-pop-in 150ms ease-out;
+}
+
+/* 分组分隔线（Notion 化 T3 单行布局） */
+.linkbase-tb-sep {
+  width: 1px;
+  height: 16px;
+  margin: 0 2px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* 颜色按钮下缘色条 */
+.linkbase-tb-color-strip {
+  margin-top: 6px;
+}
+
+/* 颜色面板 */
+.linkbase-color-menu {
+  min-width: 200px;
+  padding: 6px;
+}
+
+.linkbase-color-group-label {
+  padding: 4px 6px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.linkbase-tb-swatches {
+  display: grid;
+  grid-template-columns: repeat(9, 22px);
+  gap: 4px;
+}
+
+.linkbase-tb-swatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--background);
+  cursor: pointer;
+  transition: border-color 120ms ease-out;
+}
+
+.linkbase-tb-swatch:hover {
+  border-color: var(--primary);
+}
+
+.linkbase-tb-swatch[data-active='true'] {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.linkbase-tb-swatch-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+}
+
+.linkbase-tb-swatch-color[data-default] {
+  background: var(--background);
+}
+
+/* 链接编辑第二行 */
+.linkbase-tb-link-row {
+  margin-top: 4px;
 }
 
 .linkbase-tb + .linkbase-tb {
@@ -126,7 +212,7 @@
   height: 28px;
   padding: 0 6px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   color: inherit;
   font-size: 12px;
@@ -152,11 +238,12 @@
   margin-right: 4px;
   padding: 0 6px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   color: inherit;
   font-size: 12.5px;
   cursor: pointer;
+  transition: background-color 120ms ease-out;
 }
 
 .linkbase-tb-select:hover {
@@ -174,28 +261,16 @@
   height: 28px;
   padding: 0 8px;
   border: 1px solid var(--input);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--background);
   color: inherit;
   font-size: 12px;
   outline: none;
+  transition: border-color 120ms ease-out;
 }
 
 .linkbase-tb-link input:focus-visible {
   border-color: var(--ring);
-}
-
-.linkbase-tb-swatch {
-  width: 18px;
-  height: 18px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: transform 120ms ease-out;
-}
-
-.linkbase-tb-swatch:hover {
-  transform: scale(1.12);
 }
 
 /* ------------------------------- 代码块语言选择 ------------------------------- */
@@ -205,7 +280,7 @@
   height: 24px;
   padding: 0 4px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--popover);
   color: var(--muted-foreground);
   font-size: 12px;
@@ -218,12 +293,48 @@
   opacity: 1;
 }
 
-/* ------------------------------- 拖拽手柄 ------------------------------- */
+/* ------------------------------- 块操作 gutter（+ 与拖拽把手） ------------------------------- */
 
-/* 浮层把手：插件挂到编辑器宿主容器（容器由 JS 置 relative），坐标 JS 计算 */
-.linkbase-drag-handle {
+/* 浮层 gutter：插件挂到编辑器宿主容器（容器由 JS 置 relative），坐标 JS 计算 */
+.linkbase-block-gutter {
   position: absolute;
   z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease-out;
+}
+
+.linkbase-block-gutter.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* + 在下方插入块 */
+.linkbase-block-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background-color 120ms ease-out, color 120ms ease-out;
+}
+
+.linkbase-block-add:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+/* ⠿ 拖拽把手：gutter 内静态子元素 */
+.linkbase-drag-handle {
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -233,18 +344,10 @@
   height: 24px;
   border-radius: 5px;
   cursor: grab;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 120ms ease-out, background-color 120ms ease-out;
+  transition: background-color 120ms ease-out;
 }
 
-.linkbase-drag-handle.is-visible {
-  opacity: 0.45;
-  pointer-events: auto;
-}
-
-.linkbase-drag-handle.is-visible:hover {
-  opacity: 1;
+.linkbase-drag-handle:hover {
   background: var(--muted);
 }
 
@@ -291,7 +394,7 @@
   width: 100%;
   min-height: 120px;
   border: 1px dashed var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--secondary);
   color: var(--muted-foreground);
   font-size: 13px;
@@ -300,7 +403,7 @@
 .linkbase-image-skeleton {
   width: 60%;
   height: 14px;
-  border-radius: 4px;
+  border-radius: 5px;
   background: var(--muted);
   animation: linkbase-pulse 1.2s ease-in-out infinite;
 }
@@ -325,7 +428,7 @@
 .linkbase-image-error button {
   padding: 3px 10px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--background);
   color: var(--foreground);
   font-size: 12px;
@@ -349,19 +452,19 @@
   width: 100%;
   padding: 8px 12px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--card);
   color: var(--foreground);
   font-size: 14px;
   font-weight: 500;
   text-align: left;
   cursor: pointer;
-  transition: background-color 120ms ease-out, box-shadow 120ms ease-out;
+  transition: background-color 150ms ease-out, box-shadow 150ms ease-out;
 }
 
 .linkbase-subpage-card:hover {
   background: var(--muted);
-  box-shadow: 0 1px 3px rgb(15 15 15 / 6%);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .linkbase-subpage-card > svg:first-child {
@@ -426,7 +529,7 @@
   top: -1.25em;
   left: -2px;
   padding: 1px 6px;
-  border-radius: 4px 4px 4px 0;
+  border-radius: 5px 5px 5px 0;
   font-size: 11px;
   font-weight: 500;
   line-height: 1.3;
@@ -464,16 +567,16 @@
   max-width: 420px;
   padding: 10px 12px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--card);
   color: var(--foreground);
   text-decoration: none;
-  transition: background-color 120ms ease-out, box-shadow 120ms ease-out;
+  transition: background-color 150ms ease-out, box-shadow 150ms ease-out;
 }
 
 .linkbase-attachment-card:hover {
   background: var(--muted);
-  box-shadow: 0 1px 3px rgb(15 15 15 / 6%);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .linkbase-attachment-icon {
@@ -522,7 +625,7 @@
   margin: 0.5em 0;
   padding: 10px 14px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--secondary);
 }
 
@@ -530,6 +633,33 @@
   cursor: pointer;
   font-weight: 600;
   padding: 2px 0;
+}
+
+/* 折叠块自绘 chevron：展开旋转过渡（Notion 式交互反馈）；原生 marker 隐藏 */
+.ProseMirror details summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ProseMirror details summary::-webkit-details-marker {
+  display: none;
+}
+
+.ProseMirror details summary::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  background: currentColor;
+  color: var(--muted-foreground);
+  transition: transform 150ms ease-out;
+  clip-path: polygon(5px 4px, 11px 4px, 8px 11px);
+}
+
+.ProseMirror details[open] > summary::before {
+  transform: rotate(90deg);
 }
 
 .ProseMirror details > * + * {
@@ -542,7 +672,7 @@
 .linkbase-mermaid-block {
   margin: 0.5em 0;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -601,9 +731,9 @@
   gap: 4px;
   padding: 5px 8px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--popover);
-  box-shadow: 0 4px 12px rgb(15 15 15 / 10%);
+  box-shadow: var(--shadow-pop);
 }
 
 .linkbase-find-input {
@@ -611,11 +741,12 @@
   height: 26px;
   padding: 0 8px;
   border: 1px solid var(--input);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--background);
   color: inherit;
   font-size: 12px;
   outline: none;
+  transition: border-color 120ms ease-out;
 }
 
 .linkbase-find-input:focus-visible {
@@ -680,7 +811,7 @@
   margin: 0.5em 0;
   padding: 8px 10px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--secondary);
 }
 
@@ -697,7 +828,7 @@
 .linkbase-subpage-list-refresh {
   display: inline-flex;
   border: 0;
-  border-radius: 4px;
+  border-radius: 5px;
   background: transparent;
   color: var(--muted-foreground);
   cursor: pointer;
@@ -770,11 +901,12 @@
   gap: 5px;
   padding: 4px 8px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   color: var(--muted-foreground);
   font-size: 12px;
   cursor: pointer;
+  transition: background-color 120ms ease-out, color 120ms ease-out;
 }
 
 .linkbase-base-views button.is-active {
@@ -793,11 +925,12 @@
   gap: 4px;
   padding: 4px 8px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   color: var(--muted-foreground);
   font-size: 12px;
   cursor: pointer;
+  transition: background-color 120ms ease-out, color 120ms ease-out;
 }
 
 .linkbase-base-add:hover {
@@ -843,7 +976,8 @@
   color: var(--muted-foreground);
   cursor: pointer;
   padding: 1px;
-  border-radius: 3px;
+  border-radius: 5px;
+  transition: background-color 120ms ease-out, color 120ms ease-out;
 }
 
 .linkbase-base-colname button:hover {
@@ -868,7 +1002,7 @@
 
 .linkbase-base-cell-input:focus {
   box-shadow: 0 0 0 1.5px var(--ring);
-  border-radius: 3px;
+  border-radius: 5px;
 }
 
 .linkbase-base-cell-title.link {
@@ -889,7 +1023,8 @@
   color: var(--muted-foreground);
   cursor: pointer;
   padding: 2px;
-  border-radius: 4px;
+  border-radius: 5px;
+  transition: background-color 120ms ease-out, color 120ms ease-out;
 }
 
 .linkbase-base-rowactions button:hover {
@@ -908,7 +1043,8 @@
   color: var(--muted-foreground);
   cursor: pointer;
   padding: 3px;
-  border-radius: 4px;
+  border-radius: 5px;
+  transition: background-color 120ms ease-out, color 120ms ease-out;
 }
 
 .linkbase-base-addcol-btn:hover {
@@ -931,12 +1067,13 @@
   color: inherit;
   font-size: 12px;
   outline: none;
+  transition: border-color 120ms ease-out;
 }
 
 .linkbase-base-addcol button {
   display: inline-flex;
   border: 0;
-  border-radius: 4px;
+  border-radius: 5px;
   background: var(--muted);
   color: inherit;
   cursor: pointer;
@@ -954,7 +1091,7 @@
 .linkbase-base-board-col {
   flex: 0 0 240px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--secondary);
   padding: 8px;
 }
@@ -977,8 +1114,13 @@
   margin-bottom: 6px;
   padding: 8px 10px;
   border: 1px solid var(--border);
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   background: var(--card);
+  transition: box-shadow 150ms ease-out, border-color 150ms ease-out;
+}
+
+.linkbase-base-card:hover {
+  box-shadow: var(--shadow-card-hover);
 }
 
 .linkbase-base-card-title {
@@ -1018,11 +1160,12 @@
   gap: 4px;
   padding: 5px 6px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   color: var(--muted-foreground);
   font-size: 12px;
   cursor: pointer;
+  transition: background-color 120ms ease-out, color 120ms ease-out;
 }
 
 .linkbase-base-board-add:hover {
@@ -1037,11 +1180,12 @@
   height: 26px;
   padding: 0 8px;
   border: 1px solid var(--input);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--background);
   color: inherit;
   font-size: 12px;
   outline: none;
+  transition: border-color 120ms ease-out;
 }
 
 .linkbase-base-filter:focus-visible {
@@ -1051,7 +1195,7 @@
 .linkbase-base-sort {
   height: 26px;
   border: 1px solid var(--input);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--background);
   color: inherit;
   font-size: 12px;
@@ -1062,7 +1206,7 @@
   height: 26px;
   min-width: 26px;
   border: 1px solid var(--input);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--background);
   color: inherit;
   font-size: 12px;

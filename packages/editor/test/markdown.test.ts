@@ -26,6 +26,16 @@ describe('buildEditorKit', () => {
     expect(names).toContain('findReplace')
   })
 
+  test('装配包含块级操作扩展（Notion 化 T1）', () => {
+    const names = buildEditorKit({ ydoc: new Y.Doc(), uploadImage: async () => ({ url: '' }) }).map((e) => e.name)
+    expect(names).toContain('blockOps')
+  })
+
+  test('装配包含文字颜色 marks（Notion 化 T3：TextStyle + Color）', () => {
+    const names = buildEditorKit({ ydoc: new Y.Doc(), uploadImage: async () => ({ url: '' }) }).map((e) => e.name)
+    expect(names).toContain('textStyle')
+    expect(names).toContain('color')
+  })
   test('装配包含 Base 数据库块（P1-8 / T2.8）', () => {
     const names = buildEditorKit({ ydoc: new Y.Doc(), uploadImage: async () => ({ url: '' }) }).map((e) => e.name)
     expect(names).toContain('baseBlock')

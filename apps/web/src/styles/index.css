@@ -52,16 +52,23 @@
   --color-tag-8: var(--tag-8-bg);
   --color-tag-8-fg: var(--tag-8-fg);
 
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  /* 官方映射：单源 --radius（0.625rem，见 tokens.css）calc 派生 */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-pill: 999px;
 
-  --shadow-pop: 0 0 0 1px var(--border), 0 4px 12px rgb(15 15 15 / 8%);
-  --shadow-modal: 0 10px 40px rgb(15 15 15 / 16%);
+  /* 软阴影；--shadow-md/lg 覆盖 Tailwind 硬编码黑影（审计建议） */
+  --shadow-pop: 0 0 0 1px var(--border), 0 8px 24px rgb(15 15 20 / 8%);
+  --shadow-modal: 0 16px 48px rgb(15 15 20 / 18%);
+  --shadow-card-hover: 0 8px 24px rgb(15 15 20 / 8%);
+  --shadow-md: var(--shadow-pop);
+  --shadow-lg: var(--shadow-modal);
 
   /* 字体（值直接内联，避免 inline 映射自引用） */
   --font-sans:
-    ui-sans-serif, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei',
+    Inter, ui-sans-serif, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei',
     'Noto Sans CJK SC', sans-serif;
   --font-mono: ui-monospace, 'SFMono-Regular', 'JetBrains Mono', Consolas, monospace;
 
@@ -108,6 +115,25 @@
     background: transparent;
   }
 }
+
+/* 全局 ease-out（shadcn 组件默认 ease） */
+@theme inline {
+  --default-transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* sonner toast 阴影主题化（sonner 内部硬编码，token 层覆盖） */
+[data-sonner-toast] {
+  box-shadow: var(--shadow-pop) !important;
+}
+
+/* 区块级强调色（保留机制；shadcn 默认主题下统一走 primary） */
+:root {
+  --region-accent: var(--primary);
+}
+.linkbase-region-blue,
+.linkbase-region-orange,
+.linkbase-region-green,
+.linkbase-region-red { --region-accent: var(--primary); }
 
 /* 布局宽度 token（06 §5.3）——以任意值语法消费：w-(--width-sidebar) */
 :root {

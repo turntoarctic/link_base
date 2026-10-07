@@ -8,12 +8,15 @@ export interface RateLimitOptions {
   prefix: string
   windowSec: number
   max: number
+  /** 关闭时直接放行（RATE_LIMIT_ENABLED=false） */
+  enabled?: boolean
 }
 
 export const rateLimit =
   (kv: KV, options: RateLimitOptions) =>
   // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
   createMiddleware<AppEnv>(async (c, next) => {
+    if (options.enabled === false) return next()
     const ip =
       c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ??
       c.req.header('x-real-ip') ??

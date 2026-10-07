@@ -10,7 +10,9 @@ import StarterKit from '@tiptap/starter-kit'
 import { Collaboration } from '@tiptap/extension-collaboration'
 import { CollaborationCaret } from '@tiptap/extension-collaboration-caret'
 import { Placeholder } from '@tiptap/extensions'
+import { placeholderForNode } from './extensions/placeholders.ts'
 import { Highlight } from '@tiptap/extension-highlight'
+import { Color, TextStyle } from '@tiptap/extension-text-style'
 import { TableKit } from '@tiptap/extension-table'
 import { Details, DetailsSummary, insertDetails } from './extensions/details.ts'
 import { MathBlock } from './extensions/math-block.ts'
@@ -29,6 +31,7 @@ import { Callout } from './extensions/callout.ts'
 import { SlashMenu, type SlashMenuOptions } from './extensions/slash-menu.ts'
 import { MarkdownPaste } from './extensions/markdown.ts'
 import { DragHandle } from './extensions/drag-handle.ts'
+import { BlockOps } from './extensions/block-ops.ts'
 import { TaskListInputRule } from './extensions/task-input-rule.ts'
 import { CommentsHighlight, refreshComments, type CommentAnchorSpec } from './extensions/comments.ts'
 import { Attachment, type AttachmentAttrs } from './extensions/attachment.ts'
@@ -90,12 +93,18 @@ export function buildEditorKit(options: EditorKitOptions) {
     TaskItem.configure({ nested: true }),
     TaskListInputRule,
     Highlight.configure({ multicolor: true }),
+    // 文字颜色（Notion 化 T3）：TextStyle 基础 + Color mark；背景色复用上方 multicolor Highlight
+    TextStyle,
+    Color,
     // 表格进阶（P1-7）：列宽拖拽 + 合并/拆分单元格（工具条按钮）
     TableKit.configure({ table: { resizable: true } }),
     Placeholder.configure({
       showOnlyWhenEditable: true,
+      // Notion 化 T5：全部空块都显示对应提示（标题/待办/引用/标注），普通空段落不提示
+      showOnlyCurrent: false,
+      includeChildren: true,
       // 动态取词，语言切换即时生效（13 §6 不刷新页面）
-      placeholder: () => i18next.t('editor:placeholder'),
+      placeholder: placeholderForNode,
     }),
     Collaboration.configure({ document: options.ydoc }),
     // 协作光标（T2.2，09 §6）：需要 awareness + 本端身份；自绘光标样式走 linkbase-caret
@@ -131,6 +140,8 @@ export function buildEditorKit(options: EditorKitOptions) {
     Attachment,
     DragHandle,
     MarkdownPaste,
+    // 块级操作（Notion 化 T1）：必须在 SlashMenu/Mention 之后——suggestion 先消费 Escape/方向键
+    BlockOps,
     // 折叠块/公式/图/子页列表（P1-7）
     Details,
     DetailsSummary,
@@ -169,6 +180,8 @@ export { Subpage as SubpageExtension } from './extensions/subpage.ts'
 export { Callout as CalloutExtension } from './extensions/callout.ts'
 export { SlashMenu as SlashMenuExtension } from './extensions/slash-menu.ts'
 export { DragHandle as DragHandleExtension } from './extensions/drag-handle.ts'
+export { BlockOps as BlockOpsExtension } from './extensions/block-ops.ts'
+export { Color as ColorExtension, TextStyle as TextStyleExtension } from '@tiptap/extension-text-style'
 export { MarkdownPaste as MarkdownPasteExtension, markdownToPmJson, looksLikeMarkdown } from './extensions/markdown.ts'
 export { CommentsHighlight as CommentsHighlightExtension, refreshComments, type CommentAnchorSpec } from './extensions/comments.ts'
 export { Attachment as AttachmentExtension, type AttachmentAttrs } from './extensions/attachment.ts'

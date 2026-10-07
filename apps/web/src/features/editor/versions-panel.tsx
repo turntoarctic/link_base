@@ -9,6 +9,7 @@ import { History, RotateCcw, Save } from 'lucide-react'
 import { pageApi } from '@/lib/api'
 import type { VersionItem } from '@linkbase/types'
 import { refreshPageDoc } from './doc-manager'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -21,8 +22,8 @@ import { toast } from '@/components/ui/sonner'
 import { cn } from '@/lib/cn'
 
 const REASON_TONE: Record<string, string> = {
-  manual: 'bg-(--primary)/10 text-(--primary)',
-  restore: 'bg-(--warning)/15 text-(--warning)',
+  manual: 'bg-(--tag-2-bg) text-(--tag-2-fg)',
+  restore: 'bg-(--tag-3-bg) text-(--tag-3-fg)',
   auto: 'bg-(--muted) text-(--muted-foreground)',
   copy: 'bg-(--muted) text-(--muted-foreground)',
 }
@@ -85,7 +86,7 @@ export function VersionsPanel({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[560px] max-w-[760px] flex-col gap-0 p-0">
+      <DialogContent className="flex h-[560px] max-w-[760px] flex-col gap-0 rounded-lg p-0">
         <DialogHeader className="border-b border-(--border) px-5 py-4">
           <DialogTitle className="flex items-center gap-2 text-[15px]">
             <History size={15} />
@@ -125,14 +126,14 @@ export function VersionsPanel({
               >
                 <div className="flex items-center gap-2">
                   <span className="text-[12.5px] font-medium">v{item.version}</span>
-                  <span
+                  <Badge
                     className={cn(
-                      'rounded-full px-1.5 py-0.5 text-[10px] font-medium',
+                      'px-1.5 py-0.5 text-[10px]',
                       REASON_TONE[item.reason] ?? REASON_TONE.auto,
                     )}
                   >
                     {t(`versions.reason.${item.reason}`)}
-                  </span>
+                  </Badge>
                   <span className="ml-auto text-[11px] text-(--muted-foreground)">
                     {new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(
                       new Date(item.createdAt),

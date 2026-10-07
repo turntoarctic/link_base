@@ -1,12 +1,22 @@
 {
-  "placeholder": "输入 / 唤起命令菜单",
+  "placeholder": {
+    "docEmpty": "输入 / 唤起命令菜单",
+    "heading1": "标题 1",
+    "heading2": "标题 2",
+    "heading3": "标题 3",
+    "task": "待办事项",
+    "quote": "输入引用内容",
+    "callout": "输入正文",
+    "toggle": "折叠标题"
+  },
   "slash": {
     "title": "命令菜单",
-    "noResults": "没有匹配的命令",
+    "noResults": "没有匹配的命令，换个关键词试试",
     "group": {
       "text": "基本块",
       "media": "媒体与页面",
-      "advanced": "进阶"
+      "advanced": "进阶",
+      "recent": "最近使用"
     },
     "item": {
       "paragraph": "文本",
@@ -25,9 +35,11 @@
       "subpage": "子页面",
       "mention": "提及（输入 @）",
       "attachment": "附件",
-      "item": {
-        "base": "数据库"
-      }
+      "details": "折叠块",
+      "math": "数学公式",
+      "mermaid": "流程图",
+      "subpageList": "子页列表",
+      "base": "数据库"
     }
   },
   "toolbar": {
@@ -58,11 +70,18 @@
       "deleteTable": "删除表格"
     },
     "linkOpen": "打开链接",
-    "linkRemove": "移除链接"
+    "linkRemove": "移除链接",
+    "turnInto": "转为",
+    "underline": "下划线",
+    "color": {
+      "text": "文字颜色",
+      "background": "背景颜色",
+      "default": "默认"
+    }
   },
   "mention": {
     "title": "提及成员",
-    "noResults": "没有匹配的成员"
+    "noResults": "没有匹配的成员，换个名字试试"
   },
   "image": {
     "uploading": "上传中…",
@@ -83,7 +102,7 @@
   },
   "subpageList": {
     "title": "子页面",
-    "empty": "暂无子页面",
+    "empty": "还没有子页面，新建一个试试",
     "untitled": "无标题"
   },
   "findReplace": {
@@ -100,10 +119,10 @@
     "splitCell": "拆分单元格"
   },
   "base": {
-    "loadFailed": "数据库加载失败",
+    "loadFailed": "数据库加载失败，刷新试试",
     "viewTable": "表格",
     "viewBoard": "看板",
-    "needSelectColumn": "需要先添加一个「选择」类型的列",
+    "needSelectColumn": "看板需要一个「选择」类型的列，先添加一个吧",
     "addRow": "新建行",
     "addColumn": "添加列",
     "deleteColumn": "删除列",
@@ -126,5 +145,13 @@
     "filterPlaceholder": "筛选行…",
     "sortDefault": "默认排序",
     "sortBy": "按 {column}"
+  },
+  "blockMenu": {
+    "title": "块操作",
+    "turnInto": "转为",
+    "duplicate": "复制",
+    "delete": "删除",
+    "moveUp": "上移",
+    "moveDown": "下移"
   }
 }

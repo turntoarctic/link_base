@@ -15,7 +15,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { EmptyState, Skeleton } from '@/components/ui/primitives'
+import { EmptyState } from '@/components/ui/primitives'
+import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from '@/components/ui/sonner'
 
 export default function TrashPage() {

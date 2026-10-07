@@ -10,14 +10,14 @@ import { createAuthService } from '../services/auth.service.ts'
 
 export function authRouter(
   deps: ServerDeps,
-  limits: { loginMax: number; registerMax: number },
+  limits: { loginMax: number; registerMax: number; enabled: boolean },
 ): Hono<AppEnv> {
   const auth = createAuthService(deps.db, deps.sessions)
 
   return new Hono<AppEnv>()
     .post(
       '/register',
-      rateLimit(deps.kv, { prefix: 'register', windowSec: 3600, max: limits.registerMax }),
+      rateLimit(deps.kv, { prefix: 'register', windowSec: 3600, max: limits.registerMax, enabled: limits.enabled }),
       validate('json', registerSchema),
       async (c) => {
         const result = await auth.register(c.req.valid('json'))
@@ -26,7 +26,7 @@ export function authRouter(
     )
     .post(
       '/login',
-      rateLimit(deps.kv, { prefix: 'login', windowSec: 60, max: limits.loginMax }),
+      rateLimit(deps.kv, { prefix: 'login', windowSec: 60, max: limits.loginMax, enabled: limits.enabled }),
       validate('json', loginSchema),
       async (c) => {
         const result = await auth.login(c.req.valid('json'))

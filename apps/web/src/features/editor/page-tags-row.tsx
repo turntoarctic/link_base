@@ -6,6 +6,8 @@ import { Plus, X } from 'lucide-react'
 import { tagApi } from '@/lib/api'
 import type { TagDto } from '@linkbase/types'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/cn'
 
@@ -119,7 +121,7 @@ export function PageTagsRow({
                 submitCreate()
               }}
             >
-              <input
+              <Input
                 autoFocus
                 value={name}
                 maxLength={50}
@@ -128,7 +130,7 @@ export function PageTagsRow({
                   if (e.key === 'Escape') setCreating(false)
                 }}
                 placeholder={t('tags.namePlaceholder')}
-                className="h-7 w-full rounded-md border border-(--input) bg-(--background) px-2 text-[13px] outline-none focus-visible:border-(--ring)"
+                className="h-7 w-full px-2 text-[13px]"
               />
               <div className="flex items-center gap-1">
                 {TAG_COLORS.map((c) => (
@@ -146,20 +148,23 @@ export function PageTagsRow({
                 ))}
               </div>
               <div className="flex items-center justify-end gap-1">
-                <button
+                <Button
                   type="button"
-                  className="rounded-md px-2 py-1 text-[12px] text-(--muted-foreground) transition-colors hover:bg-(--muted)"
+                  variant="ghost"
+                  size="xs"
+                  className="h-7 px-2 text-[12px] text-(--muted-foreground)"
                   onClick={() => setCreating(false)}
                 >
                   {t('common:cancel')}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
+                  size="xs"
+                  className="h-7 px-2 text-[12px]"
                   disabled={!name.trim() || createTag.isPending}
-                  className="rounded-md bg-(--primary) px-2 py-1 text-[12px] text-white transition-colors hover:bg-(--primary)/90 disabled:opacity-40"
                 >
                   {t('tags.create')}
-                </button>
+                </Button>
               </div>
             </form>
           ) : (

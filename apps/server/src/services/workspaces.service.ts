@@ -38,6 +38,11 @@ export function createWorkspacesService(db: LinkbaseDb, sessions: Sessions, appO
       return { id: ws.id, name: ws.name, avatarUrl: ws.avatarUrl, memberCount: counts[0]?.count ?? 0 }
     },
 
+    /** 删除空间（仅 owner；FK 级联清成员/页面/文档派生） */
+    async remove(wsId: string): Promise<void> {
+      await db.delete(workspaces).where(eq(workspaces.id, wsId))
+    },
+
     async patch(wsId: string, input: { name?: string; avatarUrl?: string | null }): Promise<void> {
       await db.update(workspaces).set(input).where(eq(workspaces.id, wsId))
     },

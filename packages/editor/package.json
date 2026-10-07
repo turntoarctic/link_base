@@ -20,6 +20,7 @@
     "@tiptap/extension-highlight": "catalog:",
     "@tiptap/extension-list": "catalog:",
     "@tiptap/extension-table": "catalog:",
+    "@tiptap/extension-text-style": "catalog:",
     "@tiptap/extensions": "catalog:",
     "@tiptap/pm": "catalog:",
     "@tiptap/react": "catalog:",

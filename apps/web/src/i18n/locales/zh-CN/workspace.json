@@ -2,12 +2,12 @@
   "sidebar": {
     "searchPlaceholder": "搜索或跳转…（⌘K）",
     "favorites": "收藏",
-    "favoritesEmpty": "收藏的页面会出现在这里",
+    "favoritesEmpty": "把常用的页面加上收藏，就会出现在这里",
     "private": "私密",
     "pages": "页面",
     "tags": "标签",
     "trash": "回收站",
-    "newPage": "＋ 新页面",
+    "newPage": "新建页面",
     "addChild": "在此节点下新建子页",
     "nodeMenu": "页面操作",
     "renameTitle": "重命名页面",
@@ -52,16 +52,19 @@
   },
   "tags": {
     "title": "标签",
-    "empty": "还没有标签",
+    "empty": "还没有标签，新建一个来整理页面吧",
     "create": "新建标签",
     "namePlaceholder": "标签名",
     "color": "颜色",
     "deleteConfirm": "删除标签「{{name}}」？页面上的该标签会一并移除。",
-    "newTag": "新建标签"
+    "newTag": "新建标签",
+    "docs": "文档",
+    "docsEmpty": "该标签下还没有文档",
+    "selectHint": "点上方标签查看对应文档"
   },
   "search": {
     "placeholder": "搜索页面标题与正文…",
-    "noResults": "没有匹配的页面",
+    "noResults": "没有找到相关页面，换个关键词试试",
     "newPage": "新建页面：{{title}}",
     "hint": "↑↓ 选择，⏎ 打开，⌘⏎ 新建"
   },
@@ -84,13 +87,22 @@
     "roleMember": "成员",
     "removeMember": "移除",
     "transferOwner": "转让所有权",
-    "transferConfirm": "将所有权转让给「{{name}}」？转让后你将变为管理员。"
+    "transferConfirm": "将所有权转让给「{{name}}」？转让后你将变为管理员。",
+    "manage": "空间管理",
+    "dangerZone": "危险操作",
+    "deleteHint": "删除空间会连同其中的所有页面、文档与成员关系一并移除，且不可恢复。",
+    "deleteWorkspace": "删除此空间",
+    "deleteConfirm": "确定删除空间「{{name}}」？此操作不可恢复。",
+    "ownerOnly": "只有空间所有者可以删除或重命名空间。",
+    "manageWorkspace": "空间管理",
+    "manageIntro": "这里列出你创建的全部空间，可以重命名或删除。删除不可恢复。",
+    "manageEmpty": "你还没有创建过空间（加入的空间不在此列）。"
   },
   "errors": {
-    "loadFailed": "加载失败"
+    "loadFailed": "加载失败，刷新一下试试"
   },
   "auth": {
-    "loginRequired": "请先登录"
+    "loginRequired": "请先登录，再继续操作"
   },
   "versions": {
     "title": "版本历史",
@@ -112,7 +124,7 @@
   "comments": {
     "title": "评论",
     "unresolved": "{{count}} 条未解决",
-    "empty": "还没有评论",
+    "empty": "还没有评论，写下第一条吧",
     "onQuote": "评论「{{quote}}…」",
     "resolved": "已解决",
     "reopen": "重开",
@@ -144,7 +156,7 @@
   },
   "notifications": {
     "title": "通知",
-    "empty": "暂无通知",
+    "empty": "这里还没有通知，被提及或收到评论时会提醒你",
     "markAllRead": "全部已读",
     "typeMention": "{{actor}} 在页面中提及了你",
     "typeComment": "{{actor}} 评论了页面",
@@ -158,9 +170,11 @@
     "copy": "复制链接",
     "hint": "链接知晓者均可只读访问；关闭后链接立即失效（再次开启链接不变）。",
     "readOnly": "只读分享",
-    "notFound": "分享不存在或已关闭"
+    "notFound": "分享链接不存在或已关闭，可以联系分享者确认"
   },
   "backlinks": {
     "title": "{count} 条反向链接"
-  }
+  },
+  "noWorkspace": "还没有可用的空间",
+  "noWorkspaceHint": "让管理员通过邀请链接把你加入空间，或退出后用被邀请的账号重新登录。"
 }

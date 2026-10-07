@@ -31,6 +31,10 @@ export function workspacesRouter(deps: ServerDeps): Hono<AppEnv> {
       await svc.patch(c.req.param('wsId'), c.req.valid('json'))
       return c.json(await svc.get(c.req.param('wsId')), 200)
     })
+    .delete('/:wsId', requireOwner, async (c) => {
+      await svc.remove(c.req.param('wsId'))
+      return c.body(null, 204)
+    })
     .get('/:wsId', requireMember, async (c) => {
       return c.json(await svc.get(c.req.param('wsId')), 200)
     })

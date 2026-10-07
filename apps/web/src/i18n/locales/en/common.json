@@ -23,7 +23,14 @@
   "empty": "Nothing here yet",
   "operationFailed": "Operation failed, please try again",
   "workspace": "Workspace",
-  "pageError": "Something went wrong",
+  "pageError": "Something went wrong — try reloading this page",
   "reload": "Reload",
-  "syncOffline": "Offline · changes saved locally, will sync"
+  "syncOffline": "Offline · changes saved locally, will sync",
+  "newWorkspace": "New workspace",
+  "newWorkspaceName": "My workspace",
+  "newWorkspaceFailed": "Couldn't create it — try again?",
+  "newWorkspaceHint": "Name your workspace — you can rename it later in settings.",
+  "newWorkspaceNamePlaceholder": "Workspace name",
+  "create": "Create",
+  "manageWorkspace": "Manage workspace"
 }

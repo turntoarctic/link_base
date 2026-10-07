@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Copy } from 'lucide-react'
 import { pageApi } from '@/lib/api'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Dialog,
   DialogContent,
@@ -65,7 +66,7 @@ export function ShareDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[440px]">
+      <DialogContent className="max-w-[440px] rounded-lg">
         <DialogHeader>
           <DialogTitle className="text-[15px]">{t('share.title')}</DialogTitle>
           <DialogDescription className="text-[12px]">{t('share.subtitle')}</DialogDescription>
@@ -96,10 +97,10 @@ export function ShareDialog({
 
         {enabled && slug && (
           <div className="flex items-center gap-2">
-            <input
+            <Input
               readOnly
               value={link}
-              className="h-8 flex-1 rounded-md border border-(--input) bg-(--muted) px-2.5 text-[12px] text-(--muted-foreground) outline-none"
+              className="h-8 flex-1 bg-(--muted) px-2.5 text-[12px] text-(--muted-foreground)"
             />
             <Button variant="secondary" size="sm" onClick={copy}>
               <Copy size={13} />

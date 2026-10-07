@@ -43,9 +43,9 @@ export function createApp(deps: ServerDeps): Hono<AppEnv> {
 
   // health 不计入全局限流（探活）
   app.route('/api/health', healthRouter(deps))
-  app.use('/api/*', rateLimit(deps.kv, { prefix: 'global', windowSec: 15 * 60, max: env.RATE_LIMIT_GLOBAL }))
+  app.use('/api/*', rateLimit(deps.kv, { prefix: 'global', windowSec: 15 * 60, max: env.RATE_LIMIT_GLOBAL, enabled: env.RATE_LIMIT_ENABLED }))
 
-  app.route('/api/auth', authRouter(deps, { loginMax: env.RATE_LIMIT_LOGIN, registerMax: env.RATE_LIMIT_REGISTER }))
+  app.route('/api/auth', authRouter(deps, { loginMax: env.RATE_LIMIT_LOGIN, registerMax: env.RATE_LIMIT_REGISTER, enabled: env.RATE_LIMIT_ENABLED }))
   app.route('/api/users', usersRouter(deps))
   app.route('/api/workspaces', workspacesRouter(deps))
   app.route('/api/invites', invitesRouter(deps))

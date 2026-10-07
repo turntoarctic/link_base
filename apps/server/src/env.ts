@@ -11,6 +11,11 @@ const envSchema = z.object({
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace'])
     .default('info'),
+  /** 限流总开关（默认开；开发期可设 false 关闭）——注意不能用 z.coerce.boolean()：'false' 字符串是真值 */
+  RATE_LIMIT_ENABLED: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((v) => v === 'true'),
   /** 限流阈值（07 §3 默认值；开发期可放宽） */
   RATE_LIMIT_GLOBAL: z.coerce.number().int().positive().default(100),
   RATE_LIMIT_LOGIN: z.coerce.number().int().positive().default(5),

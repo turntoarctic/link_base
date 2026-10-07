@@ -16,16 +16,24 @@ type RowMap = Y.Map<any>
 
 interface ColumnData extends BaseColumn {}
 
+/** 列条目读取（容忍普通对象：早期「加列」曾把 plain object 推进 Y.Array，读侧统一兼容） */
+function colGet(c: any, key: string): any {
+  return c instanceof Y.Map ? c.get(key) : c?.[key]
+}
+
 function readColumns(map: any): ColumnData[] {
-  const arr = map.get('columns') as Y.Array<Y.Map<any>> | undefined
+  const arr = map.get('columns') as Y.Array<any> | undefined
   if (!arr) return []
-  return arr.toArray().map((c: any) => ({
-    id: String(c.get('id')),
-    name: String(c.get('name')),
-    type: c.get('type') as ColumnData['type'],
-    options: c.get('options') as ColumnData['options'] | undefined,
-    width: c.get('width') as number | undefined,
-  }))
+  return arr
+    .toArray()
+    .filter((c: any) => c != null && colGet(c, 'id') != null)
+    .map((c: any) => ({
+      id: String(colGet(c, 'id')),
+      name: String(colGet(c, 'name') ?? ''),
+      type: colGet(c, 'type') as ColumnData['type'],
+      options: colGet(c, 'options') as ColumnData['options'] | undefined,
+      width: colGet(c, 'width') as number | undefined,
+    }))
 }
 
 function readRows(map: any): Array<{ id: string; row: RowMap }> {
@@ -130,13 +138,13 @@ export function BaseView({ node }: NodeViewProps) {
   const addColumn = () => {
     if (!newColName.trim()) return
     const arr = map.get('columns') as Y.Array<unknown>
-    const col: ColumnData = {
-      id: crypto.randomUUID(),
-      name: newColName.trim(),
-      type: newColType,
-      ...(newColType === 'select'
-        ? { options: [1, 2].map((n) => ({ id: crypto.randomUUID(), name: t('base.optionN', { n }) })) }
-        : {}),
+    // 必须 push Y.Map：push 普通对象会存成 JSON 值（无 .get），readColumns 全列崩（T2.8 遗留，已修）
+    const col = new Y.Map<unknown>()
+    col.set('id', crypto.randomUUID())
+    col.set('name', newColName.trim())
+    col.set('type', newColType)
+    if (newColType === 'select') {
+      col.set('options', [1, 2].map((n) => ({ id: crypto.randomUUID(), name: t('base.optionN', { n }) })))
     }
     arr.push([col])
     setAddingColumn(false)
@@ -145,7 +153,7 @@ export function BaseView({ node }: NodeViewProps) {
 
   const deleteColumn = (colId: string) => {
     const arr = map.get('columns') as Y.Array<Y.Map<unknown>>
-    const index = arr.toArray().findIndex((c: any) => String(c.get('id')) === colId)
+    const index = arr.toArray().findIndex((c: any) => String(colGet(c, 'id')) === colId)
     if (index > 0) arr.delete(index, 1) // 首列 title 不可删
   }
 
@@ -330,9 +338,22 @@ export function BaseView({ node }: NodeViewProps) {
                       const onUp = (ev: MouseEvent) => {
                         window.removeEventListener('mousemove', onMove)
                         window.removeEventListener('mouseup', onUp)
-                        const colArr = map.get('columns') as Y.Array<Y.Map<any>>
-                        const target = colArr.toArray().find((c: any) => String(c.get('id')) === col.id)
-                        // columns 是 Y.Map（非元素）：宽用 set 而非 setAttribute
+                        const colArr = map.get('columns') as Y.Array<any>
+                        const idx = colArr.toArray().findIndex((c: any) => String(colGet(c, 'id')) === col.id)
+                        // columns 是 Y.Map（非元素）：宽用 set 而非 setAttribute；
+                        // 历史普通对象条目先原地转 Y.Map（写路径顺带修复毒化数据）
+                        const raw = idx >= 0 ? colArr.get(idx) : undefined
+                        const target: Y.Map<any> | undefined =
+                          raw instanceof Y.Map
+                            ? raw
+                            : (() => {
+                                if (idx < 0 || raw == null) return undefined
+                                const m = new Y.Map<any>()
+                                for (const [k, v] of Object.entries(raw)) m.set(k, v)
+                                colArr.delete(idx, 1)
+                                colArr.insert(idx, [m])
+                                return m
+                              })()
                         target?.set('width', Math.max(64, startW + ev.clientX - startX))
                       }
                       window.addEventListener('mousemove', onMove)

@@ -12,8 +12,8 @@ import { blobApi, pageApi, workspaceApi } from '@/lib/api'
 import { toast } from '@/components/ui/sonner'
 import { useAuthStore } from '@/stores/auth'
 import { getPageAwareness, insertSubpageNode, refreshPageDoc } from './doc-manager'
-import { FindReplaceBar, openFindReplace } from './find-replace-bar'
-import { useReducer, useState } from 'react'
+import { FindReplaceBar } from './find-replace-bar'
+import { useState } from 'react'
 
 /** 协作光标/头像配色：按用户 id 稳定取色（06 §5.5 头像色系） */
 const CARET_PALETTE = ['#e5484d', '#e5762d', '#b08de0', '#2f9e77', '#3b82d0', '#c232ac']
@@ -175,8 +175,10 @@ export function EditorView({
     onInlineComment?.(anchor)
   }
 
-  // ⌘F（编辑器聚焦时）与 ⋯ 菜单（事件）双入口打开查找替换
-  const [, force] = useReducer((x: number) => x + 1, 0)
+  // ⌘F（编辑器聚焦时）与 ⋯ 菜单（事件）双入口打开查找替换。
+  // 注意：不要在此对 editor 'transaction' 事件做 force 重渲染——FindReplaceBar /
+  // CodeBlockLangPicker / BubbleMenu 均自行订阅编辑器事件；而 BubbleMenu 的 updateOptions
+  // effect 在 props 引用变化时会派发事务，事务再触发 force 再渲染 → 无限循环（已踩坑）。
   const [findOpen, setFindOpen] = useState(false)
   useEffect(() => {
     const open = () => setFindOpen(true)
@@ -196,14 +198,6 @@ export function EditorView({
       window.removeEventListener('keydown', onKey)
     }
   }, [])
-  useEffect(() => {
-    if (!editor) return
-    const onUpdate = () => force()
-    editor.on('transaction', onUpdate)
-    return () => {
-      editor.off('transaction', onUpdate)
-    }
-  }, [editor])
   useEffect(() => {
     if (!findOpen && editor) editor.commands.setSearch({ searchTerm: '' })
   }, [findOpen, editor])

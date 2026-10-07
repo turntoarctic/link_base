@@ -12,8 +12,6 @@ import type { CommentAnchor, PageTreeNode } from '@linkbase/types'
 import { updateSubpageTitle } from './doc-manager'
 import { useDocPushFailed } from './use-doc-sync'
 import { useAwarenessUsers } from './use-awareness-users'
-import { useUiStore } from '@/stores/ui'
-import { cn } from '@/lib/cn'
 import { usePageDoc } from './use-page-doc'
 import { EditorView } from './editor-view'
 import { PageTagsRow } from './page-tags-row'
@@ -22,6 +20,7 @@ import { CommentsPanel } from './comments-panel'
 import { ImportMarkdownDialog } from './import-markdown-dialog'
 import { openFindReplace } from './find-replace-bar'
 import { ShareDialog } from './share-dialog'
+import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,14 +28,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Skeleton } from '@/components/ui/primitives'
+import { Skeleton } from '@/components/ui/skeleton'
+import { AvatarGroup, Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { toast } from '@/components/ui/sonner'
 
 export default function EditorPage() {
   const { workspaceId = '', pageId = '' } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed)
   const pushFailed = useDocPushFailed(pageId)
   const onlineUsers = useAwarenessUsers(pageId)
   const { t } = useTranslation(['workspace', 'common'])
@@ -157,29 +156,29 @@ export default function EditorPage() {
   return (
     <div className="min-h-full px-6 py-3">
       {/* 顶部条：面包屑 + 页菜单（06 §5.4：无全局 header，右上仅 ⋯）；
-          侧边栏折叠时左侧有浮动展开按钮，面包屑避让 */}
-      <div className={cn('mx-auto flex h-8 max-w-(--width-content-wide) items-center justify-end gap-1 text-[12px] text-(--muted-foreground)', sidebarCollapsed && 'pl-9')}>
+          移动端左上角为侧栏抽屉触发器，面包屑避让 */}
+      <div className="mx-auto flex h-8 max-w-(--width-content-wide) items-center justify-end gap-1 text-[12px] text-(--muted-foreground) pl-10">
         <div className="flex min-w-0 flex-1 items-center gap-0.5">
           {breadcrumb.map((item) => (
             <span key={item.id} className="flex min-w-0 items-center gap-0.5">
               <button
                 type="button"
-                className="max-w-[160px] truncate rounded px-1 py-0.5 transition-colors hover:bg-(--muted) hover:text-(--foreground)"
+                className="max-w-[160px] truncate rounded-md px-1.5 py-0.5 transition-colors hover:bg-(--accent) hover:text-(--foreground)"
                 onClick={() => navigate(`/${workspaceId}/page/${item.id}`)}
               >
                 {item.title || t('common:untitled')}
               </button>
-              <ChevronRight size={11} className="shrink-0 opacity-60" />
+              <ChevronRight size={11} className="shrink-0 text-(--text-tertiary)" />
             </span>
           ))}
           {pushFailed && (
-            <span
+            <Badge
               title={t('common:syncOffline')}
-              className="ml-1 flex shrink-0 items-center gap-1 rounded-full bg-(--muted) px-2 py-0.5 text-[11px] text-(--muted-foreground)"
+              className="ml-1 gap-1 bg-(--muted) px-2 py-0.5 text-[11px] text-(--muted-foreground)"
             >
               <CloudOff size={11} />
               {t('common:syncOffline')}
-            </span>
+            </Badge>
           )}
         </div>
 
@@ -188,37 +187,37 @@ export default function EditorPage() {
           type="button"
           aria-label={t('workspace:comments.title')}
           title={t('workspace:comments.title')}
-          className="relative mr-1 rounded-md p-1.5 text-(--muted-foreground) transition-colors hover:bg-(--muted) hover:text-(--foreground)"
+          className="relative mr-1 rounded-full p-1.5 text-(--muted-foreground) transition-colors hover:bg-(--accent) hover:text-(--foreground)"
           onClick={() => setCommentsOpen(true)}
         >
           <MessageSquare size={15} />
           {comments.data && comments.data.some((c) => !c.resolved) && (
-            <span className="absolute -top-0.5 -right-0.5 flex size-3.5 items-center justify-center rounded-full bg-(--warning) text-[9px] font-bold text-white">
+            <span className="absolute -top-0.5 -right-0.5 flex size-3.5 items-center justify-center rounded-full bg-(--primary) text-[9px] font-bold text-(--primary-foreground)">
               {comments.data.filter((c) => !c.resolved).length}
             </span>
           )}
         </button>
 
         {/* 在线协作成员（T2.2，09 §6）+ ⋯ 页菜单 */}
-        <div className="flex shrink-0 items-center -space-x-1 pr-1">
+        <AvatarGroup className="shrink-0 items-center -space-x-1 pr-1">
           {onlineUsers.map((u) => (
-            <span
-              key={u.clientID}
-              title={u.name}
-              className="flex size-5 items-center justify-center rounded-full text-[10px] font-semibold text-white ring-2 ring-(--background)"
-              style={{ background: u.color }}
-            >
-              {u.name.slice(0, 1).toUpperCase()}
-            </span>
+            <Avatar key={u.clientID} title={u.name} className="size-5">
+              <AvatarFallback
+                className="text-[10px] font-semibold text-white"
+                style={{ background: u.color }}
+              >
+                {u.name.slice(0, 1).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
           ))}
-        </div>
+        </AvatarGroup>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
               type="button"
               aria-label={t('workspace:page.menu')}
-              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="rounded-full p-1.5 text-(--muted-foreground) transition-colors hover:bg-(--accent) hover:text-(--foreground)"
             >
               <MoreHorizontal size={16} />
             </button>

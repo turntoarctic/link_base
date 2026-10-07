@@ -1,7 +1,7 @@
 /** 标签服务（10 §7）：CRUD + 页面打标 */
-import { and, asc, eq } from 'drizzle-orm'
+import { and, asc, desc, eq } from 'drizzle-orm'
 import type { TagDto } from '@linkbase/types'
-import { tags } from '../db/index.ts'
+import { pageTags, pages, tags } from '../db/index.ts'
 import { errNotFound, errTagExists } from '../lib/errors.ts'
 import { uuidv7 } from '../lib/ids.ts'
 import type { LinkbaseDb } from '../lib/deps.ts'
@@ -39,6 +39,21 @@ export function createTagsService(db: LinkbaseDb) {
         .where(and(eq(tags.id, tagId), eq(tags.workspaceId, wsId)))
         .returning({ id: tags.id })
       if (rows.length === 0) throw errNotFound('tag not found')
+    },
+
+    /** 按标签列页面（标签页视图）：排除回收站，最近更新在前 */
+    async pagesByTag(
+      wsId: string,
+      tagId: string,
+    ): Promise<Array<{ id: string; title: string; icon: string | null; updatedAt: string }>> {
+      const rows = await db
+        .select({ id: pages.id, title: pages.title, icon: pages.icon, updatedAt: pages.updatedAt })
+        .from(pageTags)
+        .innerJoin(pages, eq(pages.id, pageTags.pageId))
+        .innerJoin(tags, eq(tags.id, pageTags.tagId))
+        .where(and(eq(tags.workspaceId, wsId), eq(pageTags.tagId, tagId), eq(pages.isTrash, false)))
+        .orderBy(desc(pages.updatedAt))
+      return rows.map((r) => ({ ...r, updatedAt: r.updatedAt.toISOString() }))
     },
 
     /** 删除标签（page_tags 级联清） */

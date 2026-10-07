@@ -62,8 +62,14 @@ export const workspaceApi = {
   list(): Promise<WorkspaceBrief[]> {
     return api.json('/workspaces')
   },
+  create(name: string): Promise<{ id: string; name: string }> {
+    return api.json('/workspaces', { method: 'POST', json: { name } })
+  },
   get(wsId: string): Promise<{ id: string; name: string; avatarUrl: string | null; memberCount: number }> {
     return api.json(`/workspaces/${wsId}`)
+  },
+  remove(wsId: string): Promise<void> {
+    return api.json('/workspaces/' + wsId, { method: 'DELETE' })
   },
   patch(wsId: string, input: { name?: string }): Promise<void> {
     return api.json(`/workspaces/${wsId}`, { method: 'PATCH', json: input })
@@ -195,6 +201,9 @@ export const tagApi = {
   },
   remove(wsId: string, tagId: string): Promise<void> {
     return api.json(`/workspaces/${wsId}/tags/${tagId}`, { method: 'DELETE' })
+  },
+  pagesByTag(wsId: string, tagId: string): Promise<Array<{ id: string; title: string; icon: string | null; updatedAt: string }>> {
+    return api.json(`/workspaces/${wsId}/tags/${tagId}/pages`)
   },
   pageTags(wsId: string, pageId: string): Promise<TagDto[]> {
     return api.json(`/workspaces/${wsId}/pages/${pageId}/tags`)

@@ -9,6 +9,7 @@
 import { Component, lazy, Suspense, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import i18next from 'i18next'
 import { authApi } from '@/lib/api'
 import { getAccessToken } from '@/lib/fetch'
@@ -21,6 +22,8 @@ const InvitePage = lazy(() => import('@/features/auth/invite-page'))
 const WorkspaceIndexPage = lazy(() => import('@/features/workspace/workspace-index-page'))
 const EditorPage = lazy(() => import('@/features/editor/editor-page'))
 const TrashPage = lazy(() => import('@/features/trash/trash-page'))
+const TagsPage = lazy(() => import('@/features/tags/tags-page'))
+const WorkspaceManagePage = lazy(() => import('@/features/workspace/workspace-manage-page'))
 const SettingsPage = lazy(() => import('@/features/settings/settings-page'))
 const SharePage = lazy(() => import('@/features/share/share-page'))
 
@@ -59,12 +62,36 @@ class RouteErrorBoundary extends Component<{ children: ReactNode }, { error: Err
   }
 }
 
+/** 无空间兜底：可见空态 + 退出（邀请链接可再进入） */
+function NoWorkspaceFallback() {
+  const { t } = useTranslation('workspace')
+  return (
+    <div className="flex min-h-svh flex-col items-center justify-center gap-3 px-4 text-center">
+      <div className="text-[15px] font-medium">{t('noWorkspace')}</div>
+      <div className="max-w-[420px] text-[13px] text-muted-foreground">{t('noWorkspaceHint')}</div>
+      <button
+        type="button"
+        className="mt-2 h-8 rounded-md border border-input bg-background px-3 text-[13px] hover:bg-accent"
+        onClick={() => {
+          const rt = localStorage.getItem('linkbase.refreshToken')
+          if (rt) void authApi.logout(rt)
+          localStorage.clear()
+          location.href = '/login'
+        }}
+      >
+        {i18next.t('common:userMenu.logout')}
+      </button>
+    </div>
+  )
+}
 /** 有会话 → 最近工作空间；无会话/查询失败/空间列表为空 → /login（判定统一收口，不卡 null） */
 function RootRedirect() {
   const me = useQuery({ queryKey: ['me'], queryFn: authApi.me, staleTime: Infinity, retry: 1 })
   if (me.isPending) return <RouteLoading />
+  if (me.isError) return <Navigate to="/login" replace />
   const firstWs = me.data?.workspaces[0]
-  if (me.isError || !firstWs) return <Navigate to="/login" replace />
+  // 已登录但不属于任何空间：可见兜底（退出重来 / 走邀请链接），不再空白或误判未登录
+  if (!firstWs) return <NoWorkspaceFallback />
   return <Navigate to={`/${firstWs.id}`} replace />
 }
 
@@ -88,6 +115,8 @@ export function App() {
                 <Route index element={<WorkspaceIndexPage />} />
                 <Route path="page/:pageId" element={<EditorPage />} />
                 <Route path="trash" element={<TrashPage />} />
+                <Route path="tags" element={<TagsPage />} />
+                <Route path="manage" element={<WorkspaceManagePage />} />
                 <Route path="settings/*" element={<SettingsPage />} />
               </Route>
             </Route>

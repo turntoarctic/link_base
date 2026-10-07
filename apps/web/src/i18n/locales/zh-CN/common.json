@@ -23,7 +23,14 @@
   "empty": "暂无内容",
   "operationFailed": "操作失败，请重试",
   "workspace": "工作空间",
-  "pageError": "页面出错了",
+  "pageError": "页面出错了，刷新一下试试",
   "reload": "重新加载",
-  "syncOffline": "离线 · 改动已存本地，恢复后自动同步"
+  "syncOffline": "离线 · 改动已存本地，恢复后自动同步",
+  "newWorkspace": "新建空间",
+  "newWorkspaceName": "我的空间",
+  "newWorkspaceFailed": "没建成，再试一次？",
+  "newWorkspaceHint": "给新空间起个名字，之后可以在设置里修改。",
+  "newWorkspaceNamePlaceholder": "输入空间名称",
+  "create": "创建",
+  "manageWorkspace": "空间管理"
 }

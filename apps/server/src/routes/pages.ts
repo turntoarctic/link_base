@@ -77,6 +77,9 @@ export function pagesRouter(deps: ServerDeps): Hono<AppEnv> {
     )
     // 标签（10 §7）
     .get('/:wsId/tags', async (c) => c.json(await tags.list(c.get('ws').id), 200))
+    .get('/:wsId/tags/:tagId/pages', async (c) => {
+      return c.json(await tags.pagesByTag(c.get('ws').id, c.req.param('tagId')), 200)
+    })
     .post('/:wsId/tags', validate('json', createTagSchema), async (c) => {
       const tag = await tags.create(c.get('ws').id, c.req.valid('json'))
       return c.json(tag, 201)

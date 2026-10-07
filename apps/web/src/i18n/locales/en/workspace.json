@@ -2,12 +2,12 @@
   "sidebar": {
     "searchPlaceholder": "Search or jump… (⌘K)",
     "favorites": "Favorites",
-    "favoritesEmpty": "Favorited pages will appear here",
+    "favoritesEmpty": "Star the pages you use often and they'll show up here",
     "private": "Private",
     "pages": "Pages",
     "tags": "Tags",
     "trash": "Trash",
-    "newPage": "＋ New page",
+    "newPage": "New page",
     "addChild": "New subpage under this node",
     "nodeMenu": "Page actions",
     "renameTitle": "Rename page",
@@ -52,16 +52,19 @@
   },
   "tags": {
     "title": "Tags",
-    "empty": "No tags yet",
+    "empty": "No tags yet — create one to organize your pages",
     "create": "New tag",
     "namePlaceholder": "Tag name",
     "color": "Color",
     "deleteConfirm": "Delete tag “{{name}}”? It will be removed from all pages.",
-    "newTag": "New tag"
+    "newTag": "New tag",
+    "docs": "Documents",
+    "docsEmpty": "No documents with this tag yet",
+    "selectHint": "Pick a tag above to see its documents"
   },
   "search": {
     "placeholder": "Search page titles and content…",
-    "noResults": "No matching pages",
+    "noResults": "No pages found — try different keywords",
     "newPage": "New page: {{title}}",
     "hint": "↑↓ to select, ⏎ to open, ⌘⏎ to create"
   },
@@ -84,13 +87,22 @@
     "roleMember": "Member",
     "removeMember": "Remove",
     "transferOwner": "Transfer ownership",
-    "transferConfirm": "Transfer ownership to “{{name}}”? You will become an admin."
+    "transferConfirm": "Transfer ownership to “{{name}}”? You will become an admin.",
+    "manage": "Manage workspace",
+    "dangerZone": "Danger zone",
+    "deleteHint": "Deleting the workspace removes all its pages, documents and members. This cannot be undone.",
+    "deleteWorkspace": "Delete workspace",
+    "deleteConfirm": "Delete workspace \"{{name}}\"? This cannot be undone.",
+    "ownerOnly": "Only the workspace owner can rename or delete the workspace.",
+    "manageWorkspace": "Manage workspace",
+    "manageIntro": "All workspaces you created — rename or delete them. Deletion is permanent.",
+    "manageEmpty": "You have not created any workspaces (joined ones are not listed)."
   },
   "errors": {
-    "loadFailed": "Failed to load"
+    "loadFailed": "Couldn't load — try refreshing"
   },
   "auth": {
-    "loginRequired": "Please log in first"
+    "loginRequired": "Please log in to continue"
   },
   "versions": {
     "title": "Version history",
@@ -112,7 +124,7 @@
   "comments": {
     "title": "Comments",
     "unresolved": "{{count}} unresolved",
-    "empty": "No comments yet",
+    "empty": "No comments yet — start the conversation",
     "onQuote": "On \"{{quote}}…\"",
     "resolved": "Resolved",
     "reopen": "Reopen",
@@ -144,7 +156,7 @@
   },
   "notifications": {
     "title": "Notifications",
-    "empty": "No notifications",
+    "empty": "You're all caught up — new mentions and comments will show up here",
     "markAllRead": "Mark all read",
     "typeMention": "{{actor}} mentioned you in a page",
     "typeComment": "{{actor}} commented on a page",
@@ -158,9 +170,11 @@
     "copy": "Copy link",
     "hint": "Anyone with the link can view read-only; disabling invalidates the link instantly (re-enabling keeps the same link).",
     "readOnly": "Read-only share",
-    "notFound": "Share not found or disabled"
+    "notFound": "This share link doesn't exist or was turned off — check with the person who shared it"
   },
   "backlinks": {
     "title": "{count} backlinks"
-  }
+  },
+  "noWorkspace": "No workspace yet",
+  "noWorkspaceHint": "Ask an admin to invite you via an invite link, or sign out and sign in with the invited account."
 }
